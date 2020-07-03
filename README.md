@@ -40,7 +40,7 @@
 
 This requires you to have .NET Core 3.1 SDK installed.
 
-1. Clone the repository. Run `git clone https://github.com/aikoofujimotoo/asuka/releases`
+1. Clone the repository. Run `git clone https://github.com/aikoofujimotoo/asuka`
 2. Run `dotnet restore` to restore packages
 3. Run `dotnet build`
 
