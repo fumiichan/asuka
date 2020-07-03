@@ -4,11 +4,12 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Linq;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace asuka.Internal.Cache
 {
   #region Integrity Manager Model
-  public struct IntegrityModel
+  public struct IntegrityModel : IEquatable<IntegrityModel>
   {
     public string FileName;
     public string FileHash;
@@ -17,6 +18,14 @@ namespace asuka.Internal.Cache
     {
       FileName = fileName;
       FileHash = fileHash;
+    }
+
+    public bool Equals(IntegrityModel other)
+    {
+      if (this.FileName == other.FileName && this.FileHash == other.FileHash)
+        return true;
+
+      return false;
     }
   }
   #endregion

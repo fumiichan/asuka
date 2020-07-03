@@ -9,12 +9,13 @@ using ShellProgressBar;
 using asuka.Model;
 using asuka.Internal.Cache;
 using asuka.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace asuka.Base
 {
   class DownloadBase
   {
-    public struct ImageTaskItem
+    public struct ImageTaskItem : IEquatable<ImageTaskItem>
     {
       public string ImageURL;
       public string FileName;
@@ -23,6 +24,14 @@ namespace asuka.Base
       {
         ImageURL = imageURL;
         FileName = fileName;
+      }
+
+      public bool Equals(ImageTaskItem other)
+      {
+        if (this.FileName == other.FileName && this.ImageURL == other.ImageURL)
+          return true;
+
+        return false;
       }
     }
 
