@@ -10,7 +10,7 @@ using asuka.Exceptions;
 
 namespace asuka.API
 {
-  class Fetcher
+  public static class Fetcher
   {
     private static RestClient client = new RestClient("https://nhentai.net/api");
 
