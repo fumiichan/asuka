@@ -113,7 +113,7 @@ namespace asuka.Internal.Cache
       }
     }
 
-    private string GetSHA256Hash(string filePath)
+    private static string GetSHA256Hash(string filePath)
     {
       using SHA256 hash = SHA256.Create();
       FileStream stream = File.OpenRead(filePath);
