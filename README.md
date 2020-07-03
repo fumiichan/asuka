@@ -1,6 +1,7 @@
 ![asuka logo](docs/banner.png)
 
 [![Maintenance](https://badgen.net/badge/maintaned%3F/yes/green)](https://github.com/aikoofujimotoo/asuka/graphs/commit-activity)
+[![CircleCI](https://circleci.com/gh/aikoofujimotoo/asuka.svg?style=shield&circle-token=488813c48d642cdb1ff63cdb2483fdab55df8c19)](https://circleci.com/gh/aikoofujimotoo/asuka)
 [![Age Rating](https://badgen.net/badge/age%20rating/18+/red)](https://en.wikipedia.org/wiki/Age_of_majority)
 [![MIT license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 
