@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Description>A nhentai downloader.</Description>
+    <Copyright>© Aiko Fujimoto. All Rights Reserved.</Copyright>
+    <RepositoryUrl>https://github.com/aikoofujimotoo/asuka</RepositoryUrl>
+    <ApplicationIcon>Resources\appicon.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>asuka Assembly.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="docs\**" />
+    <EmbeddedResource Remove="docs\**" />
+    <None Remove="docs\**" />
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Base\DownloadPacker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Base\DownloadPacker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="RestSharp" Version="106.11.4" />
+    <PackageReference Include="Sharprompt" Version="1.0.5" />
+    <PackageReference Include="ShellProgressBar" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>
