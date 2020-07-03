@@ -57,6 +57,8 @@ namespace asuka.Base
             urlBase += ".gif";
             fileName += ".jpg";
             break;
+          default:
+            throw new NotImplementedException("New format is not yet implemented");
         }
 
         return new ImageTaskItem(urlBase, fileName);
