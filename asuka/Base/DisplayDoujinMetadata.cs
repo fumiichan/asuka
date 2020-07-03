@@ -6,7 +6,7 @@ using asuka.Model;
 
 namespace asuka.Base
 {
-  class DisplayDoujinMetadata
+  public static class DisplayDoujinMetadata
   {
     /// <summary>
     /// Displays the information of doujin to the console.

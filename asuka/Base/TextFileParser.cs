@@ -11,7 +11,7 @@ using asuka.Utils;
 
 namespace asuka.Base
 {
-  class TextFileParser
+  public static class TextFileParser
   {
     /// <summary>
     /// Reads the file and filters the valid codes and downloads them.

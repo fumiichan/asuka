@@ -9,7 +9,7 @@ using asuka.Utils;
 
 namespace asuka.Base
 {
-  class MultipleSelectionBase
+  public static class MultipleSelectionBase
   {
     /// <summary>
     /// Displays a multiple selection on the console and lets the user what to do next.
