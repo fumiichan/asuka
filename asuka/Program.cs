@@ -68,8 +68,7 @@ namespace asuka
         .WithParsed<GetDoujinshi>(GetDoujinshiParser)
         .WithParsed<SearchDoujin>(SearchDoujinshiParser)
         .WithParsed<RecommendDoujin>(RecommendDoujinshiParser)
-        .WithParsed<RandomDoujin>(RandomDoujinshiParser)
-        .WithNotParsed(HandleParseError);
+        .WithParsed<RandomDoujin>(RandomDoujinshiParser);
     }
 
     #region Commandline Parsers
@@ -155,10 +154,5 @@ namespace asuka
       }
     }
     #endregion
-
-    static void HandleParseError(IEnumerable<Error> errors)
-    {
-
-    }
   }
 }
