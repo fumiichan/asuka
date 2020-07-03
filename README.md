@@ -46,6 +46,10 @@ This requires you to have .NET Core 3.1 SDK installed.
 
 If you are using Visual Studio, The packages are restored automatically after you open the project. Wait for it to finish and compile the project.
 
+## Credits
+
+* [Asuka Fan Art by 黒輪](https://www.pixiv.net/en/artworks/60973409)
+
 ## License
 
 This project is licensed under [MIT License](LICENSE).
