@@ -24,16 +24,15 @@
       * [Microsoft Visual C++ 2015 Redistributable Update 3](https://www.microsoft.com/download/details.aspx?id=52685)
       * [KB2533623](https://support.microsoft.com/en-gb/help/2533623/microsoft-security-advisory-insecure-library-loading-could-allow-remot)
   * For Linux, these are currently supported distributions:
-    * Supported Distributions:
-      * Red Hat Enterprise Linux Version 6 or later
-      * CentOS, Oracle Linux Version 7 or later
-      * Fedora 30 or later
-      * Debian 9 or later
-      * Ubuntu 16.04, 18.04, 19.10, 20.04
-      * Linux Mint 18 or later
-      * openSUSE 15 or later
-      * SUSE Enterprise Linux (SLES) 12 SP2 or later
-      * Alpine Linux 3.10 or later.
+    * Red Hat Enterprise Linux Version 6 or later
+    * CentOS, Oracle Linux Version 7 or later
+    * Fedora 30 or later
+    * Debian 9 or later
+    * Ubuntu 16.04, 18.04, 19.10, 20.04
+    * Linux Mint 18 or later
+    * openSUSE 15 or later
+    * SUSE Enterprise Linux (SLES) 12 SP2 or later
+    * Alpine Linux 3.10 or later.  
   * macOS 10.13 or later
 * [.NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 
