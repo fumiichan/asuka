@@ -79,7 +79,10 @@ namespace asuka.Internal.Cache
 
     public bool CheckIntegrity(string filePath)
     {
-      if (!IntegrityData.Any()) return false;
+      if (!IntegrityData.Any())
+      {
+        return false;
+      }
 
       IntegrityModel file = IntegrityData.FirstOrDefault(v => v.FileName == Path.GetFileName(filePath));
       if (!string.IsNullOrEmpty(file.FileName))
@@ -94,7 +97,10 @@ namespace asuka.Internal.Cache
     public void SaveIntegrity()
     {
       // Do not store again when there's no changes.
-      if (!HasChanges) return;
+      if (!HasChanges)
+      {
+        return;
+      }
 
       string json = JsonConvert.SerializeObject(IntegrityData);
 

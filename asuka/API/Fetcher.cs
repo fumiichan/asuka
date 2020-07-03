@@ -59,8 +59,14 @@ namespace asuka.API
     /// <returns>Search Query Response</returns>
     public static SearchResponse SearchDoujin (List<string> queries, int page)
     {
-      if (page <= 0) page = 1;
-      if (!queries.Any()) throw new InvalidArgumentException();
+      if (page <= 0)
+      {
+        page = 1;
+      }
+      if (!queries.Any())
+      {
+        throw new InvalidArgumentException();
+      }
 
       RestRequest request = new RestRequest("/galleries/search", DataFormat.Json);
       request.AddParameter("query", string.Join(" ", queries));
