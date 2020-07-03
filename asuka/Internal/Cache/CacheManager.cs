@@ -52,7 +52,7 @@ namespace asuka.Internal.Cache
     {
       if (File.Exists(CachePath))
       {
-        StreamReader read = new StreamReader(CachePath);
+        using StreamReader read = new StreamReader(CachePath);
         string json = read.ReadToEnd();
 
         try

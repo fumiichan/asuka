@@ -52,7 +52,7 @@ namespace asuka.Internal.Cache
       {
         try
         {
-          StreamReader read = new StreamReader(IntegrityCachePath);
+          using StreamReader read = new StreamReader(IntegrityCachePath);
           string json = read.ReadToEnd();
 
           IntegrityData = JsonConvert.DeserializeObject<List<IntegrityModel>>(json);
