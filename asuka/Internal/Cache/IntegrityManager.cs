@@ -25,7 +25,7 @@ namespace asuka.Internal.Cache
   {
     private readonly string IntegrityCachePath;
     private readonly List<IntegrityModel> IntegrityData = new List<IntegrityModel>();
-    private bool HasChanges = false;
+    private bool HasChanges;
 
     public IntegrityManager(int code)
     {
