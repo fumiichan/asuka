@@ -53,11 +53,11 @@ namespace asuka.Base
             break;
           case "p":
             urlBase += ".png";
-            fileName += ".jpg";
+            fileName += ".png";
             break;
           case "g":
             urlBase += ".gif";
-            fileName += ".jpg";
+            fileName += ".gif";
             break;
           default:
             throw new NotImplementedException("New format is not yet implemented");
