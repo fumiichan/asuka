@@ -161,11 +161,6 @@ namespace asuka.Base
       });
 
       Integrity.SaveIntegrity();
-
-      if (archive != null)
-      {
-        Directory.Delete(DestinationPath);
-      }
     }
   }
 }
