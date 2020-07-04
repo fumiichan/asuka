@@ -18,6 +18,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1A1AF731-2
 		docs\USAGE.md = docs\USAGE.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "circleci", "circleci", "{3FFE768F-F06E-40EC-B38C-931DB21334AF}"
+	ProjectSection(SolutionItems) = preProject
+		.circleci\config.yml = .circleci\config.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +39,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1A1AF731-21A6-46FB-BF27-37C92EA36D71} = {5CC928EF-82FF-4B55-AE32-BF3E959B95CA}
+		{3FFE768F-F06E-40EC-B38C-931DB21334AF} = {5CC928EF-82FF-4B55-AE32-BF3E959B95CA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B48784B-033B-4B3C-BC08-271D1C052EF0}

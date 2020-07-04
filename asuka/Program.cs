@@ -24,7 +24,7 @@ namespace asuka
       [Option('r', "readOnly", Required = false, HelpText = "View information only.")]
       public bool ReadOnly { get; set; }
 
-      [Option('p', "pack", Required = false, HelpText = "Pack doujinshi as cbz archive.")]
+      [Option('p', "pack", Default = false, Required = false, HelpText = "Pack downloaded doujinshi as cbz archive.")]
       public bool Pack { get; set; }
 
       [Option('o', "output", Required = false, HelpText = "Output path. Default is the current working directory.")]
@@ -40,6 +40,9 @@ namespace asuka
       [Option('p', "page", Required = true, HelpText = "Page number")]
       public int PageNumber { get; set; }
 
+      [Option("pack", Default = false, Required = false, HelpText = "Pack downloaded doujinshi as cbz archive")]
+      public bool Pack { get; set; }
+
       [Option('o', "output", Required = false, HelpText = "Output path. Default is the current working directory.")]
       public string Output { get; set; }
     }
@@ -50,6 +53,9 @@ namespace asuka
       [Option('i', "input", Required = true, HelpText = "Input URL for recommendation.")]
       public string Input { get; set; }
 
+      [Option('p', "pack", Default = false, Required = true, HelpText = "Pack downloaded doujinshi as cbz archive")]
+      public bool Pack { get; set; }
+
       [Option('o', "output", Required = false, HelpText = "Output path. Default is current working directory.")]
       public string Output { get; set; }
     }
@@ -57,6 +63,9 @@ namespace asuka
     [Verb("random", HelpText = "Pick a random doujinshi")]
     internal class RandomDoujin
     {
+      [Option('p', "pack", Default = false, Required = false, HelpText = "Pack downloaded doujinshi as cbz archive")]
+      public bool Pack { get; set; }
+
       [Option('o', "output", Required = false, HelpText = "Output path. Default is current working directory.")]
       public string Output { get; set; }
     }
@@ -96,7 +105,8 @@ namespace asuka
               DisplayDoujinMetadata.Display(doujinData);
             } else
             {
-              DownloadBase.Download(doujinData, opts.Output);
+              DownloadBase download = new DownloadBase(doujinData, opts.Output);
+              download.Download(opts.Pack);
             }
           } else
           {
@@ -105,7 +115,7 @@ namespace asuka
         }
         else
         {
-          TextFileParser.ReadFile(opts.Input, opts.Output);
+          TextFileParser.ReadFile(opts.Input, opts.Output, opts.Pack);
         }
       } else
       {
@@ -123,7 +133,7 @@ namespace asuka
         Console.WriteLine("Viewing page " + opts.PageNumber + " out of " + data.TotalPages);
         Console.WriteLine("");
 
-        MultipleSelectionBase.PickResults(data.Result, data.ItemsPerPage, opts.Output);
+        MultipleSelectionBase.PickResults(data.Result, data.ItemsPerPage, opts.Output, opts.Pack);
       } else
       {
         throw new InvalidSearchQueryException();
@@ -135,7 +145,7 @@ namespace asuka
       if (!string.IsNullOrEmpty(opts.Input))
       {
         RecommendationsResponse data = Fetcher.GetRecommendations(opts.Input);
-        MultipleSelectionBase.PickResults(data.Result, 5, opts.Output);
+        MultipleSelectionBase.PickResults(data.Result, 5, opts.Output, opts.Pack);
       }
     }
 
@@ -147,7 +157,8 @@ namespace asuka
       var confirm = Prompt.Confirm("Are you sure to download this?");
       if (confirm)
       {
-        DownloadBase.Download(data, opts.Output);
+        DownloadBase download = new DownloadBase(data, opts.Output);
+        download.Download(opts.Pack);
       } else
       {
         Console.WriteLine("Then there's nothing to do.");

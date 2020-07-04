@@ -14,21 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove=".circleci\**" />
     <Compile Remove="docs\**" />
+    <EmbeddedResource Remove=".circleci\**" />
     <EmbeddedResource Remove="docs\**" />
+    <None Remove=".circleci\**" />
     <None Remove="docs\**" />
     <None Include="..\LICENSE.txt">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Base\DownloadPacker.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Base\DownloadPacker.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,7 +18,7 @@ namespace asuka.Base
     /// </summary>
     /// <param name="filePath">Path to file to read</param>
     /// <param name="outPath">Path to save the downloaded doujinshi.</param>
-    public static void ReadFile (string filePath, string outPath)
+    public static void ReadFile (string filePath, string outPath, bool pack)
     {
       if (!File.Exists(filePath))
       {
@@ -52,7 +52,8 @@ namespace asuka.Base
           {
             // Retrieve the metadata first.
             Response data = Fetcher.SingleDoujin(task);
-            DownloadBase.Download(data, outPath, bar);
+            DownloadBase download = new DownloadBase(data, outPath);
+            download.Download(pack, bar);
           });
         }
       } else

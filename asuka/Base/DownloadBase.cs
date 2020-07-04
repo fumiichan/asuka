@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.IO.Compression;
 using RestSharp;
 using ShellProgressBar;
 using asuka.Model;
 using asuka.Internal.Cache;
 using asuka.Utils;
-using System.Diagnostics.CodeAnalysis;
 
 namespace asuka.Base
 {
@@ -37,34 +37,18 @@ namespace asuka.Base
       }
     }
 
-    public static void Download(Response data, string outputPath, ProgressBar parentBar = null)
+    private readonly Response Data;
+    private readonly string DestinationPath;
+    private readonly string FolderName;
+
+    /// <summary>
+    /// Prepares the download by creating folders and writing metadata.
+    /// </summary>
+    /// <param name="data">nhentai response</param>
+    /// <param name="outputPath">path where to save the download.</param>
+    public DownloadBase(Response data, string outputPath)
     {
-      // Convert images to a URL string.
-      List<ImageTaskItem> imageURLs = data.Images.Pages.Select((value, index) =>
-      {
-        string urlBase = "/galleries/" + data.MediaId + "/" + (index + 1);
-        string fileName = (index + 1).ToString("D" + data.TotalPages.ToString().Length);
-
-        switch (value.Type)
-        {
-          case "j":
-            urlBase += ".jpg";
-            fileName += ".jpg";
-            break;
-          case "p":
-            urlBase += ".png";
-            fileName += ".png";
-            break;
-          case "g":
-            urlBase += ".gif";
-            fileName += ".gif";
-            break;
-          default:
-            throw new NotImplementedException("New format is not yet implemented");
-        }
-
-        return new ImageTaskItem(urlBase, fileName);
-      }).ToList();
+      Data = data;
 
       // Build destination path of images to store.
       string illegalRegex = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
@@ -75,8 +59,8 @@ namespace asuka.Base
         outputPath = Environment.CurrentDirectory;
       }
 
-      string folderName = regexp.Replace(data.Id.ToString() + " - " + data.Title.English, "");
-      string destinationPath = Path.Join(outputPath, folderName);
+      FolderName = regexp.Replace(data.Id.ToString() + " - " + data.Title.English, "");
+      string destinationPath = Path.Join(outputPath, FolderName);
 
       // Detect if the destination path exists.
       // If it exists, just use that directory instead.
@@ -92,28 +76,60 @@ namespace asuka.Base
         throw new DirectoryNotFoundException("The directory cannot be found.");
       }
 
+      DestinationPath = destinationPath;
+
       // Write the metadata to the directory.
       DisplayDoujinMetadata.GenerateInfoFile(data, Path.Join(destinationPath, "info.txt"));
-      
-      if (parentBar == null)
-      {
-        using var bar = new ProgressBar(data.TotalPages, "Downloading: " + data.Title.English, GlobalOptions.ParentBar);
-        DownloadImage(imageURLs, data, destinationPath, bar);
-      } else
-      {
-        using var bar = parentBar.Spawn(data.TotalPages, "Task: " + data.Title.English, GlobalOptions.ChildBar);
-        DownloadImage(imageURLs, data, destinationPath, bar);
-      }
     }
 
-    private static void DownloadImage(List<ImageTaskItem> imageURLs, Response data, string outputPath, dynamic bar)
+    /// <summary>
+    /// Downloads the doujin.
+    /// </summary>
+    /// <param name="pack">Pack the downloaded archive as cbz</param>
+    /// <param name="parentBar">Parent progress bar</param>
+    public void Download(bool pack, ProgressBar parentBar = null)
     {
-      IntegrityManager Integrity = new IntegrityManager(data.Id);
+      // Convert images to a URL string.
+      List<ImageTaskItem> imageURLs = Data.Images.Pages.Select((value, index) =>
+      {
+        string urlBase = "/galleries/" + Data.MediaId + "/" + (index + 1);
+        string fileName = (index + 1).ToString("D" + Data.TotalPages.ToString().Length);
+        string ext = value.Type switch
+        {
+          "j" => ".jpg",
+          "p" => ".png",
+          "g" => ".gif",
+          _ => throw new NotImplementedException("New format is not yet implemented"),
+        };
+
+        return new ImageTaskItem(urlBase + ext, fileName + ext);
+      }).ToList();
+
+      string parentPath = Directory.GetParent(DestinationPath).FullName;
+      string destinationPath = Path.Join(parentPath, FolderName + ".cbz");
+      ZipArchiveMode mode = File.Exists(destinationPath) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
+
+      using ZipArchive archive = pack ? ZipFile.Open(destinationPath, mode) : null;
+      using ChildProgressBar bar = parentBar?.Spawn(Data.TotalPages, "Task: " + Data.Title.English, GlobalOptions.ChildBar);
+
+      DownloadImages(imageURLs, bar, archive);
+    }
+
+    /// <summary>
+    /// Downloads the images.
+    /// </summary>
+    /// <param name="imageURLs">Image URLs to download</param>
+    /// <param name="bar">Progress bar instance</param>
+    private void DownloadImages(List<ImageTaskItem> imageURLs, IProgressBar bar = null, ZipArchive archive = null)
+    {
+      IntegrityManager Integrity = new IntegrityManager(Data.Id);
       RestClient Client = new RestClient("https://i.nhentai.net/");
+
+      using IProgressBar progress = bar ?? new ProgressBar(Data.TotalPages, "Downloading: " + Data.Title.English, GlobalOptions.ParentBar);
 
       Parallel.ForEach(imageURLs, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
       {
-        string imagePath = Path.Join(outputPath, task.FileName);
+        string imagePath = Path.Join(DestinationPath, task.FileName);
 
         // Checks the hash of the image. If passes, it will skip the file.
         // Once checksum fails, delete the file.
@@ -121,7 +137,7 @@ namespace asuka.Base
         {
           if (Integrity.CheckIntegrity(imagePath))
           {
-            bar.Tick("Passed: " + data.Title.English);
+            progress.Tick("Passed: " + Data.Title.English);
             return;
           }
         }
@@ -133,15 +149,23 @@ namespace asuka.Base
         {
           File.WriteAllBytes(imagePath, response.RawBytes);
           Integrity.WriteIntegrity(imagePath);
-          bar.Tick("Downloading: " + data.Title.English);
+
+          archive?.CreateEntryFromFile(imagePath, Path.GetFileName(imagePath));
+
+          progress.Tick("Downloading: " + Data.Title.English);
         }
         else
         {
-          bar.Tick("Errored: " + data.Title.English);
+          progress.Tick("Errored: " + Data.Title.English);
         }
       });
 
       Integrity.SaveIntegrity();
+
+      if (archive != null)
+      {
+        Directory.Delete(DestinationPath);
+      }
     }
   }
 }
