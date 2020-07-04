@@ -68,7 +68,7 @@ namespace asuka.Internal.Cache
     public void WriteIntegrity(string filePath)
     {
       string FileName = Path.GetFileName(filePath);
-      if (!IntegrityData.Any())
+      if (IntegrityData.Any())
       {
         IntegrityModel file = IntegrityData.FirstOrDefault(v => v.FileName == FileName);
         if (string.IsNullOrEmpty(file.FileName))
@@ -76,6 +76,10 @@ namespace asuka.Internal.Cache
           IntegrityData.Add(new IntegrityModel(FileName, GetSHA256Hash(filePath)));
           HasChanges = true;
         }
+      } else
+      {
+        IntegrityData.Add(new IntegrityModel(FileName, GetSHA256Hash(filePath)));
+        HasChanges = true;
       }
     }
 
