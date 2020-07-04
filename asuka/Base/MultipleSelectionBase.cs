@@ -17,7 +17,7 @@ namespace asuka.Base
     /// <param name="Result">nhentai search result</param>
     /// <param name="PageSize">total number of results returned</param>
     /// <param name="output">path to save the downloaded doujinshi</param>
-    public static void PickResults (List<Response> Result, int PageSize, string output, bool readOnly = false)
+    public static void PickResults (List<Response> Result, int PageSize, string output)
     {
       Func<Response, string> selector = delegate (Response resp)
       {
@@ -25,17 +25,6 @@ namespace asuka.Base
       };
       IEnumerable<Response> selection = Prompt.MultiSelect("Pick one or more in the results", Result, pageSize: PageSize, valueSelector: selector);
       List<Response> options = selection.ToList();
-
-      // Do not download when readOnly is true.
-      if (readOnly)
-      {
-        foreach (Response resp in options)
-        {
-          DisplayDoujinMetadata.Display(resp);
-        }
-
-        return;
-      }
 
       var action = Prompt.Confirm("Are you sure to download these you picked?");
       if (action)
