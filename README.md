@@ -20,11 +20,13 @@
     -   arm64
     -   x86
     -   x64
+
 -   OS
     -   For Windows, this is compatible to Windows 7 SP1 or later.
         -   For Windows 7 SP1 and Windows 8.1, you need to install the following:
             -   [Microsoft Visual C++ 2015 Redistributable Update 3](https://www.microsoft.com/download/details.aspx?id=52685)
             -   [KB2533623](https://support.microsoft.com/en-gb/help/2533623/microsoft-security-advisory-insecure-library-loading-could-allow-remot)
+
     -   For Linux, these are currently supported distributions:
         -   Red Hat Enterprise Linux Version 6 or later
         -   CentOS, Oracle Linux Version 7 or later
@@ -35,7 +37,9 @@
         -   openSUSE 15 or later
         -   SUSE Enterprise Linux (SLES) 12 SP2 or later
         -   Alpine Linux 3.10 or later.
+
     -   macOS 10.13 or later
+
 -   [.NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 
 ## Compiling from Source
