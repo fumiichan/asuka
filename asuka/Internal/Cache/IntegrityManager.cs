@@ -23,7 +23,9 @@ namespace asuka.Internal.Cache
     public bool Equals(IntegrityModel other)
     {
       if (this.FileName == other.FileName && this.FileHash == other.FileHash)
+      {
         return true;
+      }
 
       return false;
     }

@@ -29,7 +29,9 @@ namespace asuka.Base
       public bool Equals(ImageTaskItem other)
       {
         if (this.FileName == other.FileName && this.ImageURL == other.ImageURL)
+        {
           return true;
+        }
 
         return false;
       }
