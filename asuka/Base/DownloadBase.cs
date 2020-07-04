@@ -70,13 +70,12 @@ namespace asuka.Base
       string illegalRegex = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
       Regex regexp = new Regex(string.Format("[{0}]", Regex.Escape(illegalRegex)));
 
-      string folderName = data.Id.ToString() + " - " + regexp.Replace(data.Title.English, "");
-
       if (string.IsNullOrEmpty(outputPath))
       {
         outputPath = Environment.CurrentDirectory;
       }
 
+      string folderName = regexp.Replace(data.Id.ToString() + " - " + data.Title.English, "");
       string destinationPath = Path.Join(outputPath, folderName);
 
       // Detect if the destination path exists.
@@ -122,7 +121,7 @@ namespace asuka.Base
         {
           if (Integrity.CheckIntegrity(imagePath))
           {
-            bar.Tick();
+            bar.Tick("Passed: " + data.Title.English);
             return;
           }
         }
@@ -134,7 +133,7 @@ namespace asuka.Base
         {
           File.WriteAllBytes(imagePath, response.RawBytes);
           Integrity.WriteIntegrity(imagePath);
-          bar.Tick();
+          bar.Tick("Downloading: " + data.Title.English);
         }
         else
         {
