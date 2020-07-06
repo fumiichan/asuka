@@ -46,16 +46,16 @@ namespace asuka.Base
 
       if (confirm)
       {
-        using (var bar = new ProgressBar(ValidCodes.Length, "Downloading Tasks", GlobalOptions.ParentBar))
+        using var bar = new ProgressBar(ValidCodes.Length, "Downloading Tasks", GlobalOptions.ParentBar);
+        Parallel.ForEach(ValidCodes, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
         {
-          Parallel.ForEach(ValidCodes, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
-          {
-            // Retrieve the metadata first.
-            Response data = Fetcher.SingleDoujin(task);
-            DownloadBase download = new DownloadBase(data, outPath);
-            download.Download(pack, bar);
-          });
-        }
+          // Retrieve the metadata first.
+          Response data = Fetcher.SingleDoujin(task);
+          DownloadBase download = new DownloadBase(data, outPath);
+          download.Download(pack, bar);
+
+          bar.Tick();
+        });
       } else
       {
         Console.WriteLine("Then there's nothing to do.");
