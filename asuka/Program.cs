@@ -129,8 +129,8 @@ namespace asuka
       {
         SearchResponse data = Fetcher.SearchDoujin(opts.SearchQuery.ToList(), opts.PageNumber);
 
-        Console.WriteLine("Displaying " + data.ItemsPerPage + " items");
-        Console.WriteLine("Viewing page " + opts.PageNumber + " out of " + data.TotalPages);
+        Console.WriteLine($"Displaying {data.ItemsPerPage} items");
+        Console.WriteLine($"Viewing page {opts.PageNumber} out of {data.TotalPages}");
         Console.WriteLine("");
 
         MultipleSelectionBase.PickResults(data.Result, data.ItemsPerPage, opts.Output, opts.Pack);

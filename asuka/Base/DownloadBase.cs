@@ -29,7 +29,7 @@ namespace asuka.Base
 
       public bool Equals(ImageTaskItem other)
       {
-        if (this.FileName == other.FileName && this.ImageURL == other.ImageURL)
+        if (FileName == other.FileName && ImageURL == other.ImageURL)
         {
           return true;
         }
@@ -61,7 +61,7 @@ namespace asuka.Base
         outputPath = Environment.CurrentDirectory;
       }
 
-      FolderName = regexp.Replace(data.Id.ToString() + " - " + data.Title.English, "");
+      FolderName = regexp.Replace($"{data.Id} - {data.Title.English}", "");
       string destinationPath = Path.Join(outputPath, FolderName);
 
       // Detect if the destination path exists.
@@ -94,8 +94,8 @@ namespace asuka.Base
       // Convert images to a URL string.
       List<ImageTaskItem> imageURLs = Data.Images.Pages.Select((value, index) =>
       {
-        string urlBase = "/galleries/" + Data.MediaId + "/" + (index + 1);
-        string fileName = (index + 1).ToString("D" + Data.TotalPages.ToString().Length);
+        string urlBase = $"/galleries/{Data.MediaId}/{(index + 1)}";
+        string fileName = (index + 1).ToString($"D{Data.TotalPages.ToString().Length}");
         string ext = value.Type switch
         {
           "j" => ".jpg",
@@ -104,15 +104,15 @@ namespace asuka.Base
           _ => throw new NotImplementedException("New format is not yet implemented"),
         };
 
-        return new ImageTaskItem(urlBase + ext, fileName + ext);
+        return new ImageTaskItem($"{urlBase}{ext}", $"{fileName}{ext}");
       }).ToList();
 
       string parentPath = Directory.GetParent(DestinationPath).FullName;
-      string destinationPath = Path.Join(parentPath, FolderName + ".cbz");
+      string destinationPath = Path.Join(parentPath, $"{FolderName}.cbz");
       ZipArchiveMode mode = File.Exists(destinationPath) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
 
       using ZipArchive archive = pack ? ZipFile.Open(destinationPath, mode) : null;
-      using ChildProgressBar bar = parentBar?.Spawn(Data.TotalPages, "Task: " + Data.Title.English, GlobalOptions.ChildBar);
+      using ChildProgressBar bar = parentBar?.Spawn(Data.TotalPages, $"Task: {Data.Title.English}", GlobalOptions.ChildBar);
 
       DownloadImages(imageURLs, bar, archive);
     }
@@ -127,7 +127,7 @@ namespace asuka.Base
       IntegrityManager Integrity = new IntegrityManager(Data.Id);
       RestClient Client = new RestClient("https://i.nhentai.net/");
 
-      using IProgressBar progress = bar ?? new ProgressBar(Data.TotalPages, "Downloading: " + Data.Title.English, GlobalOptions.ParentBar);
+      using IProgressBar progress = bar ?? new ProgressBar(Data.TotalPages, $"Downloading: {Data.Title.English}", GlobalOptions.ParentBar);
 
       int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
       Parallel.ForEach(imageURLs, new ParallelOptions { MaxDegreeOfParallelism = maxParallelTasks }, task =>
@@ -140,7 +140,7 @@ namespace asuka.Base
         {
           if (Integrity.CheckIntegrity(imagePath))
           {
-            progress.Tick("Passed: " + Data.Title.English);
+            progress.Tick($"Passed: {Data.Title.English}");
             return;
           }
         }
@@ -155,11 +155,11 @@ namespace asuka.Base
 
           archive?.CreateEntryFromFile(imagePath, Path.GetFileName(imagePath));
 
-          progress.Tick("Downloading: " + Data.Title.English);
+          progress.Tick($"Downloading: {Data.Title.English}");
         }
         else
         {
-          progress.Tick("Errored: " + Data.Title.English);
+          progress.Tick($"Errored: {Data.Title.English}");
         }
       });
 

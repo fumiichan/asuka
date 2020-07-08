@@ -24,7 +24,7 @@ namespace asuka.Internal.Cache
         Directory.CreateDirectory(CacheDirPath);
       }
 
-      CachePath = Path.Join(CacheDirPath, doujinCode.ToString() + ".json");
+      CachePath = Path.Join(CacheDirPath, $"{doujinCode}.json");
     }
 
     /// <summary>

@@ -12,7 +12,7 @@ namespace asuka.API
 {
   public static class Fetcher
   {
-    private static RestClient client = new RestClient("https://nhentai.net/api");
+    private static readonly RestClient client = new RestClient("https://nhentai.net/api");
 
     /// <summary>
     /// Fetches a nhentai information
@@ -29,7 +29,7 @@ namespace asuka.API
         throw new InvalidArgumentException();
       }
 
-      RestRequest request = new RestRequest("/gallery/" + code, DataFormat.Json);
+      RestRequest request = new RestRequest($"/gallery/{code}", DataFormat.Json);
       CacheManager cache = new CacheManager(int.Parse(code));
 
       if (cache.ReadCache() == null)
@@ -97,7 +97,7 @@ namespace asuka.API
         throw new InvalidArgumentException();
       }
 
-      RestRequest request = new RestRequest("/gallery/" + code + "/related", DataFormat.Json);
+      RestRequest request = new RestRequest($"/gallery/{code}/related", DataFormat.Json);
 
       IRestResponse response = client.Get(request);
       if (response.IsSuccessful)
@@ -129,7 +129,7 @@ namespace asuka.API
         Random rand = new Random();
         int Id = rand.Next(1, result.Result[0].Id);
 
-        Response data = SingleDoujin("https://nhentai.net/g/" + Id.ToString());
+        Response data = SingleDoujin($"https://nhentai.net/g/{Id}");
         return data;
       } else
       {
