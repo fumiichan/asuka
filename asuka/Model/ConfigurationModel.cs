@@ -12,7 +12,10 @@ namespace asuka.Model
       }
       set
       {
-        if (value >= 1) ConcurrentTasks = value;
+        if (value >= 1)
+        {
+          ConcurrentTasks = value;
+        }
       }
     }
 
@@ -25,7 +28,10 @@ namespace asuka.Model
       }
       set
       {
-        if (value >= 1) ConcurrentImageTasks = value;
+        if (value >= 1)
+        {
+          ConcurrentImageTasks = value;
+        }
       }
     }
 
