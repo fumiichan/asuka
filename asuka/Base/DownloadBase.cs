@@ -8,6 +8,7 @@ using System.IO.Compression;
 using RestSharp;
 using ShellProgressBar;
 using asuka.Model;
+using asuka.Internal;
 using asuka.Internal.Cache;
 using asuka.Utils;
 
@@ -40,6 +41,7 @@ namespace asuka.Base
     private readonly Response Data;
     private readonly string DestinationPath;
     private readonly string FolderName;
+    private readonly Configuration Config = new Configuration();
 
     /// <summary>
     /// Prepares the download by creating folders and writing metadata.
@@ -127,7 +129,8 @@ namespace asuka.Base
 
       using IProgressBar progress = bar ?? new ProgressBar(Data.TotalPages, "Downloading: " + Data.Title.English, GlobalOptions.ParentBar);
 
-      Parallel.ForEach(imageURLs, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
+      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
+      Parallel.ForEach(imageURLs, new ParallelOptions { MaxDegreeOfParallelism = maxParallelTasks }, task =>
       {
         string imagePath = Path.Join(DestinationPath, task.FileName);
 

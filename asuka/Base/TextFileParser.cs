@@ -8,6 +8,7 @@ using ShellProgressBar;
 using asuka.API;
 using asuka.Model;
 using asuka.Utils;
+using asuka.Internal;
 
 namespace asuka.Base
 {
@@ -47,7 +48,11 @@ namespace asuka.Base
       if (confirm)
       {
         using var bar = new ProgressBar(ValidCodes.Length, "Downloading Tasks", GlobalOptions.ParentBar);
-        Parallel.ForEach(ValidCodes, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
+
+        Configuration config = new Configuration();
+        int maxParallelTasks = int.Parse(config.GetConfigurationValue("parallelTasks"));
+
+        Parallel.ForEach(ValidCodes, new ParallelOptions { MaxDegreeOfParallelism = maxParallelTasks }, task =>
         {
           // Retrieve the metadata first.
           Response data = Fetcher.SingleDoujin(task);
