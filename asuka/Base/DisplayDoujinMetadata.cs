@@ -62,18 +62,17 @@ namespace asuka.Base
       string[] Languages = TagGrouper(data.Tags, "language");
       string[] Groups = TagGrouper(data.Tags, "group");
 
-      output.AppendLine("Artist: " + string.Join(", ", Artists));
-      output.AppendLine("Parodies: " + string.Join(", ", Parodies));
-      output.AppendLine("Characters: " + string.Join(", ", Characters));
+      output.AppendLine($"Artist: {string.Join(", ", Artists)}");
+      output.AppendLine($"Parodies: {string.Join(", ", Parodies)}");
+      output.AppendLine($"Characters: {string.Join(", ", Parodies)}");
       output.AppendLine("======================================================");
-      output.AppendLine("Tags: " + string.Join(", ", Tags));
-      output.AppendLine("Categories: " + string.Join(", ", Categories));
-      output.AppendLine("Languages: " + string.Join(", ", Languages));
-      output.AppendLine("Groups: " + string.Join(", ", Groups));
+      output.AppendLine($"Tags: {string.Join(", ", Tags)}");
+      output.AppendLine($"Categories: {string.Join(", ", Categories)}");
+      output.AppendLine($"Languages: {string.Join(", ", Languages)}");
+      output.AppendLine($"Groups: {string.Join(", ", Groups)}");
       output.AppendLine("======================================================");
-      output.AppendLine("Total Pages: " + data.TotalPages.ToString());
-      output.AppendLine("URL: https://nhentai.net/g/" + data.Id.ToString());
-      output.AppendLine("");
+      output.AppendLine($"Total Pages: {data.TotalPages}");
+      output.AppendLine($"URL: https://nhentai.net/g/{data.Id}");
 
       return output.ToString();
     }
