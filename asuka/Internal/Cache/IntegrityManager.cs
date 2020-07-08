@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Linq;
 using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
 
 namespace asuka.Internal.Cache
 {
