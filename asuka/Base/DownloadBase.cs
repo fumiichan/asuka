@@ -62,9 +62,10 @@ namespace asuka.Base
         outputPath = Environment.CurrentDirectory;
       }
 
-      bool useJapanese = bool.Parse(Config.GetConfigurationValue("preferJapanese"));
+      string preferJapanese = Config.GetConfigurationValue("preferJapanese");
+      bool useJapanese = bool.Parse(preferJapanese) & !string.IsNullOrEmpty(data.Title.Japanese);
 
-      FolderName = regexp.Replace($"{data.Id} - {(useJapanese ? data.Title.English : data.Title.Japanese)}", "");
+      FolderName = regexp.Replace($"{data.Id} - {(useJapanese ? data.Title.Japanese : data.Title.English)}", "");
       string destinationPath = Path.Join(outputPath, FolderName);
 
       // Detect if the destination path exists.
