@@ -4,33 +4,20 @@ namespace asuka.Model
 {
   public class ConfigurationModel
   {
-    [JsonProperty("parallelTasks")]
-    public uint ConcurrentTasks {
-      get
-      {
-        return 2;
-      }
-      set
-      {
-        if (value >= 1)
-        {
-          ConcurrentTasks = value;
-        }
-      }
-    }
+    private uint _concurrentImageTasks = 2;
 
     [JsonProperty("parallelImageDownload")]
     public uint ConcurrentImageTasks
     {
       get
       {
-        return 2;
+        return _concurrentImageTasks;
       }
       set
       {
         if (value >= 1)
         {
-          ConcurrentImageTasks = value;
+          _concurrentImageTasks = value;
         }
       }
     }

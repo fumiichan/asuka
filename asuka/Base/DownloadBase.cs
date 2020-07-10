@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -89,9 +90,8 @@ namespace asuka.Base
     /// </summary>
     /// <param name="pack">Pack the downloaded archive as cbz</param>
     /// <param name="parentBar">Parent progress bar</param>
-    public void Download(bool pack, ProgressBar parentBar = null)
+    public void Download(bool pack, IProgressBar parentBar = null)
     {
-      // Convert images to a URL string.
       List<ImageTaskItem> imageURLs = Data.Images.Pages.Select((value, index) =>
       {
         string urlBase = $"/galleries/{Data.MediaId}/{(index + 1)}";
@@ -112,57 +112,73 @@ namespace asuka.Base
       ZipArchiveMode mode = File.Exists(destinationPath) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
 
       using ZipArchive archive = pack ? ZipFile.Open(destinationPath, mode) : null;
-      using ChildProgressBar bar = parentBar?.Spawn(Data.TotalPages, $"Task: {Data.Title.English}", GlobalOptions.ChildBar);
+      using IProgressBar progress = parentBar == null
+        ? new ProgressBar(Data.TotalPages, $"Downloading: {Data.Title.English}", GlobalOptions.ParentBar)
+        : (IProgressBar)parentBar.Spawn(Data.TotalPages, $"Task: {Data.Title.English}", GlobalOptions.ChildBar);
 
-      DownloadImages(imageURLs, bar, archive);
-    }
+      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
+      using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelTasks);
 
-    /// <summary>
-    /// Downloads the images.
-    /// </summary>
-    /// <param name="imageURLs">Image URLs to download</param>
-    /// <param name="bar">Progress bar instance</param>
-    private void DownloadImages(List<ImageTaskItem> imageURLs, IProgressBar bar = null, ZipArchive archive = null)
-    {
       IntegrityManager Integrity = new IntegrityManager(Data.Id);
       RestClient Client = new RestClient("https://i.nhentai.net/");
 
-      using IProgressBar progress = bar ?? new ProgressBar(Data.TotalPages, $"Downloading: {Data.Title.English}", GlobalOptions.ParentBar);
-
-      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
-      Parallel.ForEach(imageURLs, new ParallelOptions { MaxDegreeOfParallelism = maxParallelTasks }, task =>
+      // Generate Tasks
+      List<Task> imageTasks = Data.Images.Pages.Select((value, index) =>
       {
-        string imagePath = Path.Join(DestinationPath, task.FileName);
-
-        // Checks the hash of the image. If passes, it will skip the file.
-        // Once checksum fails, delete the file.
-        if (File.Exists(imagePath))
+        string urlBase = $"/galleries/{Data.MediaId}/{(index + 1)}";
+        string fileName = (index + 1).ToString($"D{Data.TotalPages.ToString().Length}");
+        string ext = value.Type switch
         {
-          if (Integrity.CheckIntegrity(imagePath))
+          "j" => ".jpg",
+          "p" => ".png",
+          "g" => ".gif",
+          _ => throw new NotImplementedException("New format is not yet implemented"),
+        };
+
+        return Task.Factory.StartNew(() =>
+        {
+          concurrency.Wait();
+
+          try
           {
-            progress.Tick($"Passed: {Data.Title.English}");
-            return;
+            string imagePath = Path.Join(DestinationPath, $"{fileName}{ext}");
+
+            // Checks the hash of the image. If passes, it will skip the file.
+            // Once checksum fails, delete the file.
+            if (File.Exists(imagePath))
+            {
+              if (Integrity.CheckIntegrity(imagePath))
+              {
+                progress.Tick($"Passed: {Data.Title.English}");
+                return;
+              }
+            }
+
+            RestRequest request = new RestRequest($"{urlBase}{ext}");
+            IRestResponse response = Client.Execute(request);
+
+            if (response.IsSuccessful)
+            {
+              File.WriteAllBytes(imagePath, response.RawBytes);
+              Integrity.WriteIntegrity(imagePath);
+
+              archive?.CreateEntryFromFile(imagePath, Path.GetFileName(imagePath));
+
+              progress.Tick($"Downloading: {Data.Title.English}");
+            }
+            else
+            {
+              progress.Tick($"Errored: {Data.Title.English}");
+            }
           }
-        }
+          finally
+          {
+            concurrency.Release();
+          }
+        });
+      }).ToList();
 
-        RestRequest request = new RestRequest(task.ImageURL);
-        IRestResponse response = Client.Execute(request);
-
-        if (response.IsSuccessful)
-        {
-          File.WriteAllBytes(imagePath, response.RawBytes);
-          Integrity.WriteIntegrity(imagePath);
-
-          archive?.CreateEntryFromFile(imagePath, Path.GetFileName(imagePath));
-
-          progress.Tick($"Downloading: {Data.Title.English}");
-        }
-        else
-        {
-          progress.Tick($"Errored: {Data.Title.English}");
-        }
-      });
-
+      Task.WaitAll(imageTasks.ToArray());
       Integrity.SaveIntegrity();
     }
   }

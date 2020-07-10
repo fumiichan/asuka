@@ -35,7 +35,6 @@ namespace asuka.Internal
       return key switch
       {
         "preferJapanese" => ConfigData.PreferJapanese.ToString(),
-        "parallelTasks" => ConfigData.ConcurrentTasks.ToString(),
         "parallelImageDownload" => ConfigData.ConcurrentImageTasks.ToString(),
         _ => throw new KeyNotFoundException("The configuration key you are looking for cannot be found."),
       };
