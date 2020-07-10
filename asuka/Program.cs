@@ -37,6 +37,9 @@ namespace asuka
       [Option('q', "query", Required = true, HelpText = "Search query")]
       public IEnumerable<string> SearchQuery { get; set; }
 
+      [Option('e', "exclude", Required = false, HelpText = "Add exclusion")]
+      public IEnumerable<string> ExcludeQuery { get; set; }
+
       [Option('p', "page", Required = true, HelpText = "Page number")]
       public int PageNumber { get; set; }
 
@@ -127,7 +130,7 @@ namespace asuka
     {
       if (!Utils.Validators.IsNullOrEmpty<string>(opts.SearchQuery))
       {
-        SearchResponse data = Fetcher.SearchDoujin(opts.SearchQuery.ToList(), opts.PageNumber);
+        SearchResponse data = Fetcher.SearchDoujin(opts.SearchQuery.ToList(), opts.PageNumber, opts.ExcludeQuery.ToList());
 
         Console.WriteLine($"Displaying {data.ItemsPerPage} items");
         Console.WriteLine($"Viewing page {opts.PageNumber} out of {data.TotalPages}");

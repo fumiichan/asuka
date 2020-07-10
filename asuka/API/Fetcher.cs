@@ -57,19 +57,24 @@ namespace asuka.API
     /// <param name="queries">Search queries</param>
     /// <param name="page">Page number</param>
     /// <returns>Search Query Response</returns>
-    public static SearchResponse SearchDoujin (List<string> queries, int page)
+    public static SearchResponse SearchDoujin(List<string> queries, int page, List<string> exclude)
     {
       if (page <= 0)
       {
         page = 1;
       }
-      if (!queries.Any())
+      if (!queries.Any() & !exclude.Any())
       {
         throw new InvalidArgumentException();
       }
 
       RestRequest request = new RestRequest("/galleries/search", DataFormat.Json);
-      request.AddParameter("query", string.Join(" ", queries));
+
+      // Add dashes before each item.
+      List<string> excludeList = exclude.Select(v => $"-{v}").ToList();
+
+      Console.WriteLine("output: {0}", string.Join(",", excludeList));
+      request.AddParameter("query", $"{string.Join(" ", queries)} {string.Join(" ", excludeList)}");
       request.AddParameter("page", page.ToString());
 
       IRestResponse response = client.Get(request);
