@@ -42,6 +42,10 @@
 
 -   [.NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 
+## Usage
+
+Read it [here](docs/USAGE.md)
+
 ## Compiling from Source
 
 This requires you to have .NET Core 3.1 SDK installed.
