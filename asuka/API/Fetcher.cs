@@ -73,7 +73,6 @@ namespace asuka.API
       // Add dashes before each item.
       List<string> excludeList = exclude.Select(v => $"-{v}").ToList();
 
-      Console.WriteLine("output: {0}", string.Join(",", excludeList));
       request.AddParameter("query", $"{string.Join(" ", queries)} {string.Join(" ", excludeList)}");
       request.AddParameter("page", page.ToString());
 
