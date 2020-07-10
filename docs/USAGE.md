@@ -46,6 +46,8 @@ https://nhentai.net/g/177014
 https://nhentai.net/g/177015
 ```
 
+You need to add the links seperated by a new line.
+
 ##### Get the information only
 
 ```
@@ -65,7 +67,7 @@ asuka get -i https://nhentai.net/g/177013 -p
 Usage:
 
 ```
-asuka recommend <-i|--input <url>> [-r|--readonly] [-p|--pack] [-o|--output <path>]
+asuka recommend <-i|--input <url>> [-p|--pack] [-o|--output <path>]
 ```
 
 | Option                  | Required? | Description                                        |
@@ -82,7 +84,7 @@ Usage is the same as on the `get` command except that it doesn't accept file pat
 ### `search`
 
 ```
-asuka search [-r|--readonly] [--pack] <-q|--query <query>> <-p|--page <num>> [-o|--output <path>]
+asuka search [--pack] <-q|--query <query>> <-p|--page <num>> [-o|--output <path>]
 ```
 
 | Option                     | Required? | Description                                  |
@@ -102,16 +104,21 @@ Searching with finer queries:
 
 Finer queries are
 
-| Filter            | Type          | Description                                 | Examples              |
-|-------------------|---------------|---------------------------------------------|-----------------------|
-| `pages`           | `number`      | Specify the total pages                     | `page:3`, `page:>3`   |
-| `category`        | `string`      | Specify the doujin category                 | `category:manga`      |
-| `artist`          | `string`      | Specify artist to filter                    | `artist:shindol`      |
-| `parody`          | `string`      | Specify parody of the doujin                | `parody:"to love ru"` |
-| `tag`             | `string`      | Specify a tag                               | `tag:"big breasts"`   |
-| `character`       | `string`      | Specify a character in the doujin           | `character:astolfo`   |
-| `language`        | `string`      | Specify language of the doujin              | `language:english`    |
-| `group`           | `string`      | Specify the group (or circle) of the doujin | `group:poyopoyosky`   |
+| Filter            | Type          | Description                                 | Examples                                     |
+|-------------------|---------------|---------------------------------------------|----------------------------------------------|
+| `pages`           | `number`      | Specify the total pages                     | `page:3`, `page:>3`, `page:>=30 page:<=75`   |
+| `category`        | `string`      | Specify the doujin category                 | `category:manga`                             |
+| `artist`          | `string`      | Specify artist to filter                    | `artist:shindol`                             |
+| `parody`          | `string`      | Specify parody of the doujin                | `parody:"to love ru"`                        |
+| `tag`             | `string`      | Specify a tag                               | `tag:"big breasts"`                          |
+| `character`       | `string`      | Specify a character in the doujin           | `character:astolfo`                          |
+| `language`        | `string`      | Specify language of the doujin              | `language:english`                           |
+| `group`           | `string`      | Specify the group (or circle) of the doujin | `group:poyopoyosky`                          |
+| `uploaded`        | `string`      | Specify items uploaded within timeframe     | `uploaded:20d`                               |
+
+##### Notes
+
+-   `pages` & `uploaded` filter accepts comparison operators such as `>` (greater than), `<` (less than), `>=` (greater or equal to) & `<=` (less than or equal to)
 
 ```
 asuka search -q "\"big breasts\"" "page:>60" -p 1
