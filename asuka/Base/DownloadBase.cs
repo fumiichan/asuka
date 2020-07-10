@@ -92,21 +92,6 @@ namespace asuka.Base
     /// <param name="parentBar">Parent progress bar</param>
     public void Download(bool pack, IProgressBar parentBar = null)
     {
-      List<ImageTaskItem> imageURLs = Data.Images.Pages.Select((value, index) =>
-      {
-        string urlBase = $"/galleries/{Data.MediaId}/{(index + 1)}";
-        string fileName = (index + 1).ToString($"D{Data.TotalPages.ToString().Length}");
-        string ext = value.Type switch
-        {
-          "j" => ".jpg",
-          "p" => ".png",
-          "g" => ".gif",
-          _ => throw new NotImplementedException("New format is not yet implemented"),
-        };
-
-        return new ImageTaskItem($"{urlBase}{ext}", $"{fileName}{ext}");
-      }).ToList();
-
       string parentPath = Directory.GetParent(DestinationPath).FullName;
       string destinationPath = Path.Join(parentPath, $"{FolderName}.cbz");
       ZipArchiveMode mode = File.Exists(destinationPath) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
