@@ -84,12 +84,13 @@ Usage is the same as on the `get` command except that it doesn't accept file pat
 ### `search`
 
 ```
-asuka search [--pack] <-q|--query <query>> <-p|--page <num>> [-o|--output <path>]
+asuka search [--pack] <-q|--query <query>> [-e|--exlude <query>] <-p|--page <num>> [-o|--output <path>]
 ```
 
 | Option                     | Required? | Description                                  |
 |----------------------------|-----------|----------------------------------------------|
 | `-q \| --query <query>`    | Yes       | Your search query                            |
+| `-e \| --exclude <query>`  | No        | Exclude tags in your search                  |
 | `-p \| --page <num>`       | Yes       | Page Number.                                 |
 | `--pack`                   | No        | Pack the downloaded doujinshi as CBZ archive |
 | `-o \| --output <path>`    | No        | Path to save the downloaded doujinshi.       |
@@ -119,6 +120,7 @@ Finer queries are
 ##### Notes
 
 -   `pages` & `uploaded` filter accepts comparison operators such as `>` (greater than), `<` (less than), `>=` (greater or equal to) & `<=` (less than or equal to)
+-   Use `--exclude` option to exclude tags instead of adding dashes (`-`) before queries.
 
 ```
 asuka search -q "\"big breasts\"" "page:>60" -p 1
