@@ -42,6 +42,7 @@ namespace asuka.Base
     private readonly Response Data;
     private readonly string DestinationPath;
     private readonly string FolderName;
+    private readonly Configuration Config = new Configuration();
 
     /// <summary>
     /// Prepares the download by creating folders and writing metadata.
@@ -61,7 +62,9 @@ namespace asuka.Base
         outputPath = Environment.CurrentDirectory;
       }
 
-      FolderName = regexp.Replace($"{data.Id} - {data.Title.English}", "");
+      bool useJapanese = bool.Parse(Config.GetConfigurationValue("preferJapanese"));
+
+      FolderName = regexp.Replace($"{data.Id} - {(useJapanese ? data.Title.English : data.Title.Japanese)}", "");
       string destinationPath = Path.Join(outputPath, FolderName);
 
       // Detect if the destination path exists.
@@ -100,8 +103,7 @@ namespace asuka.Base
         ? new ProgressBar(Data.TotalPages, $"Downloading: {Data.Title.English}", GlobalOptions.ParentBar)
         : (IProgressBar)parentBar.Spawn(Data.TotalPages, $"Task: {Data.Title.English}", GlobalOptions.ChildBar);
 
-      Configuration config = new Configuration();
-      int maxParallelTasks = int.Parse(config.GetConfigurationValue("parallelImageDownload"));
+      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
 
       using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelTasks);
 
