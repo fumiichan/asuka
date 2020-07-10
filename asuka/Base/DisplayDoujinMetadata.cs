@@ -64,7 +64,7 @@ namespace asuka.Base
 
       output.AppendLine($"Artist: {string.Join(", ", Artists)}");
       output.AppendLine($"Parodies: {string.Join(", ", Parodies)}");
-      output.AppendLine($"Characters: {string.Join(", ", Parodies)}");
+      output.AppendLine($"Characters: {string.Join(", ", Characters)}");
       output.AppendLine("======================================================");
       output.AppendLine($"Tags: {string.Join(", ", Tags)}");
       output.AppendLine($"Categories: {string.Join(", ", Categories)}");
