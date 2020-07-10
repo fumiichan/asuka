@@ -42,7 +42,6 @@ namespace asuka.Base
     private readonly Response Data;
     private readonly string DestinationPath;
     private readonly string FolderName;
-    private readonly Configuration Config = new Configuration();
 
     /// <summary>
     /// Prepares the download by creating folders and writing metadata.
@@ -101,7 +100,9 @@ namespace asuka.Base
         ? new ProgressBar(Data.TotalPages, $"Downloading: {Data.Title.English}", GlobalOptions.ParentBar)
         : (IProgressBar)parentBar.Spawn(Data.TotalPages, $"Task: {Data.Title.English}", GlobalOptions.ChildBar);
 
-      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
+      Configuration config = new Configuration();
+      int maxParallelTasks = int.Parse(config.GetConfigurationValue("parallelImageDownload"));
+
       using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelTasks);
 
       IntegrityManager Integrity = new IntegrityManager(Data.Id);

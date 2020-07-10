@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using ShellProgressBar;
 using Sharprompt;
 using asuka.Model;
 using asuka.Utils;
+using asuka.Internal;
 
 namespace asuka.Base
 {
@@ -30,13 +32,33 @@ namespace asuka.Base
       if (action)
       {
         using var bar = new ProgressBar(options.Count(), "Downloading Results", GlobalOptions.ParentBar);
-        Parallel.ForEach(options, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
-        {
-          DownloadBase download = new DownloadBase(task, output);
-          download.Download(pack, bar);
 
-          bar.Tick();
-        });
+        Configuration config = new Configuration();
+        int maxParallelLimit = int.Parse(config.GetConfigurationValue("parallelTasks"));
+
+        using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelLimit);
+
+        List<Task> tasks = options.Select(value =>
+        {
+          concurrency.Wait();
+
+          return Task.Factory.StartNew(() =>
+          {
+            try
+            {
+              DownloadBase download = new DownloadBase(value, output);
+              download.Download(pack, bar);
+
+              bar.Tick();
+            }
+            finally
+            {
+              concurrency.Release();
+            }
+          });
+        }).ToList();
+
+        Task.WaitAll(tasks.ToArray());
       } else
       {
         Console.WriteLine("Then there's nothing to do.");

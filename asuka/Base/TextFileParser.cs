@@ -2,12 +2,15 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Sharprompt;
 using ShellProgressBar;
 using asuka.API;
 using asuka.Model;
 using asuka.Utils;
+using asuka.Internal;
 
 namespace asuka.Base
 {
@@ -48,15 +51,33 @@ namespace asuka.Base
       {
         using var bar = new ProgressBar(ValidCodes.Length, "Downloading Tasks", GlobalOptions.ParentBar);
 
-        Parallel.ForEach(ValidCodes, new ParallelOptions { MaxDegreeOfParallelism = 2 }, task =>
-        {
-          // Retrieve the metadata first.
-          Response data = Fetcher.SingleDoujin(task);
-          DownloadBase download = new DownloadBase(data, outPath);
-          download.Download(pack, bar);
+        Configuration config = new Configuration();
+        int maxParallelLimit = int.Parse(config.GetConfigurationValue("parallelTasks"));
 
-          bar.Tick();
-        });
+        using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelLimit);
+
+        List<Task> tasks = ValidCodes.Select(value =>
+        {
+          concurrency.Wait();
+
+          return Task.Factory.StartNew(() =>
+          {
+            try
+            {
+              Response data = Fetcher.SingleDoujin(value);
+              DownloadBase download = new DownloadBase(data, outPath);
+              download.Download(pack, bar);
+
+              bar.Tick();
+            }
+            finally
+            {
+              concurrency.Release();
+            }
+          });
+        }).ToList();
+
+        Task.WaitAll(tasks.ToArray());
       } else
       {
         Console.WriteLine("Then there's nothing to do.");
