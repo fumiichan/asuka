@@ -46,9 +46,7 @@ namespace asuka.Base
           {
             try
             {
-              DownloadBase download = new DownloadBase(value, output);
-              download.Download(pack, bar);
-
+              DownloadBase.Download(value, pack, output, bar);
               bar.Tick();
             }
             finally

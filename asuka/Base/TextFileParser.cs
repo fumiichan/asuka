@@ -65,8 +65,7 @@ namespace asuka.Base
             try
             {
               Response data = Fetcher.SingleDoujin(value);
-              DownloadBase download = new DownloadBase(data, outPath);
-              download.Download(pack, bar);
+              DownloadBase.Download(data, pack, outPath, bar);
 
               bar.Tick();
             }
