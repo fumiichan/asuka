@@ -7,10 +7,12 @@
     <Copyright>© Aiko Fujimoto. All Rights Reserved.</Copyright>
     <RepositoryUrl>https://github.com/aikoofujimotoo/asuka</RepositoryUrl>
     <ApplicationIcon>Resources\appicon.ico</ApplicationIcon>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>asuka Assembly.pfx</AssemblyOriginatorKeyFile>
+    <FileVersion>0.1.2.0</FileVersion>
+    <AssemblyVersion>0.1.2.0</AssemblyVersion>
+    <PackageIcon>AppIcon.png</PackageIcon>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +23,10 @@
     <None Remove=".circleci\**" />
     <None Remove="docs\**" />
     <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="Resources\AppIcon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
