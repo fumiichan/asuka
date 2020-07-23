@@ -30,7 +30,7 @@ namespace asuka.Base
 
       Configuration config = new Configuration();
       string preferJapanese = config.GetConfigurationValue("preferJapanese");
-      bool useJapanese = bool.Parse(preferJapanese) & !string.IsNullOrEmpty(data.Title.Japanese);
+      bool useJapanese = bool.Parse(preferJapanese) && !string.IsNullOrEmpty(data.Title.Japanese);
 
       string folderName = regex.Replace($"{data.Id} - {(useJapanese ? data.Title.Japanese : data.Title.English)}", "");
       string trimmedFolderName = folderName.Trim();
