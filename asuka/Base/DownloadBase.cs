@@ -15,7 +15,7 @@ using asuka.Utils;
 
 namespace asuka.Base
 {
-  class DownloadBase
+  public static class DownloadBase
   {
     public static void Download(Response data, bool pack, string outputPath, IProgressBar parentBar = null)
     {
