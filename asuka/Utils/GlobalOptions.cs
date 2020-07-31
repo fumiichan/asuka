@@ -16,7 +16,8 @@ namespace asuka.Utils
     {
       ForegroundColor = ConsoleColor.Cyan,
       ForegroundColorDone = ConsoleColor.Green,
-      ProgressCharacter = '─'
+      ProgressCharacter = '─',
+      CollapseWhenFinished = true
     };
   }
 }
