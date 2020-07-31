@@ -19,10 +19,7 @@ namespace asuka.Base
   {
     public static void Download(Response data, bool pack, string outputPath, IProgressBar parentBar = null)
     {
-      // Build destination path of images to store.
-      string illegalRegex = new string(Path.GetInvalidPathChars()) + new string(Path.GetInvalidFileNameChars());
-      Regex regex = new Regex(string.Format("[{0}]", Regex.Escape(illegalRegex)));
-
+      // Use the current working directory if the path is empty.
       if (string.IsNullOrEmpty(outputPath))
       {
         outputPath = Environment.CurrentDirectory;
@@ -32,9 +29,16 @@ namespace asuka.Base
       string preferJapanese = config.GetConfigurationValue("preferJapanese");
       bool useJapanese = bool.Parse(preferJapanese) && !string.IsNullOrEmpty(data.Title.Japanese);
 
+      // Sanitize the path and the folder name.
+      string illegalRegex = new string(Path.GetInvalidFileNameChars()) + ".";
+      Regex regex = new Regex(string.Format("[{0}]", Regex.Escape(illegalRegex)));
+      Regex multiSpacing = new Regex("[ ]{2,}");
+
       string folderName = regex.Replace($"{data.Id} - {(useJapanese ? data.Title.Japanese : data.Title.English)}", "");
-      string trimmedFolderName = folderName.Trim();
-      string destinationPath = Path.Join(outputPath, trimmedFolderName);
+      folderName = folderName.Trim();
+      folderName = multiSpacing.Replace(folderName, " ");
+
+      string destinationPath = Path.Join(outputPath, folderName);
 
       // Detect if the destination path exists.
       // If it exists, just use that directory instead.
@@ -46,7 +50,7 @@ namespace asuka.Base
       // Write the metadata to the directory.
       DisplayDoujinMetadata.GenerateInfoFile(data, Path.Join(destinationPath, "info.txt"));
 
-      string zipArchivePath = Path.Join(outputPath, $"{trimmedFolderName}.cbz");
+      string zipArchivePath = Path.Join(outputPath, $"{folderName}.cbz");
       ZipArchiveMode mode = File.Exists(zipArchivePath) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
 
       using ZipArchive archive = pack ? ZipFile.Open(zipArchivePath, mode) : null;
@@ -82,7 +86,7 @@ namespace asuka.Base
 
             // Checks the hash of the image. If passes, it will skip the file.
             // If checksum fails, re-download the image.
-            if (File.Exists(imagePath) & integrity.CheckIntegrity(imagePath))
+            if (File.Exists(imagePath) && integrity.CheckIntegrity(imagePath))
             {
               progress.Tick();
               archive?.CreateEntryFromFile(imagePath, $"{fileName}{ext}");
