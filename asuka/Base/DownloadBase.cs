@@ -38,16 +38,9 @@ namespace asuka.Base
 
       // Detect if the destination path exists.
       // If it exists, just use that directory instead.
-      if (Directory.Exists(outputPath))
+      if (!Directory.Exists(destinationPath))
       {
-        if (!Directory.Exists(destinationPath))
-        {
-          Directory.CreateDirectory(destinationPath);
-        }
-      }
-      else
-      {
-        throw new DirectoryNotFoundException("The directory cannot be found.");
+        Directory.CreateDirectory(destinationPath);
       }
 
       // Write the metadata to the directory.
