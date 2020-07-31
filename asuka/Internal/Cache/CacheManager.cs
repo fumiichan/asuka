@@ -16,9 +16,7 @@ namespace asuka.Internal.Cache
     /// <param name="doujinCode">The 1-6 nhentai code.</param>
     public CacheManager(int doujinCode)
     {
-      string HomePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-      string CacheDirPath = Path.Join(HomePath, "asuka");
-
+      string CacheDirPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "data");
       if (!Directory.Exists(CacheDirPath))
       {
         Directory.CreateDirectory(CacheDirPath);
@@ -48,7 +46,7 @@ namespace asuka.Internal.Cache
     /// Reads the cache if present.
     /// </summary>
     /// <returns>nhentai response data or null</returns>
-    public Response ReadCache ()
+    public Response ReadCache()
     {
       if (File.Exists(CachePath))
       {

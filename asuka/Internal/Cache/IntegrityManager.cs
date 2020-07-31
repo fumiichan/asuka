@@ -39,9 +39,7 @@ namespace asuka.Internal.Cache
 
     public IntegrityManager(int code)
     {
-      string HomePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-      string CacheDirPath = Path.Join(HomePath, "asuka");
-
+      string CacheDirPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "asuka");
       if (!Directory.Exists(CacheDirPath))
       {
         Directory.CreateDirectory(CacheDirPath);
