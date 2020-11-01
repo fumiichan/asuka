@@ -38,6 +38,7 @@
     <PackageReference Include="RestSharp" Version="106.11.7" />
     <PackageReference Include="Sharprompt" Version="2.0.0" />
     <PackageReference Include="ShellProgressBar" Version="5.0.0" />
+    <PackageReference Include="YamlDotNet" Version="8.1.2" />
   </ItemGroup>
 
   <ItemGroup>

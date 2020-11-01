@@ -143,24 +143,14 @@ asuka random [-p|--pack] [-o|--output <path>]
 
 ## Configuration
 
-This CLI supports configuration. To configure the CLI, you need to create `config.json` on the application directory.
-
-Example:
-
-```json
-{
-  "preferJapanese": false,
-  "parallelTasks": 2,
-  "parallelImageDownload": 2
-}
-```
+Configuration are automatically created at runtime. You can modify values within `config.yaml` file.
 
 ### Available configuration items
 
 | Key name                 | Value Type    | Default value      | Description                            |
 |--------------------------|---------------|--------------------|----------------------------------------|
-| parallelTasks            | `int`         | `2`                | No. of concurrent tasks to process     |
-| parallelImageDownload    | `int`         | `2`                | No. of images to download in parallel  |
-| preferJapanese           | `boolean`     | `false`            | Use Japanese Titles instead of English |
+| ConcurrentTasks          | `uint`        | `2`                | No. of concurrent tasks to process     |
+| ConcurrentImageTasks     | `uint`        | `2`                | No. of images to download in parallel  |
+| PreferJapanese           | `boolean`     | `false`            | Use Japanese Titles instead of English |
 
 __NOTE: This program will decline any changes to configuration if the values are invalid.__

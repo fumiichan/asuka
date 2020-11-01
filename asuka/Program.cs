@@ -81,6 +81,9 @@ namespace asuka
         .WithParsed<SearchDoujin>(SearchDoujinshiParser)
         .WithParsed<RecommendDoujin>(RecommendDoujinshiParser)
         .WithParsed<RandomDoujin>(RandomDoujinshiParser);
+
+      // Initialise Config.
+      new Internal.Configuration();
     }
 
     #region Commandline Parsers

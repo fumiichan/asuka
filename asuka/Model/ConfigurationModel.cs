@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace asuka.Model
 {
@@ -7,7 +7,7 @@ namespace asuka.Model
     private uint _concurrentTasks = 2;
     private uint _concurrentImageTasks = 2;
 
-    [JsonProperty("parallelTasks")]
+    [Required]
     public uint ConcurrentTasks
     {
       get
@@ -23,7 +23,7 @@ namespace asuka.Model
       }
     }
 
-    [JsonProperty("parallelImageDownload")]
+    [Required]
     public uint ConcurrentImageTasks
     {
       get
@@ -39,7 +39,7 @@ namespace asuka.Model
       }
     }
 
-    [JsonProperty("preferJapanese")]
+    [Required]
     public bool PreferJapanese { get; set; } = false;
   }
 }
