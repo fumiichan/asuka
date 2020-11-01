@@ -46,13 +46,21 @@
 
 Read it [here](docs/USAGE.md)
 
-## Compiling from Source
+## How to Get
+
+### Downloading from Releases
+
+Get the latest version [here](https://github.com/aikoofujimotoo/asuka/releases)
+
+### Compiling from Source
 
 This requires you to have .NET Core 3.1 SDK installed.
 
 1.  Clone the repository. Run `git clone https://github.com/aikoofujimotoo/asuka`
 2.  Run `dotnet restore` to restore packages
 3.  Run `dotnet build`
+
+To build for other platforms, use `--runtime <RUNTIME_IDENTIFIER>`. [More Info](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
 
 If you are using Visual Studio, The packages are restored automatically after you open the project. Wait for it to finish and compile the project.
 
@@ -62,4 +70,4 @@ If you are using Visual Studio, The packages are restored automatically after yo
 
 ## License
 
-This project is licensed under [MIT License](LICENSE).
+This project is licensed under [MIT License](LICENSE.txt).
