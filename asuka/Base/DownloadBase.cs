@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using RestSharp;
 using ShellProgressBar;
 using asuka.Internal;
-using asuka.Internal.Cache;
 using asuka.Model;
 using asuka.Utils;
 
@@ -61,7 +60,6 @@ namespace asuka.Base
       int maxParallelTasks = int.Parse(config.GetConfigurationValue("parallelImageDownload"));
       using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelTasks);
 
-      IntegrityManager integrity = new IntegrityManager(data.Id);
       RestClient Client = new RestClient("https://i.nhentai.net/");
 
       List<Task> imageTasks = data.Images.Pages.Select((value, index) =>
@@ -84,13 +82,17 @@ namespace asuka.Base
           {
             string imagePath = Path.Join(destinationPath, $"{fileName}{ext}");
 
-            // Checks the hash of the image. If passes, it will skip the file.
-            // If checksum fails, re-download the image.
-            if (File.Exists(imagePath) && integrity.CheckIntegrity(imagePath))
+            // Ensure the file is present on the disk and it is not empty.
+            // Empty files could happen when there are power outage during writing or
+            // maybe the disk got ejected or whatever the scenario.
+            if (File.Exists(imagePath))
             {
-              progress.Tick();
-              archive?.CreateEntryFromFile(imagePath, $"{fileName}{ext}");
-              return;
+              if (new FileInfo(imagePath).Length > 0)
+              {
+                progress.Tick();
+                archive?.CreateEntryFromFile(imagePath, $"{fileName}{ext}");
+                return;
+              }
             }
 
             RestRequest request = new RestRequest($"{urlPath}{ext}");
@@ -99,7 +101,6 @@ namespace asuka.Base
             if (response.IsSuccessful)
             {
               File.WriteAllBytes(imagePath, response.RawBytes);
-              integrity.WriteIntegrity(imagePath);
 
               archive?.CreateEntryFromFile(imagePath, $"{fileName}{ext}");
 
@@ -118,7 +119,6 @@ namespace asuka.Base
       }).ToList();
 
       Task.WaitAll(imageTasks.ToArray());
-      integrity.SaveIntegrity();
     }
   }
 }
