@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using RestSharp;
 using Newtonsoft.Json;
-using asuka.Internal.Cache;
+using asuka.Internal;
 using asuka.Model;
 using asuka.Exceptions;
 

@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using asuka.Model;
 
-namespace asuka.Internal.Cache
+namespace asuka.Internal
 {
   class CacheManager
   {
