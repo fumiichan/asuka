@@ -34,7 +34,7 @@ namespace asuka.Base
         using var bar = new ProgressBar(options.Count(), "Downloading Results", GlobalOptions.ParentBar);
 
         Configuration config = new Configuration();
-        int maxParallelLimit = int.Parse(config.GetConfigurationValue("parallelTasks"));
+        int maxParallelLimit = (int)config.ConfigData.ConcurrentTasks;
 
         using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelLimit);
 

@@ -39,8 +39,7 @@ namespace asuka.Base
       }
 
       Config = new Configuration();
-      string preferJapanese = Config.GetConfigurationValue("preferJapanese");
-      bool useJapanese = bool.Parse(preferJapanese) && !string.IsNullOrEmpty(data.Title.Japanese);
+      bool useJapanese = Config.ConfigData.PreferJapanese && !string.IsNullOrEmpty(data.Title.Japanese);
 
       // Sanitize the path and the folder name.
       string illegalRegex = new string(Path.GetInvalidFileNameChars()) + ".";
@@ -90,7 +89,7 @@ namespace asuka.Base
 
       var client = new RestClient("https://i.nhentai.net/");
 
-      int maxParallelTasks = int.Parse(Config.GetConfigurationValue("parallelImageDownload"));
+      int maxParallelTasks = (int)Config.ConfigData.ConcurrentImageTasks;
       using SemaphoreSlim concurrency = new SemaphoreSlim(maxParallelTasks);
 
       List<Task> imageTasks = Images.Select(value =>

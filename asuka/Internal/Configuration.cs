@@ -8,7 +8,7 @@ namespace asuka.Internal
 {
   class Configuration
   {
-    private readonly ConfigurationModel ConfigData = new ConfigurationModel();
+    public readonly ConfigurationModel ConfigData = new ConfigurationModel();
 
     public Configuration()
     {
@@ -27,18 +27,6 @@ namespace asuka.Internal
           Console.WriteLine("Will use the default values.");
         }
       }
-    }
-
-    public string GetConfigurationValue (string key)
-    {
-      // Todo: Figure out how to find the specific key from the model.
-      return key switch
-      {
-        "preferJapanese" => ConfigData.PreferJapanese.ToString(),
-        "parallelTasks" => ConfigData.ConcurrentTasks.ToString(),
-        "parallelImageDownload" => ConfigData.ConcurrentImageTasks.ToString(),
-        _ => throw new KeyNotFoundException("The configuration key you are looking for cannot be found."),
-      };
     }
   }
 }
