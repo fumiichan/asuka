@@ -108,7 +108,8 @@ namespace asuka
               DisplayDoujinMetadata.Display(doujinData);
             } else
             {
-              DownloadBase.Download(doujinData, opts.Pack, opts.Output);
+              var downloadTask = new DownloadBase(doujinData, opts.Output);
+              downloadTask.Download(opts.Pack);
             }
           } else
           {
@@ -159,7 +160,8 @@ namespace asuka
       var confirm = Prompt.Confirm("Are you sure to download this?");
       if (confirm)
       {
-        DownloadBase.Download(data, opts.Pack, opts.Output);
+        var downloadTask = new DownloadBase(data, opts.Output);
+        downloadTask.Download(opts.Pack);
       } else
       {
         Console.WriteLine("Then there's nothing to do.");
