@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "asuka": {
+      "commandName": "Project",
+      "commandLineArgs": "get -i https://nhentai.net/g/201536 --pack"
+    }
+  }
+}
