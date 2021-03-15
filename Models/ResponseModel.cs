@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace asuka.Model
+namespace asukav2.Models
 {
-  public class Response
+  public class ResponseModel
   {
     [JsonProperty("id")]
     public int Id { get; set; }
@@ -43,7 +43,7 @@ namespace asuka.Model
   {
     [JsonProperty("pages")]
     public List<Pages> Pages { get; set; }
-    
+
     [JsonProperty("thumbnail")]
     public Pages Thumbnail { get; set; }
 
@@ -75,7 +75,7 @@ namespace asuka.Model
     public string Name { get; set; }
 
     [JsonProperty("url")]
-    public string URL { get; set; }
+    public string Url { get; set; }
 
     [JsonProperty("count")]
     public int Count { get; set; }

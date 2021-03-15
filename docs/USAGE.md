@@ -54,13 +54,15 @@ You need to add the links seperated by a new line.
 asuka get -i https://nhentai.net/g/177013 -r
 ```
 
-__Please take note that readonly option works only on single code.__
-
 ##### Pack the downloaded archive
 
 ```
 asuka get -i https://nhentai.net/g/177013 -p
 ```
+
+#### Remarks
+
+-   `--readonly` option supports on single link only.
 
 ### `recommend`
 
@@ -87,18 +89,24 @@ Usage is the same as on the `get` command except that it doesn't accept file pat
 asuka search [--pack] <-q|--query <query>> [-e|--exlude <query>] <-p|--page <num>> [-o|--output <path>]
 ```
 
-| Option                     | Required? | Description                                  |
-|----------------------------|-----------|----------------------------------------------|
-| `-q \| --query <query>`    | Yes       | Your search query                            |
-| `-e \| --exclude <query>`  | No        | Exclude tags in your search                  |
-| `-p \| --page <num>`       | Yes       | Page Number.                                 |
-| `--pack`                   | No        | Pack the downloaded doujinshi as CBZ archive |
-| `-o \| --output <path>`    | No        | Path to save the downloaded doujinshi.       |
+| Option                       | Required? | Description                                          |
+|------------------------------|-----------|------------------------------------------------------|
+| `-q \| --query <query>`      | No        | Your search query                                    |
+| `-e \| --exclude <query>`    | No        | Exclude tags in your search                          |
+| `--pageMin <num>`            | No        | Filter for specifying minimum page count in gallery. |
+| `--pageMax <num>`            | No        | Filter for specifying maximum page count in gallery. |
+| `--pageCount <num>`          | No        | Filter for specifying exact page count in gallery.   |
+| `--dateRangeMin <timeframe>` | No        | Filter for specifying minimum timeframe              |
+| `--dateRangeMax <timeframe>` | No        | Filter for specifying maximum timeframe              |
+| `--dateUploaded <timeframe>` | No        | Filter for specifying exact timeframe                |
+| `-p \| --page <num>`         | Yes       | Page Number.                                         |
+| `--pack`                     | No        | Pack the downloaded doujinshi as CBZ archive         |
+| `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
 
 #### Usage Examples
 
 ```
-asuka search -q maid "\"big breasts\"" -p 1
+asuka search -q maid "\"big breasts\"" --page 1
 ```
 
 Searching with finer queries:
@@ -107,7 +115,6 @@ Finer queries are
 
 | Filter            | Type          | Description                                 | Examples                                     |
 |-------------------|---------------|---------------------------------------------|----------------------------------------------|
-| `pages`           | `number`      | Specify the total pages                     | `page:3`, `page:>3`, `page:>=30 page:<=75`   |
 | `category`        | `string`      | Specify the doujin category                 | `category:manga`                             |
 | `artist`          | `string`      | Specify artist to filter                    | `artist:shindol`                             |
 | `parody`          | `string`      | Specify parody of the doujin                | `parody:"to love ru"`                        |
@@ -115,20 +122,12 @@ Finer queries are
 | `character`       | `string`      | Specify a character in the doujin           | `character:astolfo`                          |
 | `language`        | `string`      | Specify language of the doujin              | `language:english`                           |
 | `group`           | `string`      | Specify the group (or circle) of the doujin | `group:poyopoyosky`                          |
-| `uploaded`        | `string`      | Specify items uploaded within timeframe     | `uploaded:20d`                               |
 
-##### Notes
+##### Remarks
 
--   `pages` & `uploaded` filter accepts comparison operators such as `>` (greater than), `<` (less than), `>=` (greater or equal to) & `<=` (less than or equal to)
 -   Use `--exclude` option to exclude tags instead of adding dashes (`-`) before queries.
-
-```
-asuka search -q "\"big breasts\"" "page:>60" -p 1
-```
-
-```
-asuka search -q "parody:\"to love ru\"" "language:japanese" -p 1
-```
+-   `--dateRangeMin` and `--dateRangeMax` options cannot be used along with `--dateUploaded`
+-   `--pageMin` and `--pageMax` options cannot be used along with `--pageCount`
 
 ### `random`
 
@@ -140,17 +139,3 @@ asuka random [-p|--pack] [-o|--output <path>]
 |----------------------------|-----------|----------------------------------------------|
 | `--pack`                   | No        | Pack the downloaded doujinshi as CBZ archive |
 | `-o \| --output <path>`    | No        | Path to save the downloaded doujinshi.       |
-
-## Configuration
-
-Configuration are automatically created at runtime. You can modify values within `config.yaml` file.
-
-### Available configuration items
-
-| Key name                 | Value Type    | Default value      | Description                            |
-|--------------------------|---------------|--------------------|----------------------------------------|
-| ConcurrentTasks          | `uint`        | `2`                | No. of concurrent tasks to process     |
-| ConcurrentImageTasks     | `uint`        | `2`                | No. of images to download in parallel  |
-| PreferJapanese           | `boolean`     | `false`            | Use Japanese Titles instead of English |
-
-__NOTE: This program will decline any changes to configuration if the values are invalid.__

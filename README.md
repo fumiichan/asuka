@@ -1,4 +1,4 @@
-![asuka logo](docs/banner.png)
+﻿![Wao Beeg Banner](docs/banner.png)
 
 [![Maintenance](https://badgen.net/badge/maintained%3F/yes/green)](https://github.com/aikoofujimotoo/asuka/graphs/commit-activity)
 [![CircleCI](https://circleci.com/gh/aikoofujimotoo/asuka.svg?style=shield&circle-token=488813c48d642cdb1ff63cdb2483fdab55df8c19)](https://circleci.com/gh/aikoofujimotoo/asuka)
@@ -6,68 +6,39 @@
 [![Age Rating](https://badgen.net/badge/age%20rating/18+/red)](https://en.wikipedia.org/wiki/Age_of_majority)
 [![MIT license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 
-## Features
-
--   Downloads your favorite doujinshi by code, search, random or by recommendation based from doujin code
--   Views your doujinshi information without going to the site
--   Simple and fast
--   Runs on Windows, Linux and mac OS.
+Cross-platform nhentai downloader on Console.
 
 ## Requirements
 
--   Processor Architecture must be one of these:
-    -   arm
-    -   arm64
-    -   x86
-    -   x64
+-   [.NET 5.0 Runtime](https://dotnet.microsoft.com/download/dotnet/5.0)
+-   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/5.0/5.0-supported-os.md)*.
+    -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from Source section for compiling builds for these platforms.*
 
--   OS
-    -   For Windows, this is compatible to Windows 7 SP1 or later.
-        -   For Windows 7 SP1 and Windows 8.1, you need to install the following:
-            -   [Microsoft Visual C++ 2015 Redistributable Update 3](https://www.microsoft.com/download/details.aspx?id=52685)
-            -   [KB2533623](https://support.microsoft.com/en-gb/help/2533623/microsoft-security-advisory-insecure-library-loading-could-allow-remot)
-
-    -   For Linux, these are currently supported distributions:
-        -   Red Hat Enterprise Linux Version 6 or later
-        -   CentOS, Oracle Linux Version 7 or later
-        -   Fedora 30 or later
-        -   Debian 9 or later
-        -   Ubuntu 16.04, 18.04, 19.10, 20.04
-        -   Linux Mint 18 or later
-        -   openSUSE 15 or later
-        -   SUSE Enterprise Linux (SLES) 12 SP2 or later
-        -   Alpine Linux 3.10 or later.
-
-    -   macOS 10.13 or later
-
--   [.NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 
 ## Usage
 
-Read it [here](docs/USAGE.md)
+By running `asuka --help` you mostly see everything you need to know how to use the client.
 
-## How to Get
+If you want in-depth examplaination and examples, see [here](docs/USAGE.md).
 
-### Downloading from Releases
+## Compiling from Source
 
-Get the latest version [here](https://github.com/aikoofujimotoo/asuka/releases)
+### What do I need?
 
-### Compiling from Source
+-   [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
+-   [EF Core Tool](https://docs.microsoft.com/en-us/ef/core/cli/dotnet)
 
-This requires you to have .NET Core 3.1 SDK installed.
+### Compiling
 
-1.  Clone the repository. Run `git clone https://github.com/aikoofujimotoo/asuka`
-2.  Run `dotnet restore` to restore packages
-3.  Run `dotnet build`
+To compile, simply use your Terminal of your choice and navigate towards the asuka's source root.
 
-To build for other platforms, use `--runtime <RUNTIME_IDENTIFIER>`. [More Info](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
+1. `dotnet restore` to restore the packages.
+2. `dotnet build` to build.
 
-If you are using Visual Studio, The packages are restored automatically after you open the project. Wait for it to finish and compile the project.
+   You can use `--configuration` to specify the configuration to use. Available configurations are `Debug` and `Release`. For more information, check the [`dotnet build` documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
 
-## Credits
+You'll see the built packages on `bin\Debug\net5.0` or `bin\Release\net5.0` depending on the build configuration you used.
 
--   [Asuka Fan Art by 黒輪](https://www.pixiv.net/en/artworks/60973409)
+### License
 
-## License
-
-This project is licensed under [MIT License](LICENSE.txt).
+This project is licensed under [MIT license](LICENSE). For more information about the license, read the [LICENSE](LICENSE) file. It's short I promise.
