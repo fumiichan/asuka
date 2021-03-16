@@ -23,7 +23,10 @@ namespace asukav2.Lib
     public static async Task<ResponseModel> FetchSingleAsync(string url, CacheManagerLibrary cache,
       CancellationToken token)
     {
-      if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+      if (token.IsCancellationRequested)
+      {
+        token.ThrowIfCancellationRequested();
+      }
 
       // Test if the URL is a valid nhentai URL.
       const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
@@ -32,7 +35,10 @@ namespace asukav2.Lib
       // Get the 1-6 digit codes from the URL.
       var code = Regex.Match(url, @"\d+").Value;
 
-      if (!regexp.IsMatch(url) || string.IsNullOrEmpty(code)) throw new ArgumentException("Invalid URL.");
+      if (!regexp.IsMatch(url) || string.IsNullOrEmpty(code))
+      {
+        throw new ArgumentException("Invalid URL.");
+      }
 
       // Fetch the information from the database if present.
       var search = await cache.GetDoujinInformationAsync(code, token);
@@ -42,7 +48,10 @@ namespace asukav2.Lib
       var request = new RestRequest($"/gallery/{code}", DataFormat.Json);
       var response = await client.ExecuteAsync(request, token);
 
-      if (!response.IsSuccessful) throw new HttpRequestException("Failed to fetch information.");
+      if (!response.IsSuccessful)
+      {
+        throw new HttpRequestException("Failed to fetch information.");
+      }
 
       var result = JsonConvert.DeserializeObject<ResponseModel>(response.Content);
       await cache.AddDataToCacheAsync(code, result, token);
@@ -62,7 +71,10 @@ namespace asukav2.Lib
 
       // Set page to 1 if page specified is 0.
       var page = args.PageNumber;
-      if (args.PageNumber <= 0) page = 1;
+      if (args.PageNumber <= 0)
+      {
+        page = 1;
+      }
 
       // Create list of queries
       var finalQueries = new List<string>();
@@ -76,19 +88,31 @@ namespace asukav2.Lib
       // Ensure we don't collide with options such as --pageMin or --pageMax with --pageCount.
       // The same with --dateRangeMin or --dateRangeMax with --dateUploaded.
       if ((args.PageRangeMinimum != null || args.PageRangeMaximum != null) && args.PageSpecific != null)
+      {
         throw new ArgumentException("You cannot combine --pageMin or --pageMax with --pageCount.");
+      }
 
-      if ((!string.IsNullOrEmpty(args.DateRangeMin) || !string.IsNullOrEmpty(args.DateRangeMax)) &&
-          !string.IsNullOrEmpty(args.DateUploaded))
+      if ((!string.IsNullOrEmpty(args.DateRangeMin) || !string.IsNullOrEmpty(args.DateRangeMax)) && !string.IsNullOrEmpty(args.DateUploaded))
+      {
         throw new ArgumentException("You cannot combine --dateRangeMin or --dateRangeMax with --dateUploaded.");
+      }
 
       if (args.PageRangeMinimum != null) finalQueries.Add($"pages:>={args.PageRangeMinimum}");
       if (args.PageRangeMaximum != null) finalQueries.Add($"pages:<={args.PageRangeMaximum}");
       if (args.PageSpecific != null) finalQueries.Add($"pages:{args.PageSpecific}");
 
-      if (!string.IsNullOrEmpty(args.DateRangeMin)) finalQueries.Add($"uploaded:>={args.DateRangeMin}");
-      if (!string.IsNullOrEmpty(args.DateRangeMax)) finalQueries.Add($"uploaded:<={args.DateRangeMax}");
-      if (!string.IsNullOrEmpty(args.DateUploaded)) finalQueries.Add($"uploaded:{args.DateUploaded}");
+      if (!string.IsNullOrEmpty(args.DateRangeMin))
+      {
+        finalQueries.Add($"uploaded:>={args.DateRangeMin}");
+      }
+      if (!string.IsNullOrEmpty(args.DateRangeMax))
+      {
+        finalQueries.Add($"uploaded:<={args.DateRangeMax}");
+      }
+      if (!string.IsNullOrEmpty(args.DateUploaded))
+      {
+        finalQueries.Add($"uploaded:{args.DateUploaded}");
+      }
 
       request.AddParameter("query", string.Join(" ", finalQueries));
       request.AddParameter("page", page.ToString());
@@ -104,6 +128,11 @@ namespace asukav2.Lib
         case SortOptions.PopularWeek:
           request.AddParameter("sort", "popular-week");
           break;
+        case SortOptions.Recent:
+          request.AddParameter("sort", "date");
+          break;
+        default:
+          throw new NotImplementedException("Sort option is not implemented.");
       }
 
       var response = await client.ExecuteAsync(request, token);
@@ -127,17 +156,21 @@ namespace asukav2.Lib
       const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
       var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
 
-      if (!regexp.IsMatch(url)) throw new ArgumentException("Invalid URL.");
-
       var code = Regex.Match(url, @"\d+").Value;
 
-      if (string.IsNullOrEmpty(code)) throw new ArgumentException("Invalid doujin URL.");
+      if (!regexp.IsMatch(url) || string.IsNullOrEmpty(code))
+      {
+        throw new ArgumentException("Invalid URL.");
+      }
 
       var client = new RestClient("https://nhentai.net/api");
       var request = new RestRequest($"/gallery/{code}/related", DataFormat.Json);
       var response = await client.ExecuteAsync(request, token);
 
-      if (!response.IsSuccessful) throw new HttpRequestException("Failed to fetch recommendations");
+      if (!response.IsSuccessful)
+      {
+        throw new HttpRequestException("Failed to fetch recommendations");
+      }
 
       var result = JsonConvert.DeserializeObject<ListResponseModel>(response.Content);
       return result;
@@ -151,7 +184,10 @@ namespace asukav2.Lib
     /// <returns></returns>
     public static async Task<ResponseModel> RandomAsync(CacheManagerLibrary cache, CancellationToken token)
     {
-      if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+      if (token.IsCancellationRequested)
+      {
+        token.ThrowIfCancellationRequested();
+      }
 
       var initialCount = 300000;
 

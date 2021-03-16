@@ -48,7 +48,10 @@ namespace asukav2.Lib
       var filter = await _context.ImageHashes.FirstOrDefaultAsync(
         c => c.DoujinCode == imageHashItem.DoujinCode && c.Image == imageHashItem.Image && c.Hash == imageHashItem.Hash);
 
-      if (filter != null) return;
+      if (filter != null)
+      {
+        return;
+      }
       
       await _context.ImageHashes.AddAsync(imageHashItem);
     }
@@ -169,7 +172,10 @@ namespace asukav2.Lib
 
     protected virtual void Dispose(bool disposing)
     {
-      if (_disposed) return;
+      if (_disposed)
+      {
+        return;
+      }
 
       // Dispose the DbContext
       if (disposing)

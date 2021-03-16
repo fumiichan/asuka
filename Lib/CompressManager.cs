@@ -60,10 +60,16 @@ namespace asukav2.Lib
       var task = await Task.Run(() =>
       {
         // Just create the entries if the mode is create.
-        if (_createMode) return CreateEntry(entryName);
+        if (_createMode)
+        {
+          return CreateEntry(entryName);
+        }
 
         var archiveEntry = GetEntry(entryName);
-        if (archiveEntry == null) return CreateEntry(entryName);
+        if (archiveEntry == null)
+        {
+          return CreateEntry(entryName);
+        }
 
         // Delete the entry to overwrite it.
         archiveEntry.Delete();
@@ -75,9 +81,12 @@ namespace asukav2.Lib
 
     protected override void Dispose(bool disposing)
     {
-      if (_disposed) return;
-      _progress.Dispose();
+      if (_disposed)
+      {
+        return;
+      }
 
+      _progress.Dispose();
       _disposed = true;
 
       // Dispose.

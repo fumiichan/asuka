@@ -9,6 +9,8 @@
     <PackageIcon>AppIcon.png</PackageIcon>
     <ApplicationIcon>appicon.ico</ApplicationIcon>
     <Platforms>AnyCPU;x64</Platforms>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/aikoofujimotoo/asuka</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -32,6 +34,10 @@
     <Compile Remove="Experiments\**" />
     <EmbeddedResource Remove="Experiments\**" />
     <None Remove="Experiments\**" />
+    <None Include="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

@@ -7,7 +7,7 @@ using CommandLine.Text;
 
 namespace asukav2
 {
-  internal class Program
+  internal static class Program
   {
     /// <summary>
     /// Main entry point
@@ -27,7 +27,8 @@ namespace asukav2
 
       try
       {
-        var result = Parser.Default.ParseArguments<Get, Search, Recommend, Random>(args);
+        var result = new Parser(with => with.HelpWriter = null)
+          .ParseArguments<Get, Search, Recommend, Random>(args);
         await result.MapResult(
           async (Get opts) => await CommandLineParser.GetParserAsync(opts, cache, token),
           async (Search opts) => await CommandLineParser.SearchParserAsync(opts, cache, token),
@@ -39,7 +40,7 @@ namespace asukav2
             {
               h.AddEnumValuesToHelpText = true;
               return h;
-            }, e => e, true);
+            }, e => e);
 
             Console.WriteLine(helpText);
 

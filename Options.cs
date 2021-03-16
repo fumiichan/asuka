@@ -34,7 +34,8 @@ namespace asukav2
   {
     PopularToday,
     PopularWeek,
-    Popular
+    Popular,
+    Recent
   }
 
   [Verb("get", HelpText = "Download or view a information about doujinshi.")]
@@ -116,6 +117,7 @@ namespace asukav2
 
     [Option('s',"sort",
       Required = false,
+      Default = SortOptions.Recent,
       HelpText = "Sort results")]
     public SortOptions Sort { get; set; }
 

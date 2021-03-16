@@ -27,7 +27,10 @@ namespace asukav2.Lib
     {
       // Use the current working directory if the path is empty.
       var destinationPath = Environment.CurrentDirectory;
-      if (!string.IsNullOrEmpty(outputPath)) destinationPath = outputPath;
+      if (!string.IsNullOrEmpty(outputPath))
+      {
+        destinationPath = outputPath;
+      }
 
       // Use other titles if they are present in other name properties.
       // Some doujinshis sometimes have missing names like in japanese or english equivalent.
@@ -116,7 +119,10 @@ namespace asukav2.Lib
     private async Task DownloadTaskAsync(Pages value, int index, IProgressBar bar, IRestClient client,
       CacheManagerLibrary cache, CancellationToken token)
     {
-      if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+      if (token.IsCancellationRequested)
+      {
+        token.ThrowIfCancellationRequested();
+      }
 
       var ext = value.Type switch
       {
@@ -212,7 +218,10 @@ namespace asukav2.Lib
     /// <returns></returns>
     private async Task<bool> MatchIntegrityAsync(string targetFile, string filename)
     {
-      if (!File.Exists(targetFile)) return false;
+      if (!File.Exists(targetFile))
+      {
+        return false;
+      }
 
       // Fetch the hash of the file.
       var integrity = await ComputeSha256FromFileAsync(targetFile);
