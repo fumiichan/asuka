@@ -103,7 +103,10 @@ namespace asukav2.Lib
       await Task.WhenAll(taskList);
 
       // Finally if pack is true, run the compression.
-      if (pack) await CompressTaskAsync(bar, token);
+      if (pack)
+      {
+        await CompressTaskAsync(bar, token);
+      }
     }
 
     /// <summary>
@@ -190,7 +193,10 @@ namespace asukav2.Lib
 
       foreach (var file in fileList)
       {
-        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested)
+        {
+          token.ThrowIfCancellationRequested();
+        }
         await compress.InsertFromFileAsync(Path.Combine(_destinationPath, file));
       }
     }

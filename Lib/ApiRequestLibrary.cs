@@ -42,7 +42,10 @@ namespace asukav2.Lib
 
       // Fetch the information from the database if present.
       var search = await cache.GetDoujinInformationAsync(code, token);
-      if (search != null) return search;
+      if (search != null)
+      {
+        return search;
+      }
 
       var client = new RestClient("https://nhentai.net/api");
       var request = new RestRequest($"/gallery/{code}", DataFormat.Json);
@@ -67,7 +70,10 @@ namespace asukav2.Lib
     /// <returns></returns>
     public static async Task<SearchResponseModel> SearchDoujinAsync(Search args, CancellationToken token)
     {
-      if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+      if (token.IsCancellationRequested)
+      {
+        token.ThrowIfCancellationRequested();
+      }
 
       // Set page to 1 if page specified is 0.
       var page = args.PageNumber;
@@ -97,9 +103,19 @@ namespace asukav2.Lib
         throw new ArgumentException("You cannot combine --dateRangeMin or --dateRangeMax with --dateUploaded.");
       }
 
-      if (args.PageRangeMinimum != null) finalQueries.Add($"pages:>={args.PageRangeMinimum}");
-      if (args.PageRangeMaximum != null) finalQueries.Add($"pages:<={args.PageRangeMaximum}");
-      if (args.PageSpecific != null) finalQueries.Add($"pages:{args.PageSpecific}");
+      // Start of Cringey if statements
+      if (args.PageRangeMinimum != null)
+      {
+        finalQueries.Add($"pages:>={args.PageRangeMinimum}");
+      }
+      if (args.PageRangeMaximum != null)
+      {
+        finalQueries.Add($"pages:<={args.PageRangeMaximum}");
+      }
+      if (args.PageSpecific != null)
+      {
+        finalQueries.Add($"pages:{args.PageSpecific}");
+      }
 
       if (!string.IsNullOrEmpty(args.DateRangeMin))
       {
@@ -136,7 +152,10 @@ namespace asukav2.Lib
       }
 
       var response = await client.ExecuteAsync(request, token);
-      if (!response.IsSuccessful) throw new HttpRequestException("Failed to fetch search results.");
+      if (!response.IsSuccessful)
+      {
+        throw new HttpRequestException("Failed to fetch search results.");
+      }
 
       var result = JsonConvert.DeserializeObject<SearchResponseModel>(response.Content);
       return result;
@@ -150,7 +169,10 @@ namespace asukav2.Lib
     /// <returns></returns>
     public static async Task<ListResponseModel> RecommendAsync(string url, CancellationToken token)
     {
-      if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+      if (token.IsCancellationRequested)
+      {
+        token.ThrowIfCancellationRequested();
+      }
 
       // Test if the URL is a valid nhentai URL.
       const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";

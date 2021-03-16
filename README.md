@@ -26,7 +26,6 @@ If you want in-depth examplaination and examples, see [here](docs/USAGE.md).
 ### What do I need
 
 -   [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
-
 -   [EF Core Tool](https://docs.microsoft.com/en-us/ef/core/cli/dotnet)
 
 ### Compiling

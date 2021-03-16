@@ -24,15 +24,15 @@ asuka get <-i|--input <file|url>> [-r|--readonly] [-p|--pack] [-o|--output <path
 | `-p \| --pack`              | No        | Pack the downloaded doujinshi as CBZ archive       |
 | `-o \| --output <path>`     | No        | Path to save the downloaded doujinshi.             |
 
-#### Usage Examples
+**Usage Examples**
 
-##### Get a single doujinshi:
+#### Get a single doujinshi
 
 ```
 asuka get -i https://nhentai.net/g/177013
 ```
 
-##### Download multiple doujinshi:
+#### Download multiple doujinshi
 
 ```
 asuka get -i ~/Downloads/file.txt
@@ -48,19 +48,19 @@ https://nhentai.net/g/177015
 
 You need to add the links seperated by a new line.
 
-##### Get the information only
+#### Get the information only
 
 ```
 asuka get -i https://nhentai.net/g/177013 -r
 ```
 
-##### Pack the downloaded archive
+#### Pack the downloaded archive
 
 ```
 asuka get -i https://nhentai.net/g/177013 -p
 ```
 
-#### Remarks
+**Remarks**
 
 -   `--readonly` option supports on single link only.
 
@@ -78,12 +78,13 @@ asuka recommend <-i|--input <url>> [-p|--pack] [-o|--output <path>]
 | `-p \| --pack`          | No        | Pack the downloaded doujinshi as CBZ archive       |
 | `-o \| --output <path>` | No        | Path to save the downloaded doujinshi.             |
 
-
-#### Usage Examples
+**Usage Examples**
 
 Usage is the same as on the `get` command except that it doesn't accept file paths as arguments.
 
 ### `search`
+
+Usage:
 
 ```
 asuka search [--pack] <-q|--query <query>> [-e|--exlude <query>] <-p|--page <num>> [-o|--output <path>]
@@ -103,7 +104,7 @@ asuka search [--pack] <-q|--query <query>> [-e|--exlude <query>] <-p|--page <num
 | `--pack`                     | No        | Pack the downloaded doujinshi as CBZ archive         |
 | `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
 
-#### Usage Examples
+**Usage Examples**
 
 ```
 asuka search -q maid "\"big breasts\"" --page 1
@@ -123,13 +124,15 @@ Finer queries are
 | `language`        | `string`      | Specify language of the doujin              | `language:english`                           |
 | `group`           | `string`      | Specify the group (or circle) of the doujin | `group:poyopoyosky`                          |
 
-##### Remarks
+**Remarks**
 
 -   Use `--exclude` option to exclude tags instead of adding dashes (`-`) before queries.
 -   `--dateRangeMin` and `--dateRangeMax` options cannot be used along with `--dateUploaded`
 -   `--pageMin` and `--pageMax` options cannot be used along with `--pageCount`
 
 ### `random`
+
+Usage:
 
 ```
 asuka random [-p|--pack] [-o|--output <path>]
