@@ -84,36 +84,16 @@ namespace asukav2
       Required = true,
       HelpText = "Page number")]
     public uint PageNumber { get; set; }
-    
-    [Option("pageMin",
-      Required = false,
-      HelpText = "Filter for specifying minimum count of pages in gallery.")]
-    public uint? PageRangeMinimum { get; set; }
 
-    [Option("pageMax",
+    [Option("pageRange",
       Required = false,
-      HelpText = "Filter for specifying maximum count of pages in gallery.")]
-    public uint? PageRangeMaximum { get; set; }
+      HelpText = "Filter for specifying count of pages in gallery.")]
+    public IEnumerable<string> PageRange { get; set; }
 
-    [Option("pageCount",
-      Required = false,
-      HelpText = "Filter for specifying count of pages in galerry.")]
-    public uint? PageSpecific { get; set; }
-
-    [Option("dateRangeMin",
-      Required = false,
-      HelpText = "Filter for specifying minimum timeframe.")]
-    public string DateRangeMin { get; set; }
-
-    [Option("dateRangeMax",
-      Required = false,
-      HelpText = "Filter for specifying maximum timeframe.")]
-    public string DateRangeMax { get; set; }
-
-    [Option("dateUploaded",
+    [Option("dateRange",
       Required = false,
       HelpText = "Filter for specifying exact upload timeframe of the gallery.")]
-    public string DateUploaded { get; set; }
+    public IEnumerable<string> DateRange { get; set; }
 
     [Option('s',"sort",
       Required = false,
@@ -133,13 +113,13 @@ namespace asukav2
         yield return new Example("normal usage but exclude",
           new Search {Query = new[] {"netorare", "group"}, PageNumber = 1});
         yield return new Example("no queries but exact amount of pages only",
-          new Search {PageSpecific = 30, PageNumber = 1});
+          new Search {PageRange = new[] {"20"}, PageNumber = 1});
         yield return new Example("no queries but between minimum and maximum pages",
-          new Search {PageRangeMinimum = 20, PageRangeMaximum = 50, PageNumber = 1});
+          new Search {PageRange = new[] {">20", "<50"}, PageNumber = 1});
         yield return new Example("no queries but exact timeframe only",
-          new Search {DateUploaded = "1d", PageNumber = 1});
+          new Search {DateRange = new[] {"1d"}, PageNumber = 1});
         yield return new Example("no queries but range timeframes",
-          new Search {DateRangeMin = "2w", DateRangeMax = "5w", PageNumber = 1});
+          new Search {DateRange = new[] {">2d", "<=5d"}, PageNumber = 1});
         yield return new Example("filter by popularity", new Search {Sort = SortOptions.Popular, PageNumber = 1});
       }
     }

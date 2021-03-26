@@ -77,45 +77,8 @@ namespace asukav2.Lib
 
       finalQueries.AddRange(args.Query);
       finalQueries.AddRange(args.Exclude.Select(v => $"-{v}"));
-
-      // Ensure we don't collide with options such as --pageMin or --pageMax with --pageCount.
-      // The same with --dateRangeMin or --dateRangeMax with --dateUploaded.
-      if ((args.PageRangeMinimum != null || args.PageRangeMaximum != null) && args.PageSpecific != null)
-      {
-        throw new ArgumentException("You cannot combine --pageMin or --pageMax with --pageCount.");
-      }
-
-      if ((!string.IsNullOrEmpty(args.DateRangeMin) || !string.IsNullOrEmpty(args.DateRangeMax)) && !string.IsNullOrEmpty(args.DateUploaded))
-      {
-        throw new ArgumentException("You cannot combine --dateRangeMin or --dateRangeMax with --dateUploaded.");
-      }
-
-      // Start of Cringey if statements
-      if (args.PageRangeMinimum != null)
-      {
-        finalQueries.Add($"pages:>={args.PageRangeMinimum}");
-      }
-      if (args.PageRangeMaximum != null)
-      {
-        finalQueries.Add($"pages:<={args.PageRangeMaximum}");
-      }
-      if (args.PageSpecific != null)
-      {
-        finalQueries.Add($"pages:{args.PageSpecific}");
-      }
-
-      if (!string.IsNullOrEmpty(args.DateRangeMin))
-      {
-        finalQueries.Add($"uploaded:>={args.DateRangeMin}");
-      }
-      if (!string.IsNullOrEmpty(args.DateRangeMax))
-      {
-        finalQueries.Add($"uploaded:<={args.DateRangeMax}");
-      }
-      if (!string.IsNullOrEmpty(args.DateUploaded))
-      {
-        finalQueries.Add($"uploaded:{args.DateUploaded}");
-      }
+      finalQueries.AddRange(args.PageRange.Select(p => $"pages:{p}"));
+      finalQueries.AddRange(args.DateRange.Select(d => $"uploaded:{d}"));
 
       request.AddParameter("query", string.Join(" ", finalQueries));
       request.AddParameter("page", page.ToString());
