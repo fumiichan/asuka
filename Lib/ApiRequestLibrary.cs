@@ -202,11 +202,15 @@ namespace asukav2.Lib
         if (requestResponse.IsSuccessful)
         {
           var result = JsonConvert.DeserializeObject<SearchResponseModel>(requestResponse.Content);
-          initialCount = result.Result[0].Id;
 
-          // Store the information to the cache so that it will be used on further random commands
-          // for 24 hours.
-          await cache.AddDoujinCountCacheAsync(DateTime.Now, initialCount);
+          if (result != null)
+          {
+            initialCount = result.Result[0].Id;
+
+            // Store the information to the cache so that it will be used on further random commands
+            // for 24 hours.
+            await cache.AddDoujinCountCacheAsync(DateTime.Now, initialCount);
+          }
         }
         else
         {
