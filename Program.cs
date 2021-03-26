@@ -15,9 +15,6 @@ namespace asukav2
     /// <param name="args">Program arguments</param>
     private static async Task Main(string[] args)
     {
-      var cancellationToken = new CancellationTokenSource();
-      var token = cancellationToken.Token;
-
       // Initialise the Cache Manager here.
       if (!CacheManagerLibrary.IsDatabaseExists())
       {
@@ -30,10 +27,10 @@ namespace asukav2
         var result = new Parser(with => with.HelpWriter = null)
           .ParseArguments<Get, Search, Recommend, Random>(args);
         await result.MapResult(
-          async (Get opts) => await CommandLineParser.GetParserAsync(opts, cache, token),
-          async (Search opts) => await CommandLineParser.SearchParserAsync(opts, cache, token),
-          async (Recommend opts) => await CommandLineParser.RecommendParserAsync(opts, cache, token),
-          async (Random opts) => await CommandLineParser.RandomParserAsync(opts, cache, token),
+          async (Get opts) => await CommandLineParser.GetParserAsync(opts, cache),
+          async (Search opts) => await CommandLineParser.SearchParserAsync(opts, cache),
+          async (Recommend opts) => await CommandLineParser.RecommendParserAsync(opts, cache),
+          async (Random opts) => await CommandLineParser.RandomParserAsync(opts, cache),
           (err) =>
           {
             var helpText = HelpText.AutoBuild(result, h =>
@@ -54,8 +51,6 @@ namespace asukav2
       }
       finally
       {
-        cancellationToken.Dispose();
-
         // Save database changes.
         await cache.SaveChangesAsync();
         cache.Dispose();

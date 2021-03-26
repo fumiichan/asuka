@@ -72,9 +72,8 @@ namespace asukav2.Lib
     /// </summary>
     /// <param name="code">nhentai 1-6 digit code</param>
     /// <param name="jsonResponse">nhentai's response but serialised as string.</param>
-    /// <param name="token">Cancellation TOken</param>
     /// <returns></returns>
-    public async Task AddDataToCacheAsync(string code, ResponseModel jsonResponse, CancellationToken token)
+    public async Task AddDataToCacheAsync(string code, ResponseModel jsonResponse)
     {
       // Serialise the object.
       var serialized = JsonConvert.SerializeObject(jsonResponse);
@@ -82,20 +81,19 @@ namespace asukav2.Lib
       await _context.CacheData.AddAsync(new CacheModel
       {
         DoujinCode = code, JsonData = serialized
-      }, token);
+      });
     }
 
     /// <summary>
     /// Writes all result to the cache.
     /// </summary>
     /// <param name="responses"></param>
-    /// <param name="token"></param>
     /// <returns></returns>
-    public async Task WriteAllResultToCacheAsync(IEnumerable<ResponseModel> responses, CancellationToken token)
+    public async Task WriteAllResultToCacheAsync(IEnumerable<ResponseModel> responses)
     {
       foreach (var response in responses)
       {
-        await AddDataToCacheAsync(response.Id.ToString(), response, token);
+        await AddDataToCacheAsync(response.Id.ToString(), response);
       }
     }
 
@@ -103,17 +101,12 @@ namespace asukav2.Lib
     /// Retrieve doujin information stored in cache.
     /// </summary>
     /// <param name="code">nhentai 1-6 digit code</param>
-    /// <param name="token">Cancellation token</param>
     /// <returns></returns>
-    public async Task<ResponseModel> GetDoujinInformationAsync(string code, CancellationToken token)
+    public async Task<ResponseModel> GetDoujinInformationAsync(string code)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
 
       var filter = _context.CacheData.Where(x => x.DoujinCode == code);
-      var data = await filter.FirstOrDefaultAsync(token);
+      var data = await filter.FirstOrDefaultAsync();
 
       return data != null ? JsonConvert.DeserializeObject<ResponseModel>(data.JsonData) : null;
     }
@@ -123,28 +116,23 @@ namespace asukav2.Lib
     /// </summary>
     /// <param name="date">Time and Date of storing</param>
     /// <param name="count">Total doujin count</param>
-    /// <param name="token">Cancellation Token</param>
     /// <returns></returns>
-    public async Task AddDoujinCountCacheAsync(DateTime date, int count, CancellationToken token)
+    public async Task AddDoujinCountCacheAsync(DateTime date, int count)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
 
       var dateString = date.ToString("dd-MM-yyyy");
-      await _context.DoujinTotalCounter.AddAsync(new DoujinCounter {Count = count, Date = dateString}, token);
+      await _context.DoujinTotalCounter.AddAsync(new DoujinCounter {Count = count, Date = dateString});
     }
 
-    public async Task<DoujinCounter> GetDoujinCountCacheAsync(DateTime date, CancellationToken token)
+    /// <summary>
+    /// Retrieves total gallery count stored on cache.
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public async Task<DoujinCounter> GetDoujinCountCacheAsync(DateTime date)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
-      
       var data =  await _context.DoujinTotalCounter.FirstOrDefaultAsync(
-        d => d.Date == date.ToString("dd-MM-yyyy"), token);
+        d => d.Date == date.ToString("dd-MM-yyyy"));
 
       return data;
     }

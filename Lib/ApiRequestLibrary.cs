@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using asukav2.Models;
 using Newtonsoft.Json;
@@ -18,16 +17,9 @@ namespace asukav2.Lib
     /// </summary>
     /// <param name="url">A nhentai doujin code.</param>
     /// <param name="cache">Cache Manager Instance</param>
-    /// <param name="token">Cancellation token</param>
     /// <returns></returns>
-    public static async Task<ResponseModel> FetchSingleAsync(string url, CacheManagerLibrary cache,
-      CancellationToken token)
+    public static async Task<ResponseModel> FetchSingleAsync(string url, CacheManagerLibrary cache)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
-
       // Test if the URL is a valid nhentai URL.
       const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
       var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
@@ -41,7 +33,7 @@ namespace asukav2.Lib
       }
 
       // Fetch the information from the database if present.
-      var search = await cache.GetDoujinInformationAsync(code, token);
+      var search = await cache.GetDoujinInformationAsync(code);
       if (search != null)
       {
         return search;
@@ -49,7 +41,7 @@ namespace asukav2.Lib
 
       var client = new RestClient("https://nhentai.net/api");
       var request = new RestRequest($"/gallery/{code}", DataFormat.Json);
-      var response = await client.ExecuteAsync(request, token);
+      var response = await client.ExecuteAsync(request);
 
       if (!response.IsSuccessful)
       {
@@ -57,7 +49,7 @@ namespace asukav2.Lib
       }
 
       var result = JsonConvert.DeserializeObject<ResponseModel>(response.Content);
-      await cache.AddDataToCacheAsync(code, result, token);
+      await cache.AddDataToCacheAsync(code, result);
 
       return result;
     }
@@ -66,14 +58,9 @@ namespace asukav2.Lib
     ///   Search for doujins on nhentai
     /// </summary>
     /// <param name="args">Search arguments</param>
-    /// <param name="token">Cancellation Token</param>
     /// <returns></returns>
-    public static async Task<SearchResponseModel> SearchDoujinAsync(Search args, CancellationToken token)
+    public static async Task<SearchResponseModel> SearchDoujinAsync(Search args)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
 
       // Set page to 1 if page specified is 0.
       var page = args.PageNumber;
@@ -151,7 +138,7 @@ namespace asukav2.Lib
           throw new NotImplementedException("Sort option is not implemented.");
       }
 
-      var response = await client.ExecuteAsync(request, token);
+      var response = await client.ExecuteAsync(request);
       if (!response.IsSuccessful)
       {
         throw new HttpRequestException("Failed to fetch search results.");
@@ -165,15 +152,9 @@ namespace asukav2.Lib
     ///   Fetch Recommendations
     /// </summary>
     /// <param name="url">Doujin URL to get for recommendations</param>
-    /// <param name="token">Cancellation Token</param>
     /// <returns></returns>
-    public static async Task<ListResponseModel> RecommendAsync(string url, CancellationToken token)
+    public static async Task<ListResponseModel> RecommendAsync(string url)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
-
       // Test if the URL is a valid nhentai URL.
       const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
       var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
@@ -187,7 +168,7 @@ namespace asukav2.Lib
 
       var client = new RestClient("https://nhentai.net/api");
       var request = new RestRequest($"/gallery/{code}/related", DataFormat.Json);
-      var response = await client.ExecuteAsync(request, token);
+      var response = await client.ExecuteAsync(request);
 
       if (!response.IsSuccessful)
       {
@@ -202,18 +183,12 @@ namespace asukav2.Lib
     ///   Randomise Doujin Selection
     /// </summary>
     /// <param name="cache">Cache Manager Instance</param>
-    /// <param name="token">Cancellation Token</param>
     /// <returns></returns>
-    public static async Task<ResponseModel> RandomAsync(CacheManagerLibrary cache, CancellationToken token)
+    public static async Task<ResponseModel> RandomAsync(CacheManagerLibrary cache)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
-
       var initialCount = 300000;
 
-      var cachedCount = await cache.GetDoujinCountCacheAsync(DateTime.Now, token);
+      var cachedCount = await cache.GetDoujinCountCacheAsync(DateTime.Now);
       if (cachedCount != null)
       {
         initialCount = cachedCount.Count;
@@ -222,7 +197,7 @@ namespace asukav2.Lib
       {
         var client = new RestClient("https://nhentai.net/api");
         var request = new RestRequest("/galleries/all", DataFormat.Json);
-        var requestResponse = await client.ExecuteAsync(request, token);
+        var requestResponse = await client.ExecuteAsync(request);
 
         if (requestResponse.IsSuccessful)
         {
@@ -231,7 +206,7 @@ namespace asukav2.Lib
 
           // Store the information to the cache so that it will be used on further random commands
           // for 24 hours.
-          await cache.AddDoujinCountCacheAsync(DateTime.Now, initialCount, token);
+          await cache.AddDoujinCountCacheAsync(DateTime.Now, initialCount);
         }
         else
         {
@@ -243,7 +218,7 @@ namespace asukav2.Lib
       var random = new System.Random();
       var id = random.Next(1, initialCount);
 
-      var response = await FetchSingleAsync($"https://nhentai.net/g/{id}", cache, token);
+      var response = await FetchSingleAsync($"https://nhentai.net/g/{id}", cache);
       return response;
     }
   }

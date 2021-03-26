@@ -65,15 +65,14 @@ namespace asukav2.Lib
     /// <param name="pack">Compress the download or not.</param>
     /// <param name="progress">Progress bar to display download and compressing progress</param>
     /// <param name="cache">Cache Manager Instance</param>
-    /// <param name="token">Cancellation token</param>
     /// <returns></returns>
-    public async Task DownloadAsync(bool pack, IProgressBar progress, CacheManagerLibrary cache, CancellationToken token)
+    public async Task DownloadAsync(bool pack, IProgressBar progress, CacheManagerLibrary cache)
     {
       _integrityData = await cache.GetHashAsync(_data.Id.ToString());
 
       // Dump the text file.
       var fileContent = await DisplayOutputLibrary.StringifyResponseAsync(_data);
-      await File.WriteAllTextAsync(Path.Combine(_destinationPath, "info.txt"), fileContent, token);
+      await File.WriteAllTextAsync(Path.Combine(_destinationPath, "info.txt"), fileContent);
 
       // If the progress is null, we create a new one which is the parent bar.
       using var bar = progress == null
@@ -89,15 +88,15 @@ namespace asukav2.Lib
       // DbContext is not thread safe. So we can't Task.WhenAll or Task.WaitAll.
       foreach (var (value, index) in _data.Images.Pages.Select((value, index) => (value, index)))
       {
-        await throttler.WaitAsync(token);
+        await throttler.WaitAsync();
 
         var referenceBar = bar;
         var referenceThrottler = throttler;
         taskList.Add(Task.Run(async () =>
         {
-          await DownloadTaskAsync(value, index, referenceBar, client, cache, token);
+          await DownloadTaskAsync(value, index, referenceBar, client, cache);
           referenceThrottler.Release();
-        }, token));
+        }));
       }
 
       await Task.WhenAll(taskList);
@@ -105,7 +104,7 @@ namespace asukav2.Lib
       // Finally if pack is true, run the compression.
       if (pack)
       {
-        await CompressTaskAsync(bar, token);
+        await CompressTaskAsync(bar);
       }
     }
 
@@ -117,15 +116,10 @@ namespace asukav2.Lib
     /// <param name="bar">IProgressBar instance</param>
     /// <param name="client">Rest Client</param>
     /// <param name="cache">Cache Manager Instance</param>
-    /// <param name="token">Cancellation token</param>
     /// <returns></returns>
     private async Task DownloadTaskAsync(Pages value, int index, IProgressBar bar, IRestClient client,
-      CacheManagerLibrary cache, CancellationToken token)
+      CacheManagerLibrary cache)
     {
-      if (token.IsCancellationRequested)
-      {
-        token.ThrowIfCancellationRequested();
-      }
 
       var ext = value.Type switch
       {
@@ -153,7 +147,7 @@ namespace asukav2.Lib
       var response = ExecuteRequest(client, request, bar);
       if (response.IsSuccessful)
       {
-        await File.WriteAllBytesAsync(destinationPath, response.RawBytes, token);
+        await File.WriteAllBytesAsync(destinationPath, response.RawBytes);
 
         var hash = await ComputeSha256FromFileAsync(destinationPath);
         cache.AddImageToBag(
@@ -167,9 +161,8 @@ namespace asukav2.Lib
     /// Handles Creation and Updating of Zip Archives
     /// </summary>
     /// <param name="progress">IProgressBar instance</param>
-    /// <param name="token">Cancellation Token</param>
     /// <returns></returns>
-    private async Task CompressTaskAsync(IProgressBar progress, CancellationToken token)
+    private async Task CompressTaskAsync(IProgressBar progress)
     {
       var fileList = Directory.GetFiles(_destinationPath);
 
@@ -193,10 +186,6 @@ namespace asukav2.Lib
 
       foreach (var file in fileList)
       {
-        if (token.IsCancellationRequested)
-        {
-          token.ThrowIfCancellationRequested();
-        }
         await compress.InsertFromFileAsync(Path.Combine(_destinationPath, file));
       }
     }
