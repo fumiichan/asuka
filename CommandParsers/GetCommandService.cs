@@ -32,13 +32,11 @@ namespace asuka.CommandParsers
             var validationResult = await _validator.ValidateAsync(opts);
             if (!validationResult.IsValid)
             {
-                _console.ErrorLine("Invalid URL.");
+                _console.ErrorLine("Invalid gallery code.");
                 return;
             }
 
-            var code = Regex.Match(opts.Input, @"\d+").Value;
-
-            var response = await _api.FetchSingleAsync(code);
+            var response = await _api.FetchSingleAsync(opts.Input.ToString());
             _console.WriteLine(response.ToReadable());
 
             // Do not continue if the user specifies to read only.

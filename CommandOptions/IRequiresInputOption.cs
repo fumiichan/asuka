@@ -7,6 +7,6 @@ namespace asuka.CommandOptions
         [Option('i', "input",
             Required = true,
             HelpText = "Input URL")]
-        string Input { get; init; }
+        int Input { get; init; }
     }
 }

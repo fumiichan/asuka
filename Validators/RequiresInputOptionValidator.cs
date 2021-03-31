@@ -8,8 +8,8 @@ namespace asuka.Validators
         public RequiresInputOptionValidator()
         {
             RuleFor(opts => opts.Input)
-                    .Matches(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")
-                    .WithMessage("Enter a valid URL.");
+                    .GreaterThan(0)
+                    .WithMessage("Enter a valid gallery code.");
         }
     }
 }

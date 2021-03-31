@@ -35,17 +35,16 @@ namespace asuka.CommandParsers
             var validator = await _validator.ValidateAsync(opts);
             if (!validator.IsValid)
             {
-                _console.ErrorLine("Invalid URL.");
+                _console.ErrorLine("Invalid gallery code.");
                 return;
             }
-
-            var code = Regex.Match(opts.Input, @"\d+").Value;
-            var responses = await _api.FetchRecommendedAsync(code);
+            
+            var responses = await _api.FetchRecommendedAsync(opts.Input.ToString());
 
             var selection = responses.FilterByUserSelected();
             
             // Initialise the Progress bar.
-            using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {code}",
+            using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
                 ProgressBarConfiguration.BarOption);
 
             foreach (var response in selection)
