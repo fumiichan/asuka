@@ -9,5 +9,4 @@
     
      steps:
        - checkout
-       - run: dotnet tool install --global dotnet-ef
        - run: dotnet build
