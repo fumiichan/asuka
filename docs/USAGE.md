@@ -19,31 +19,15 @@ asuka get <-i|--input <file|url>> [-r|--readonly] [-p|--pack] [-o|--output <path
 
 | Option                      | Required? | Description                                        |
 |-----------------------------|-----------|----------------------------------------------------|
-| `-i \| --input <url\|file>` | Yes       | Specify a URL or a path to a text file to download |
+| `-i \| --input <code>`      | Yes       | Specify a gallery code to download.                |
 | `-r \| --readonly`          | No        | View the information only.                         |
 | `-p \| --pack`              | No        | Pack the downloaded doujinshi as CBZ archive       |
 | `-o \| --output <path>`     | No        | Path to save the downloaded doujinshi.             |
 
 **Usage Examples**
 
-#### Get a single doujinshi
-
 ```
-asuka get -i https://nhentai.net/g/177013
-```
-
-#### Download multiple doujinshi
-
-```
-asuka get -i ~/Downloads/file.txt
-```
-
-where the text file contains:
-
-```
-https://nhentai.net/g/177013
-https://nhentai.net/g/177014
-https://nhentai.net/g/177015
+asuka get -i 177013
 ```
 
 You need to add the links seperated by a new line.
@@ -74,7 +58,7 @@ asuka recommend <-i|--input <url>> [-p|--pack] [-o|--output <path>]
 
 | Option                  | Required? | Description                                        |
 |-------------------------|-----------|----------------------------------------------------|
-| `-i \| --input <url>`   | Yes       | Specify a URL or a path to a text file to download |
+| `-i \| --input <code>`  | Yes       | Specify a gallery code to download.                |
 | `-p \| --pack`          | No        | Pack the downloaded doujinshi as CBZ archive       |
 | `-o \| --output <path>` | No        | Path to save the downloaded doujinshi.             |
 
@@ -87,19 +71,15 @@ Usage is the same as on the `get` command except that it doesn't accept file pat
 Usage:
 
 ```
-asuka search [--pack] <-q|--query <query>> [-e|--exlude <query>] <-p|--page <num>> [-o|--output <path>]
+asuka search [options]
 ```
 
 | Option                       | Required? | Description                                          |
 |------------------------------|-----------|------------------------------------------------------|
 | `-q \| --query <query>`      | No        | Your search query                                    |
 | `-e \| --exclude <query>`    | No        | Exclude tags in your search                          |
-| `--pageMin <num>`            | No        | Filter for specifying minimum page count in gallery. |
-| `--pageMax <num>`            | No        | Filter for specifying maximum page count in gallery. |
-| `--pageCount <num>`          | No        | Filter for specifying exact page count in gallery.   |
-| `--dateRangeMin <timeframe>` | No        | Filter for specifying minimum timeframe              |
-| `--dateRangeMax <timeframe>` | No        | Filter for specifying maximum timeframe              |
-| `--dateUploaded <timeframe>` | No        | Filter for specifying exact timeframe                |
+| `--pageRange <range>`        | No        | Filter for specifying minimum page count in gallery. |
+| `--dateRange <timeframe>`    | No        | Filter for specifying exact timeframe                |
 | `-p \| --page <num>`         | Yes       | Page Number.                                         |
 | `--pack`                     | No        | Pack the downloaded doujinshi as CBZ archive         |
 | `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
@@ -127,8 +107,13 @@ Finer queries are
 **Remarks**
 
 -   Use `--exclude` option to exclude tags instead of adding dashes (`-`) before queries.
--   `--dateRangeMin` and `--dateRangeMax` options cannot be used along with `--dateUploaded`
--   `--pageMin` and `--pageMax` options cannot be used along with `--pageCount`
+-   `--dateRange` and `--pageRange` supports operators such as `>` `>=` `<` and `<=`.
+-   `--dateRange` supports following date units (Ex: `--dateRange ">2d" "<=5d"`:
+    -   `h` for hours
+    -   `d` for days
+    -   `w` for weeks
+    -   `m` for months
+    -   `y` for years
 
 ### `random`
 

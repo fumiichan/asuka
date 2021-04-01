@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "asukav2": {
-      "commandName": "Project",
-      "commandLineArgs": "get -i \"https://nhentai.net/g/201536\"",
-      "workingDirectory": "C:\\Experiments"
-    }
-  }
-}

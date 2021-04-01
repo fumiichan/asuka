@@ -1,0 +1,31 @@
+using asuka.Api.Responses;
+using asuka.Models;
+
+namespace asuka.Mappings
+{
+    public static class ContractToGalleryResultModelMapping
+    {
+        public static GalleryResult ToGalleryResult(this GalleryResponse response)
+        {
+            return new()
+            {
+                Id = response.Id,
+                MediaId = response.MediaId,
+                Title = new GalleryTitleResult()
+                {
+                    Japanese = response.Title.Japanese,
+                    English = response.Title.English,
+                    Pretty = response.Title.Pretty
+                },
+                Images = response.Images.Images.ToGalleryImageResult(response.MediaId),
+                Artists = response.Tags.GetTagByGroup("artist"),
+                Parodies = response.Tags.GetTagByGroup("parody"),
+                Characters = response.Tags.GetTagByGroup("character"),
+                Tags = response.Tags.GetTagByGroup("tag"),
+                Categories = response.Tags.GetTagByGroup("category"),
+                Languages = response.Tags.GetTagByGroup("language"),
+                TotalPages = response.TotalPages
+            };
+        }
+    }
+}
