@@ -6,7 +6,6 @@ using CommandLine.Text;
 using asuka.CommandOptions;
 using asuka.CommandParsers;
 using asuka.Output;
-using asuka.Services;
 
 namespace asuka
 {
@@ -16,6 +15,7 @@ namespace asuka
         private readonly IRecommendCommandService _recommendCommand;
         private readonly ISearchCommandService _searchCommand;
         private readonly IRandomCommandService _randomCommand;
+        private readonly IFileCommandService _fileCommand;
         private readonly IConsoleWriter _console;
 
         public AsukaApplication(
@@ -23,13 +23,15 @@ namespace asuka
             IRecommendCommandService recommendCommand,
             IConsoleWriter console,
             ISearchCommandService searchCommand,
-            IRandomCommandService randomCommand)
+            IRandomCommandService randomCommand,
+            IFileCommandService fileCommand)
         {
             _getCommand = getCommand;
             _recommendCommand = recommendCommand;
             _console = console;
             _searchCommand = searchCommand;
             _randomCommand = randomCommand;
+            _fileCommand = fileCommand;
         }
 
         public async Task RunAsync(IEnumerable<string> args)
@@ -37,12 +39,13 @@ namespace asuka
             try
             {
                 var parser = new Parser(with => with.HelpWriter = null)
-                    .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions>(args);
+                    .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
                 await parser.MapResult(
                     async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
                     async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts); },
                     async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
                     async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
+                    async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
                     errors =>
                     {
                         var helpText = HelpText.AutoBuild(parser, h =>

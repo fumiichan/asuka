@@ -35,6 +35,15 @@
       <Content Include="LICENSE">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Remove="asuka.Tests\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="asuka.Tests\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="asuka.Tests\**" />
     </ItemGroup>
 
 </Project>

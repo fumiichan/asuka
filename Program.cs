@@ -40,6 +40,7 @@ namespace asuka
             services.AddSingleton<IRecommendCommandService, RecommendCommandService>();
             services.AddSingleton<ISearchCommandService, SearchCommandService>();
             services.AddSingleton<IRandomCommandService, RandomCommandService>();
+            services.AddSingleton<IFileCommandService, FileCommandService>();
             services.AddValidatorsFromAssemblyContaining<Program>();
             
             // Configure refit
