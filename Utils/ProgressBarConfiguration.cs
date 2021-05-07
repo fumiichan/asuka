@@ -11,5 +11,12 @@ namespace asuka.Utils
             ForegroundColorDone = ConsoleColor.Green,
             ProgressCharacter = '-'
         };
+
+        public static readonly ProgressBarOptions CompressOption = new()
+        {
+            ForegroundColor = ConsoleColor.DarkRed,
+            ForegroundColorDone = ConsoleColor.Green,
+            ProgressCharacter = '#'
+        };
     }
 }

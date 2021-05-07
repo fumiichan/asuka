@@ -8,6 +8,7 @@ using Polly;
 using Refit;
 using asuka.Api;
 using asuka.CommandParsers;
+using asuka.Compression;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
@@ -41,6 +42,7 @@ namespace asuka
             services.AddSingleton<ISearchCommandService, SearchCommandService>();
             services.AddSingleton<IRandomCommandService, RandomCommandService>();
             services.AddSingleton<IFileCommandService, FileCommandService>();
+            services.AddSingleton<IPackArchiveToCbz, PackArchiveToCbz>();
             services.AddValidatorsFromAssemblyContaining<Program>();
             
             // Configure refit

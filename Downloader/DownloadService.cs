@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,14 +16,15 @@ namespace asuka.Downloader
     public class DownloadService : IDownloadService
     {
         private readonly IGalleryImage _api;
-        private readonly IConsoleWriter _console;
+        private readonly IPackArchiveToCbz _packer;
         private int _taskId;
         private string _destinationPath;
+        private string _folderName;
 
-        public DownloadService(IGalleryImage api, IConsoleWriter console)
+        public DownloadService(IGalleryImage api, IPackArchiveToCbz packer)
         {
             _api = api;
-            _console = console;
+            _packer = packer;
         }
 
         public async Task DownloadAsync(GalleryResult result,
@@ -63,59 +63,48 @@ namespace asuka.Downloader
 
             if (pack)
             {
-                _console.WriteLine("Compressing...");
-                await CompressAsync();
-                _console.SuccessLine("Successfully compressed.");
+                var imageFiles = Directory.GetFiles(_destinationPath);
+                await _packer.RunAsync(_folderName, imageFiles, $"{_destinationPath}.zip", bar);
             }
         }
 
-        private async Task CompressAsync()
+        private static string SantizeFolderName(string folderName)
         {
-            var archiveName = $"{_destinationPath}.cbz";
-            await ZipExtension.IsArchiveValid(archiveName);
+            var illegalRegex = new string(Path.GetInvalidFileNameChars()) + ".";
+            var regex = new Regex($"[{Regex.Escape(illegalRegex)}]");
+            var multiSpacingRegex = new Regex("[ ]{2,}");
 
-            await Task.Run(() =>
-            {
-                ZipFile.CreateFromDirectory(_destinationPath, archiveName);
-            });
+            folderName = regex.Replace(folderName, "");
+            folderName = folderName.Trim();
+            folderName = multiSpacingRegex.Replace(folderName, "");
+
+            return folderName;
         }
 
         private async Task PrepareAsync(GalleryResult result, string outputPath)
         {
-            // Use the current working directory if the path is empty.
-            var destinationPath = Environment.CurrentDirectory;
+            _taskId = result.Id;
+            _destinationPath = Environment.CurrentDirectory;
             if (!string.IsNullOrEmpty(outputPath))
             {
-                destinationPath = outputPath;
+                _destinationPath = outputPath;
             }
 
             var galleryTitle = string.IsNullOrEmpty(result.Title.Japanese)
                 ? (string.IsNullOrEmpty(result.Title.English) ? result.Title.Pretty : result.Title.English)
                 : result.Title.Japanese;
+            
+            var folderName = SantizeFolderName($"{result.Id} - {galleryTitle}");
+            _folderName = folderName;
 
-            // Sanitize the path and the folder name.
-            var illegalRegex = new string(Path.GetInvalidFileNameChars()) + ".";
-            var regex = new Regex($"[{Regex.Escape(illegalRegex)}]");
-            var multiSpacingRegex = new Regex("[ ]{2,}");
-
-            var folderName = regex.Replace($"{result.Id} - {galleryTitle}", "");
-            folderName = folderName.Trim();
-            folderName = multiSpacingRegex.Replace(folderName, "");
-
-            destinationPath = Path.Join(destinationPath, folderName);
-
-            // Check if the output path exists.
-            if (!Directory.Exists(destinationPath))
+            _destinationPath = Path.Join(_destinationPath, folderName);
+            if (!Directory.Exists(_destinationPath))
             {
-                Directory.CreateDirectory(destinationPath);
+                Directory.CreateDirectory(_destinationPath);
             }
-
-            // Write the metadata inside the directory.
-            var metadataPath = Path.Combine(destinationPath, "info.txt");
+            
+            var metadataPath = Path.Combine(_destinationPath, "info.txt");
             await File.WriteAllTextAsync(metadataPath, result.ToReadable());
-
-            _taskId = result.Id;
-            _destinationPath = destinationPath;
         }
 
         private async Task FetchImageAsync(int mediaId, GalleryImageResult page, IProgressBar bar)
