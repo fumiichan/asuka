@@ -11,7 +11,7 @@ namespace asuka.Mappings
             this IReadOnlyList<GalleryResult> response)
         {
             var selection = Prompt.MultiSelect("Select to download", response, response.Count,
-                valueSelector: (result) =>
+                textSelector: (result) =>
                 {
                     var title = string.IsNullOrEmpty(result.Title.Japanese)
                         ? (string.IsNullOrEmpty(result.Title.English) ? result.Title.Pretty : result.Title.English)

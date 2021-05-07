@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.Validators;
 using asuka.CommandOptions;
 
 namespace asuka.Validators
@@ -9,7 +8,7 @@ namespace asuka.Validators
         public SearchValidator()
         {
             RuleForEach(opts => opts.Queries)
-                .Custom(QueriesValidator);
+                .Must(query => !query.StartsWith("-"));
 
             RuleFor(opts => opts.Page)
                 .GreaterThan(0);
@@ -21,14 +20,6 @@ namespace asuka.Validators
             RuleForEach(opts => opts.PageRange)
                 .Matches(@"(>|<)?(=)?(\d+)")
                 .WithMessage("One or more arguments on your page range is wrong.");
-        }
-
-        private static void QueriesValidator(string query, CustomContext context)
-        {
-            if (query.StartsWith("-"))
-            {
-                context.AddFailure("Excluded tags should use exclude option.");
-            }
         }
     }
 }
