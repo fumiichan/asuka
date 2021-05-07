@@ -13,7 +13,7 @@
     <ItemGroup>
       <PackageReference Include="Colorful.Console" Version="1.2.15" />
       <PackageReference Include="CommandLineParser" Version="2.8.0" />
-      <PackageReference Include="FluentValidation" Version="9.5.3" />
+      <PackageReference Include="FluentValidation" Version="10.1.0" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.1.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
@@ -22,7 +22,7 @@
       <PackageReference Include="Refit" Version="6.0.38" />
       <PackageReference Include="Refit.HttpClientFactory" Version="6.0.38" />
       <PackageReference Include="Refit.Newtonsoft.Json" Version="6.0.38" />
-      <PackageReference Include="Sharprompt" Version="2.1.2" />
+      <PackageReference Include="Sharprompt" Version="2.2.1" />
       <PackageReference Include="ShellProgressBar" Version="5.1.0" />
     </ItemGroup>
 
