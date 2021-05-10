@@ -39,7 +39,6 @@ namespace asuka.CommandParsers
             var response = await _api.FetchSingleAsync(opts.Input.ToString());
             _console.WriteLine(response.ToReadable());
 
-            // Do not continue if the user specifies to read only.
             if (opts.ReadOnly)
             {
                 return;

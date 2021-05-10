@@ -24,22 +24,21 @@ namespace asuka.CommandParsers
         public async Task RunAsync(RandomOptions opts)
         {
             var totalNumbers = await _api.GetTotalGalleryCountAsync();
-            
+
             while (true)
             {
                 var randomCode = new Random().Next(1, totalNumbers);
                 var response = await _api.FetchSingleAsync(randomCode.ToString());
-                
+
                 _console.WriteLine(response.ToReadable());
 
                 var prompt = Prompt.Confirm("Are you sure to download this one?", true);
                 if (!prompt)
                 {
-                    // Wait for a second. This would alleviate requests to the server.
                     await Task.Delay(1000);
                     continue;
                 }
-                
+
                 await _download.DownloadAsync(response, opts.Output, opts.Pack);
                 break;
             }

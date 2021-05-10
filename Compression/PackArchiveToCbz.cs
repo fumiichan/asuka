@@ -67,10 +67,13 @@ namespace asuka.Compression
 
             await Task.Run(() =>
             {
-                if (IsArchiveValid(inputArchive)) return;
-                
+                if (IsArchiveValid(inputArchive))
+                {
+                    return;
+                }
+
                 childBar.WriteErrorLine("Archive appears to be invalid. Deleting...");
-                // TODO: Might fail.
+                // Deletion might fail.
                 File.Delete(inputArchive);
             });
         }

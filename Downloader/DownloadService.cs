@@ -64,7 +64,7 @@ namespace asuka.Downloader
             if (pack)
             {
                 var imageFiles = Directory.GetFiles(_destinationPath);
-                await _packer.RunAsync(_folderName, imageFiles, $"{_destinationPath}.zip", bar);
+                await _packer.RunAsync(_folderName, imageFiles, $"{_destinationPath}.cbz", bar);
             }
         }
 
@@ -93,7 +93,7 @@ namespace asuka.Downloader
             var galleryTitle = string.IsNullOrEmpty(result.Title.Japanese)
                 ? (string.IsNullOrEmpty(result.Title.English) ? result.Title.Pretty : result.Title.English)
                 : result.Title.Japanese;
-            
+
             var folderName = SantizeFolderName($"{result.Id} - {galleryTitle}");
             _folderName = folderName;
 
@@ -102,7 +102,7 @@ namespace asuka.Downloader
             {
                 Directory.CreateDirectory(_destinationPath);
             }
-            
+
             var metadataPath = Path.Combine(_destinationPath, "info.txt");
             await File.WriteAllTextAsync(metadataPath, result.ToReadable());
         }

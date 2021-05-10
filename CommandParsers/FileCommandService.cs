@@ -41,7 +41,7 @@ namespace asuka.CommandParsers
             }
 
             var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8);
-            var validUrls = await FilterValidUrl(textFile);
+            var validUrls = FilterValidUrls(textFile);
 
             if (validUrls.Count == 0)
             {
@@ -50,7 +50,7 @@ namespace asuka.CommandParsers
             }
 
             using var progress = new ProgressBar(
-                validUrls.Count, 
+                validUrls.Count,
                 "downloading from text file...",
                 ProgressBarConfiguration.BarOption);
 
@@ -64,18 +64,15 @@ namespace asuka.CommandParsers
             }
         }
 
-        private static async Task<IReadOnlyList<string>> FilterValidUrl(IEnumerable<string> urls)
+        private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
         {
-            return await Task.Run(() =>
+            return urls.Where(url =>
             {
-                return urls.Where(x =>
-                {
-                    const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
-                    var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
+                const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
+                var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
 
-                    return regexp.IsMatch(x);
-                }).ToList();
-            });
+                return regexp.IsMatch(url);
+            }).ToList();
         }
 
         private static bool IsFileExceedingToFileSizeLimit(string inputFile)

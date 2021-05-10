@@ -8,10 +8,10 @@ namespace asuka.Api
     public interface IGalleryApi
     {
         [Get("/api/gallery/{code}")]
-        Task<GalleryResponse> FetchSingleAsync(string code);
+        Task<GalleryResponse> FetchSingle(string code);
 
         [Get("/api/gallery/{code}/related")]
-        Task<GalleryListResponse> FetchRecommendedAsync(string code);
+        Task<GalleryListResponse> FetchRecommended(string code);
 
         [Get("/api/galleries/all?page=1")]
         Task<GalleryListResponse> FetchAll();

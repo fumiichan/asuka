@@ -19,13 +19,13 @@ namespace asuka.Services
 
         public async Task<GalleryResult> FetchSingleAsync(string code)
         {
-            var result = await _api.FetchSingleAsync(code);
+            var result = await _api.FetchSingle(code);
             return result.ToGalleryResult();
         }
 
         public async Task<IReadOnlyList<GalleryResult>> FetchRecommendedAsync(string code)
         {
-            var result = await _api.FetchRecommendedAsync(code);
+            var result = await _api.FetchRecommended(code);
             return result.Result.Select(x => x.ToGalleryResult()).ToList();
         }
 
