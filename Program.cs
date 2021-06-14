@@ -44,14 +44,18 @@ namespace asuka
             services.AddSingleton<IFileCommandService, FileCommandService>();
             services.AddSingleton<IPackArchiveToCbz, PackArchiveToCbz>();
             services.AddValidatorsFromAssemblyContaining<Program>();
-            
-            // Configure refit
+
+            ConfigureRefit(services, configuration);
+        }
+
+        private static void ConfigureRefit(IServiceCollection services, IConfiguration configuration)
+        {
             var configureRefit = new RefitSettings
             {
                 ContentSerializer = new NewtonsoftJsonContentSerializer()
             };
             services.AddRefitClient<IGalleryApi>(configureRefit)
-                .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new []
+                .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromSeconds(1),
                     TimeSpan.FromSeconds(5),
@@ -66,7 +70,7 @@ namespace asuka
             services.AddRefitClient<IGalleryImage>()
                 .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                    (exception, timeSpan, context) =>
+                    (exception, timeSpan, _) =>
                     {
                         Colorful.Console.WriteLine($"Download will retry in {timeSpan}", Color.Yellow);
                         Colorful.Console.WriteLine($"Exception: {exception.Exception.Message}", Color.Yellow);
