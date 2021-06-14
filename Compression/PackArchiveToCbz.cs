@@ -15,7 +15,7 @@ namespace asuka.Compression
             var progressTheme = ProgressBarConfiguration.CompressOption;
             var childBar = parentBar.Spawn(imageFiles.Length, "compressing...", progressTheme);
 
-            await ValidateArchive(output, childBar);
+            await ValidateArchive(output, childBar).ConfigureAwait(false);
 
             var fileMode = File.Exists(output) ? FileMode.Open : FileMode.Create;
             var zipMode = File.Exists(output) ? ZipArchiveMode.Update : ZipArchiveMode.Create;
@@ -27,7 +27,8 @@ namespace asuka.Compression
 
             foreach (var image in imageFiles)
             {
-                await AddOrUpdate(archive, folderName, image, zipMode);
+                await AddOrUpdate(archive, folderName, image, zipMode)
+                    .ConfigureAwait(false);
                 childBar.Tick();
             }
         }
@@ -39,7 +40,8 @@ namespace asuka.Compression
 
             if (mode == ZipArchiveMode.Create)
             {
-                await WriteEntry(archive, entryName, imageFile);
+                await WriteEntry(archive, entryName, imageFile)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -54,7 +56,8 @@ namespace asuka.Compression
             var entry = archive.CreateEntry(entryName);
             await using var writer = new BinaryWriter(entry.Open());
 
-            var fileContents = await File.ReadAllBytesAsync(inputFile);
+            var fileContents = await File.ReadAllBytesAsync(inputFile)
+                .ConfigureAwait(false);
             writer.Write(fileContents);
         }
 
@@ -75,7 +78,7 @@ namespace asuka.Compression
                 childBar.WriteErrorLine("Archive appears to be invalid. Deleting...");
                 // Deletion might fail.
                 File.Delete(inputArchive);
-            });
+            }).ConfigureAwait(false);
         }
 
         private static bool IsArchiveValid(string inputArchive)

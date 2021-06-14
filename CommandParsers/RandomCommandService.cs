@@ -35,7 +35,7 @@ namespace asuka.CommandParsers
                 var prompt = Prompt.Confirm("Are you sure to download this one?", true);
                 if (!prompt)
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(1000).ConfigureAwait(false);
                     continue;
                 }
 

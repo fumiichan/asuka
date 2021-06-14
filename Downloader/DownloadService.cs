@@ -33,7 +33,7 @@ namespace asuka.Downloader
             IProgressBar progress = null)
         {
             // Prepare the download.
-            await PrepareAsync(result, outputPath);
+            await PrepareAsync(result, outputPath).ConfigureAwait(false);
 
             // If the progress is null, we create a new one.
             var progressTheme = ProgressBarConfiguration.BarOption;
@@ -48,18 +48,18 @@ namespace asuka.Downloader
 
             foreach (var page in result.Images)
             {
-                await throttler.WaitAsync();
+                await throttler.WaitAsync().ConfigureAwait(false);
 
                 var referenceBar = bar;
                 var referenceThrottler = throttler;
                 taskList.Add(Task.Run(async () =>
                 {
-                    await FetchImageAsync(result.MediaId, page, referenceBar);
+                    await FetchImageAsync(result.MediaId, page, referenceBar).ConfigureAwait(false);
                     referenceThrottler.Release();
                 }));
             }
 
-            await Task.WhenAll(taskList);
+            await Task.WhenAll(taskList).ConfigureAwait(false);
 
             if (pack)
             {
@@ -104,7 +104,8 @@ namespace asuka.Downloader
             }
 
             var metadataPath = Path.Combine(_destinationPath, "info.txt");
-            await File.WriteAllTextAsync(metadataPath, result.ToReadable());
+            await File.WriteAllTextAsync(metadataPath, result.ToReadable())
+                .ConfigureAwait(false);
         }
 
         private async Task FetchImageAsync(int mediaId, GalleryImageResult page, IProgressBar bar)
@@ -113,7 +114,8 @@ namespace asuka.Downloader
             var imageContents = await image.ReadAsByteArrayAsync();
 
             var filePath = Path.Combine(_destinationPath, page.Filename);
-            await File.WriteAllBytesAsync(filePath, imageContents);
+            await File.WriteAllBytesAsync(filePath, imageContents)
+                .ConfigureAwait(false);
 
             bar.Tick($"[downloading] id: {_taskId}");
         }

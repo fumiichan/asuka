@@ -40,7 +40,8 @@ namespace asuka.CommandParsers
                 return;
             }
 
-            var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8);
+            var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8)
+                .ConfigureAwait(false);
             var validUrls = FilterValidUrls(textFile);
 
             if (validUrls.Count == 0)
