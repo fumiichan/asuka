@@ -31,7 +31,7 @@ namespace asuka.CommandParsers
             _console = console;
             _download = download;
         }
-        
+
         public async Task RunAsync(SearchOptions opts)
         {
             var validationResult = await _validator.ValidateAsync(opts);
@@ -43,7 +43,7 @@ namespace asuka.CommandParsers
                 }
                 return;
             }
-            
+
             // Construct search query
             var searchQueries = new List<string>();
             searchQueries.AddRange(opts.Queries);
@@ -51,7 +51,7 @@ namespace asuka.CommandParsers
             searchQueries.AddRange(opts.DateRange.Select(d => $"uploaded:{d}"));
             searchQueries.AddRange(opts.PageRange.Select(p => $"pages:{p}"));
 
-            var query = new SearchQuery()
+            var query = new SearchQuery
             {
                 Queries = string.Join(" ", searchQueries),
                 PageNumber = 1,
@@ -66,7 +66,7 @@ namespace asuka.CommandParsers
             }
 
             var selection = responses.FilterByUserSelected();
-            
+
             // Initialise the Progress bar.
             using var progress = new ProgressBar(selection.Count, $"[task] search download",
                 ProgressBarConfiguration.BarOption);

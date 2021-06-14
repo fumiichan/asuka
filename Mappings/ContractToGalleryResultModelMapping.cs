@@ -11,13 +11,13 @@ namespace asuka.Mappings
             {
                 Id = response.Id,
                 MediaId = response.MediaId,
-                Title = new GalleryTitleResult()
+                Title = new GalleryTitleResult
                 {
                     Japanese = response.Title.Japanese,
                     English = response.Title.English,
                     Pretty = response.Title.Pretty
                 },
-                Images = response.Images.Images.ToGalleryImageResult(response.MediaId),
+                Images = response.Images.Images.ToGalleryImageResult(),
                 Artists = response.Tags.GetTagByGroup("artist"),
                 Parodies = response.Tags.GetTagByGroup("parody"),
                 Characters = response.Tags.GetTagByGroup("character"),

@@ -7,7 +7,7 @@ namespace asuka.Mappings
     public static class ContractToGalleryTagResultModelMapping
     {
         public static IReadOnlyList<string> GetTagByGroup(
-            this IReadOnlyList<GalleryTagResponse> response,
+            this IEnumerable<GalleryTagResponse> response,
             string filter)
         {
             return response

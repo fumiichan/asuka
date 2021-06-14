@@ -8,8 +8,7 @@ namespace asuka.Mappings
     public static class ContractToGalleryImageResultModelMapping
     {
         public static IReadOnlyList<GalleryImageResult> ToGalleryImageResult(
-            this IReadOnlyList<GalleryImageResponse> response,
-            int mediaId)
+            this IReadOnlyList<GalleryImageResponse> response)
         {
             return response.Select((value, index) =>
             {
@@ -25,7 +24,7 @@ namespace asuka.Mappings
                 var pageNumberFormatted = pageNumber.ToString($"D{response.Count.ToString().Length}");
                 var filename = $"{pageNumberFormatted}{extension}";
 
-                return new GalleryImageResult()
+                return new GalleryImageResult
                 {
                     ServerFilename = $"{pageNumber}{extension}",
                     Filename = filename
