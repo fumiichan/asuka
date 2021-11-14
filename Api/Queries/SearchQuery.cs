@@ -6,11 +6,11 @@ namespace asuka.Api.Queries
     {
         [AliasAs("query")]
         public string Queries { get; init; }
-        
+
         [AliasAs("page")]
         public int PageNumber { get; init; }
-        
+
         [AliasAs("sort")]
-        public SearchSortOptions Sort { get; init; }
+        public string Sort { get; init; }
     }
 }

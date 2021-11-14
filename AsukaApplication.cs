@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CommandLine;
-using CommandLine.Text;
 using asuka.CommandOptions;
 using asuka.CommandParsers;
 using asuka.Output;
@@ -38,7 +37,7 @@ namespace asuka
         {
             try
             {
-                var parser = new Parser(with => with.HelpWriter = null)
+                var parser = Parser.Default
                     .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
                 await parser.MapResult(
                     async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
@@ -46,17 +45,7 @@ namespace asuka
                     async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
                     async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
                     async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
-                    errors =>
-                    {
-                        var helpText = HelpText.AutoBuild(parser, h =>
-                        {
-                            h.AddEnumValuesToHelpText = true;
-                            return h;
-                        }, e => e);
-
-                        Console.WriteLine(helpText);
-                        return Task.FromResult(1);
-                    });
+                    _ => Task.FromResult(1));
                 _console.SuccessLine("Task completed.");
             }
             catch (Exception err)
