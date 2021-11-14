@@ -54,7 +54,7 @@ namespace asuka.CommandParsers
             var query = new SearchQuery
             {
                 Queries = string.Join(" ", searchQueries),
-                PageNumber = 1,
+                PageNumber = opts.Page,
                 Sort = opts.Sort
             };
 
