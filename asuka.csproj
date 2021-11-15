@@ -8,6 +8,14 @@
         <ApplicationIcon>appicon.ico</ApplicationIcon>
         <Configurations>Release;Debug</Configurations>
         <Platforms>x64</Platforms>
+        <Version>1.1.0</Version>
+        <Company>Aiko Fujimoto</Company>
+        <Description>Cross Platform nhentai downloader</Description>
+        <Copyright>Copyright 2021 Aiko Fujimoto</Copyright>
+        <Authors>Aiko Fujimoto</Authors>
+        <RepositoryUrl>https://github.com/aikoofujimotoo/asuka</RepositoryUrl>
+        <PackageIcon>AppIcon.png</PackageIcon>
+        <PackageIconUrl />
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,14 +50,9 @@
       <Content Include="docs/**">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Include="Resources\AppIcon.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
     </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="asuka.Tests\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="asuka.Tests\**" />
-    </ItemGroup>
-
 </Project>
