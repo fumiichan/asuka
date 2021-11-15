@@ -21,6 +21,10 @@ namespace asuka.Validators
             RuleForEach(opts => opts.PageRange)
                 .Matches(@"(>|<)?(=)?(\d+)")
                 .WithMessage("One or more arguments on your page range is wrong.");
+
+            RuleFor(opts => opts.Sort)
+                .Matches(@"popular-?(week|today)?|date")
+                .WithMessage("Invalid Sort option.");
         }
     }
 }
