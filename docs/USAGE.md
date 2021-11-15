@@ -4,17 +4,17 @@
 
 Asuka has 4 main Commands:
 
--   `get` is used to retrieve and download doujinshi either by code or a collection of links in a text file.
--   `recommend` is used to get recommendations on specific doujinshi.
--   `search` is used to search a doujinshi.
--   `random` is used to get really a random doujinshi.
+-   `get` is used to retrieve and download manga either by code or a collection of links in a text file.
+-   `recommend` is used to get recommendations on specific manga.
+-   `search` is used to search a manga.
+-   `random` is used to get really a random manga.
 
 ### `get`
 
 Usage:
 
 ```
-asuka get <-i|--input <file|url>> [-r|--readonly] [-p|--pack] [-o|--output <path>]
+asuka get <-i|--input <code|url>> [-r|--readonly] [-p|--pack] [-o|--output <path>]
 ```
 
 | Option                      | Required? | Description                                        |
@@ -53,7 +53,7 @@ asuka get -i https://nhentai.net/g/177013 -p
 Usage:
 
 ```
-asuka recommend <-i|--input <url>> [-p|--pack] [-o|--output <path>]
+asuka recommend <-i|--input <code>> [-p|--pack] [-o|--output <path>]
 ```
 
 | Option                  | Required? | Description                                        |
@@ -81,28 +81,30 @@ asuka search [options]
 | `--pageRange <range>`        | No        | Filter for specifying minimum page count in gallery. |
 | `--dateRange <timeframe>`    | No        | Filter for specifying exact timeframe                |
 | `-p \| --page <num>`         | Yes       | Page Number.                                         |
-| `--pack`                     | No        | Pack the downloaded doujinshi as CBZ archive         |
+| `--pack`                     | No        | Pack the downloaded manga as CBZ archive             |
+| `--sort <sort>`              | No        | Sort results. (default: `date`)                      |
 | `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
 
-**Usage Examples**
+**Sort Options:**
 
-```
-asuka search -q maid "\"big breasts\"" --page 1
-```
+| Sort                         | Description                                             |
+|------------------------------|---------------------------------------------------------|
+| `date`                       | Sorts result from newest to oldest.                     |
+| `popular-week`               | Sorts result from most popular to less popular (Weekly) |
+| `popular-today`              | Sorts result from most popular to less popular (Today)  |
+| `popular`                    | Sorts result from most popular to less popular          |
 
-Searching with finer queries:
-
-Finer queries are
+**Finer Queries:**
 
 | Filter            | Type          | Description                                 | Examples                                     |
 |-------------------|---------------|---------------------------------------------|----------------------------------------------|
-| `category`        | `string`      | Specify the doujin category                 | `category:manga`                             |
+| `category`        | `string`      | Specify the manga category                  | `category:manga`                             |
 | `artist`          | `string`      | Specify artist to filter                    | `artist:shindol`                             |
-| `parody`          | `string`      | Specify parody of the doujin                | `parody:"to love ru"`                        |
-| `tag`             | `string`      | Specify a tag                               | `tag:"big breasts"`                          |
-| `character`       | `string`      | Specify a character in the doujin           | `character:astolfo`                          |
-| `language`        | `string`      | Specify language of the doujin              | `language:english`                           |
-| `group`           | `string`      | Specify the group (or circle) of the doujin | `group:poyopoyosky`                          |
+| `parody`          | `string`      | Specify parody of the manga                 | `parody:"to love ru"`                        |
+| `tag`             | `string`      | Specify a tag                               | `tag:"wholesome"`                            |
+| `character`       | `string`      | Specify a character in the manga            | `character:astolfo`                          |
+| `language`        | `string`      | Specify language of the manga               | `language:english`                           |
+| `group`           | `string`      | Specify the group (or circle) of the manga  | `group:poyopoyosky`                          |
 
 **Remarks**
 
@@ -125,5 +127,5 @@ asuka random [-p|--pack] [-o|--output <path>]
 
 | Option                     | Required? | Description                                  |
 |----------------------------|-----------|----------------------------------------------|
-| `--pack`                   | No        | Pack the downloaded doujinshi as CBZ archive |
+| `--pack`                   | No        | Pack the downloaded manga as CBZ archive     |
 | `-o \| --output <path>`    | No        | Path to save the downloaded doujinshi.       |
