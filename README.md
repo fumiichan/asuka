@@ -8,6 +8,8 @@
 
 Cross-platform nhentai downloader on Console.
 
+**This branch is on WIP and will transition to .NET 6**
+
 ## Requirements
 
 -   [.NET 5.0 Runtime](https://dotnet.microsoft.com/download/dotnet/5.0)
