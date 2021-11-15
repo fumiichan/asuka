@@ -31,6 +31,28 @@ namespace asuka.Output
       return builder.ToString();
     }
 
+    public static TachiyomiDetails ToTachiyomiMetadata(this GalleryResult result)
+    {
+      var metadata = new TachiyomiDetails
+      {
+        Title = GetTitle(result.Title),
+        Author = SafeJoin(result.Artists),
+        Artist = SafeJoin(result.Artists),
+        Description = $"Source: https://nhentai.net/g/{result.Id}",
+        Genres = result.Tags
+      };
+
+      return metadata;
+    }
+
+    private static string GetTitle(GalleryTitleResult titles)
+    {
+      // By default use the Pretty name, if not present then use English
+      // if not then Japanese
+      if (!string.IsNullOrEmpty(titles.Pretty)) return titles.Pretty;
+      return !string.IsNullOrEmpty(titles.English) ? titles.English : titles.Japanese;
+    }
+
     private static string SafeJoin(IEnumerable<string> strings)
     {
       return strings == null ? string.Empty : string.Join(", ", strings);

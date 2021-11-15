@@ -35,7 +35,13 @@
       <Content Include="LICENSE">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
-      <None Remove="asuka.Tests\**" />
+      <None Remove="README.md" />
+      <Content Include="README.md">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Include="docs/**">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

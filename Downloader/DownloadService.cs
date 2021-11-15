@@ -10,6 +10,7 @@ using asuka.Compression;
 using asuka.Models;
 using asuka.Output;
 using asuka.Utils;
+using Newtonsoft.Json;
 
 namespace asuka.Downloader
 {
@@ -97,14 +98,28 @@ namespace asuka.Downloader
             var folderName = SantizeFolderName($"{result.Id} - {galleryTitle}");
             _folderName = folderName;
 
-            _destinationPath = Path.Join(_destinationPath, folderName);
+            var mangaRootPath = Path.Join(_destinationPath, folderName);
+            if (!Directory.Exists(mangaRootPath))
+            {
+                Directory.CreateDirectory(mangaRootPath);
+            }
+
+            // For tachiyomi, we gonna nest the name inside another folder named ch1
+            _destinationPath = Path.Join(mangaRootPath, "ch1");
             if (!Directory.Exists(_destinationPath))
             {
                 Directory.CreateDirectory(_destinationPath);
             }
 
-            var metadataPath = Path.Combine(_destinationPath, "info.txt");
+            var metadataPath = Path.Combine(mangaRootPath, "info.txt");
             await File.WriteAllTextAsync(metadataPath, result.ToReadable())
+                .ConfigureAwait(false);
+
+            // Generate Tachiyomi details.json
+            var tachiyomiMetadataPath = Path.Combine(mangaRootPath, "details.json");
+            var tachiyomiMetadata = JsonConvert
+                .SerializeObject(result.ToTachiyomiMetadata(), Formatting.Indented);
+            await File.WriteAllTextAsync(tachiyomiMetadataPath, tachiyomiMetadata)
                 .ConfigureAwait(false);
         }
 
