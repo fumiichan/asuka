@@ -9,4 +9,9 @@
     
      steps:
        - checkout
-       - run: dotnet build -c Release
+       - run:
+            name: Restore nuget packages
+            command: dotnet restore
+       - run:
+            name: Attempt to build Release
+            command: dotnet build -c Release
