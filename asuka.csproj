@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <AssemblyVersion>1.1.0.0</AssemblyVersion>
         <FileVersion>1.1.0.0</FileVersion>
         <ApplicationIcon>appicon.ico</ApplicationIcon>
@@ -16,6 +16,7 @@
         <RepositoryUrl>https://github.com/aikoofujimotoo/asuka</RepositoryUrl>
         <PackageIcon>AppIcon.png</PackageIcon>
         <PackageIconUrl />
+        <PackageLicenseFile>D:\Code\Projects\asuka\LICENSE</PackageLicenseFile>
     </PropertyGroup>
 
     <ItemGroup>
