@@ -11,7 +11,7 @@
        - checkout
        - run:
             name: Install .NET 6 Manually
-            command: . { iwr -useb https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1 } | iex; -Architecture auto -Version latest -Channel LTS -Quality signed
+            command: . { iwr -useb https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1 } | iex;
        - run:
             name: Restore nuget packages
             command: dotnet restore
