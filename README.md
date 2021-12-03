@@ -8,11 +8,13 @@
 
 Cross-platform nhentai downloader on Console.
 
+**This branch is on WIP and will transition to .NET 6**
+
 ## Requirements
 
--   [.NET 5.0 Runtime](https://dotnet.microsoft.com/download/dotnet/5.0)
+-   [.NET 6.0 Runtime](https://dotnet.microsoft.com/download/dotnet/6.0)
 
--   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/5.0/5.0-supported-os.md)*.
+-   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/6.0/supported-os.md)*.
     -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from Source section for compiling builds for these platforms.*
 
 ## Usage
@@ -25,7 +27,7 @@ If you want in-depth examplaination and examples, see [here](docs/USAGE.md).
 
 ### What do I need
 
--   [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
+-   [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 
 ### Compiling
 
@@ -37,7 +39,7 @@ To compile, simply use your Terminal of your choice and navigate towards the asu
 
     You can use `--configuration` to specify the configuration to use. Available configurations are `Debug` and `Release`. For more information, check the [`dotnet build` documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
 
-You'll see the built packages on `bin\Debug\net5.0` or `bin\Release\net5.0` depending on the build configuration you used.
+You'll see the built packages on `bin\Debug\net6.0` or `bin\Release\net6.0` depending on the build configuration you used.
 
 ### License
 
