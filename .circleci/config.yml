@@ -1,7 +1,7 @@
 ﻿ version: 2.1
 
  orbs:
-  win: circleci/windows@2.2.0
+  win: circleci/windows@2.4.1
 
  jobs:
    build:
@@ -9,4 +9,4 @@
     
      steps:
        - checkout
-       - run: dotnet build
+       - run: dotnet build -c Release
