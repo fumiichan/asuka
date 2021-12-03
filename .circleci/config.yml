@@ -4,17 +4,14 @@
   win: circleci/windows@2.4.1
 
  jobs:
-   build:
-     executor: win/default     
-    
-     steps:
-       - checkout
-       - run:
-            name: Install .NET 6 Manually
-            command: . { iwr -useb https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1 } | iex;
-       - run:
-            name: Restore nuget packages
-            command: dotnet restore
-       - run:
-            name: Attempt to build Release
-            command: dotnet build -c Release
+    build:
+        docker:
+            - image: mcr.microsoft.com/dotnet/sdk:6.0
+        steps:
+            - checkout
+            - run:
+                name: Restore packages
+                command: dotnet restore
+            - run:
+                name: Build
+                command: dotnet build -c Release
