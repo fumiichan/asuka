@@ -8,6 +8,8 @@
 
 Cross-platform nhentai downloader on Console.
 
+**Use .NET 6 builds for latest updates. If your PC supports .NET 5 before, then your PC *should* also support .NET 6.**
+
 ## Requirements
 
 -   [.NET 5.0 Runtime](https://dotnet.microsoft.com/download/dotnet/5.0)
