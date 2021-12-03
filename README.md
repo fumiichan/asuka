@@ -39,7 +39,7 @@ To compile, simply use your Terminal of your choice and navigate towards the asu
 
     You can use `--configuration` to specify the configuration to use. Available configurations are `Debug` and `Release`. For more information, check the [`dotnet build` documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
 
-You'll see the built packages on `bin\Debug\net5.0` or `bin\Release\net5.0` depending on the build configuration you used.
+You'll see the built packages on `bin\Debug\net6.0` or `bin\Release\net6.0` depending on the build configuration you used.
 
 ### License
 
