@@ -9,6 +9,7 @@ using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
+using Microsoft.Extensions.Configuration;
 using ShellProgressBar;
 
 namespace asuka.CommandParsers;
@@ -26,7 +27,7 @@ public class FileCommandService : IFileCommandService
         _download = download;
     }
 
-    public async Task RunAsync(FileCommandOptions opts)
+    public async Task RunAsync(FileCommandOptions opts, IConfiguration configuration)
     {
         if (!File.Exists(opts.FilePath))
         {
@@ -55,12 +56,14 @@ public class FileCommandService : IFileCommandService
             "downloading from text file...",
             ProgressBarConfiguration.BarOption);
 
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+
         foreach (var url in validUrls)
         {
             var code = Regex.Match(url, @"\d+").Value;
             var response = await _api.FetchSingleAsync(code);
 
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
             progress.Tick();
         }
     }

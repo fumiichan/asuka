@@ -10,6 +10,7 @@ using asuka.Mappings;
 using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace asuka.CommandParsers;
 
@@ -32,7 +33,7 @@ public class SearchCommandService : ISearchCommandService
         _download = download;
     }
 
-    public async Task RunAsync(SearchOptions opts)
+    public async Task RunAsync(SearchOptions opts, IConfiguration configuration)
     {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
@@ -71,9 +72,11 @@ public class SearchCommandService : ISearchCommandService
         using var progress = new ProgressBar(selection.Count, $"[task] search download",
             ProgressBarConfiguration.BarOption);
 
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+
         foreach (var response in selection)
         {
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
             progress.Tick();
         }
     }

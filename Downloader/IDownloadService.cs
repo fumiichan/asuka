@@ -6,5 +6,10 @@ namespace asuka.Downloader;
 
 public interface IDownloadService
 {
-  Task DownloadAsync(GalleryResult result, string outputPath, bool pack, IProgressBar progress = null);
+  Task DownloadAsync(
+    GalleryResult result,
+    string outputPath,
+    bool pack,
+    bool useTachiyomiFolderLayout = false,
+    IProgressBar progress = null);
 }

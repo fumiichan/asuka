@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -5,6 +6,7 @@ using asuka.CommandOptions;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace asuka.CommandParsers;
 
@@ -27,7 +29,7 @@ public class GetCommandService : IGetCommandService
         _console = console;
     }
 
-    public async Task RunAsync(GetOptions opts)
+    public async Task RunAsync(GetOptions opts, IConfiguration configuration)
     {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
@@ -44,6 +46,7 @@ public class GetCommandService : IGetCommandService
             return;
         }
 
-        await _download.DownloadAsync(response, opts.Output, opts.Pack);
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+        await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout);
     }
 }

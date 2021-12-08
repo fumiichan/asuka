@@ -8,6 +8,7 @@ using asuka.Mappings;
 using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace asuka.CommandParsers;
 
@@ -30,7 +31,7 @@ public class RecommendCommandService : IRecommendCommandService
         _console = console;
     }
 
-    public async Task RunAsync(RecommendOptions opts)
+    public async Task RunAsync(RecommendOptions opts, IConfiguration configuration)
     {
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
@@ -47,9 +48,12 @@ public class RecommendCommandService : IRecommendCommandService
         using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
             ProgressBarConfiguration.BarOption);
 
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+
         foreach (var response in selection)
         {
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
             progress.Tick();
         }
     }

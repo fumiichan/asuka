@@ -28,7 +28,7 @@ internal class Program
         var serviceProvider = services.BuildServiceProvider();
 
         var app = serviceProvider.GetRequiredService<AsukaApplication>();
-        await app.RunAsync(args);
+        await app.RunAsync(args, configuration);
     }
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)

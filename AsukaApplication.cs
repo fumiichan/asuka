@@ -5,6 +5,7 @@ using CommandLine;
 using asuka.CommandOptions;
 using asuka.CommandParsers;
 using asuka.Output;
+using Microsoft.Extensions.Configuration;
 
 namespace asuka;
 
@@ -33,18 +34,18 @@ public class AsukaApplication
         _fileCommand = fileCommand;
     }
 
-    public async Task RunAsync(IEnumerable<string> args)
+    public async Task RunAsync(IEnumerable<string> args, IConfiguration configuration)
     {
         try
         {
             var parser = Parser.Default
                 .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
             await parser.MapResult(
-                async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
-                async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts); },
-                async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
-                async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
-                async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
+                async (GetOptions opts) => { await _getCommand.RunAsync(opts, configuration); },
+                async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts, configuration); },
+                async (SearchOptions opts) => { await _searchCommand.RunAsync(opts, configuration); },
+                async (RandomOptions opts) => { await _randomCommand.RunAsync(opts, configuration); },
+                async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts, configuration); },
                 _ => Task.FromResult(1));
             _console.SuccessLine("Task completed.");
         }

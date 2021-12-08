@@ -14,4 +14,9 @@ public interface ICommonOptions
         Required = false,
         HelpText = "Destination path for gallery download")]
     string Output { get; init; }
+
+    [Option("useTachiyomiLayout",
+        Required = false,
+        HelpText = "Uses Tachiyomi Folder Structure for Download")]
+    bool UseTachiyomiLayout { get; init; }
 }

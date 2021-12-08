@@ -8,4 +8,5 @@ public record RecommendOptions : ICommonOptions, IRequiresInputOption
     public int Input { get; init; }
     public bool Pack { get; init; }
     public string Output { get; init; }
+    public bool UseTachiyomiLayout { get; init; }
 }

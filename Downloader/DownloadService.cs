@@ -31,10 +31,11 @@ public class DownloadService : IDownloadService
     public async Task DownloadAsync(GalleryResult result,
         string outputPath,
         bool pack,
+        bool useTachiyomiFolderLayout = false,
         IProgressBar progress = null)
     {
         // Prepare the download.
-        await PrepareAsync(result, outputPath).ConfigureAwait(false);
+        await PrepareAsync(result, outputPath, useTachiyomiFolderLayout).ConfigureAwait(false);
 
         // If the progress is null, we create a new one.
         var progressTheme = ProgressBarConfiguration.BarOption;
@@ -82,7 +83,7 @@ public class DownloadService : IDownloadService
         return folderName;
     }
 
-    private async Task PrepareAsync(GalleryResult result, string outputPath)
+    private async Task PrepareAsync(GalleryResult result, string outputPath, bool useTachiyomiFolderLayout)
     {
         _taskId = result.Id;
         _destinationPath = Environment.CurrentDirectory;
@@ -99,13 +100,7 @@ public class DownloadService : IDownloadService
         _folderName = folderName;
 
         var mangaRootPath = Path.Join(_destinationPath, folderName);
-        if (!Directory.Exists(mangaRootPath))
-        {
-            Directory.CreateDirectory(mangaRootPath);
-        }
-
-        // For tachiyomi, we gonna nest the name inside another folder named ch1
-        _destinationPath = Path.Join(mangaRootPath, "ch1");
+        _destinationPath = useTachiyomiFolderLayout ? Path.Join(mangaRootPath, "ch1") : mangaRootPath;
         if (!Directory.Exists(_destinationPath))
         {
             Directory.CreateDirectory(_destinationPath);
@@ -116,11 +111,14 @@ public class DownloadService : IDownloadService
             .ConfigureAwait(false);
 
         // Generate Tachiyomi details.json
-        var tachiyomiMetadataPath = Path.Combine(mangaRootPath, "details.json");
-        var tachiyomiMetadata = JsonConvert
-            .SerializeObject(result.ToTachiyomiMetadata(), Formatting.Indented);
-        await File.WriteAllTextAsync(tachiyomiMetadataPath, tachiyomiMetadata)
-            .ConfigureAwait(false);
+        if (useTachiyomiFolderLayout)
+        {
+            var tachiyomiMetadataPath = Path.Combine(mangaRootPath, "details.json");
+            var tachiyomiMetadata = JsonConvert
+                .SerializeObject(result.ToTachiyomiMetadata(), Formatting.Indented);
+            await File.WriteAllTextAsync(tachiyomiMetadataPath, tachiyomiMetadata)
+                .ConfigureAwait(false);
+        }
     }
 
     private async Task FetchImageAsync(int mediaId, GalleryImageResult page, IProgressBar bar)

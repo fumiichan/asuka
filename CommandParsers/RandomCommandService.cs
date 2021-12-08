@@ -5,6 +5,7 @@ using asuka.CommandOptions;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace asuka.CommandParsers;
 
@@ -21,7 +22,7 @@ public class RandomCommandService : IRandomCommandService
         _console = console;
     }
 
-    public async Task RunAsync(RandomOptions opts)
+    public async Task RunAsync(RandomOptions opts, IConfiguration configuration)
     {
         var totalNumbers = await _api.GetTotalGalleryCountAsync();
 
@@ -39,7 +40,8 @@ public class RandomCommandService : IRandomCommandService
                 continue;
             }
 
-            await _download.DownloadAsync(response, opts.Output, opts.Pack);
+            var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout);
             break;
         }
     }
