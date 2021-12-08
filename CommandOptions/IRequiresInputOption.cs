@@ -1,12 +1,11 @@
 using CommandLine;
 
-namespace asuka.CommandOptions
+namespace asuka.CommandOptions;
+
+public interface IRequiresInputOption
 {
-    public interface IRequiresInputOption
-    {
-        [Option('i', "input",
-            Required = true,
-            HelpText = "Input URL")]
-        int Input { get; init; }
-    }
+    [Option('i', "input",
+        Required = true,
+        HelpText = "Input URL")]
+    int Input { get; init; }
 }

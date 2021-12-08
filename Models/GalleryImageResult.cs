@@ -1,8 +1,7 @@
-namespace asuka.Models
+namespace asuka.Models;
+
+public record GalleryImageResult
 {
-    public record GalleryImageResult
-    {
-        public string ServerFilename { get; init; }
-        public string Filename { get; init; }
-    }
+    public string ServerFilename { get; init; }
+    public string Filename { get; init; }
 }

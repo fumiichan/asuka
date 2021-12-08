@@ -1,9 +1,8 @@
-namespace asuka.Models
+namespace asuka.Models;
+
+public record GalleryTitleResult
 {
-    public record GalleryTitleResult
-    {
-        public string Japanese { get; init; }
-        public string English { get; init; }
-        public string Pretty { get; init; }
-    }
+    public string Japanese { get; init; }
+    public string English { get; init; }
+    public string Pretty { get; init; }
 }

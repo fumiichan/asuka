@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 using asuka.CommandOptions;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public interface IFileCommandService
 {
-    public interface IFileCommandService
-    {
-        Task RunAsync(FileCommandOptions opts);
-    }
+    Task RunAsync(FileCommandOptions opts);
 }

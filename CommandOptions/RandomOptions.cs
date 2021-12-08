@@ -1,12 +1,11 @@
 using CommandLine;
 using CommandLine.Text;
 
-namespace asuka.CommandOptions
+namespace asuka.CommandOptions;
+
+[Verb("random", HelpText = "Randomly pick a gallery.")]
+public record RandomOptions : ICommonOptions
 {
-    [Verb("random", HelpText = "Randomly pick a gallery.")]
-    public record RandomOptions : ICommonOptions
-    {
-        public bool Pack { get; init; }
-        public string Output { get; init; }
-    }
+    public bool Pack { get; init; }
+    public string Output { get; init; }
 }

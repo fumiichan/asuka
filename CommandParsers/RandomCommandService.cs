@@ -6,42 +6,41 @@ using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public class RandomCommandService : IRandomCommandService
 {
-    public class RandomCommandService : IRandomCommandService
+    private readonly IDownloadService _download;
+    private readonly IGalleryRequestService _api;
+    private readonly IConsoleWriter _console;
+
+    public RandomCommandService(IDownloadService download, IGalleryRequestService api, IConsoleWriter console)
     {
-        private readonly IDownloadService _download;
-        private readonly IGalleryRequestService _api;
-        private readonly IConsoleWriter _console;
+        _download = download;
+        _api = api;
+        _console = console;
+    }
 
-        public RandomCommandService(IDownloadService download, IGalleryRequestService api, IConsoleWriter console)
+    public async Task RunAsync(RandomOptions opts)
+    {
+        var totalNumbers = await _api.GetTotalGalleryCountAsync();
+
+        while (true)
         {
-            _download = download;
-            _api = api;
-            _console = console;
-        }
+            var randomCode = new Random().Next(1, totalNumbers);
+            var response = await _api.FetchSingleAsync(randomCode.ToString());
 
-        public async Task RunAsync(RandomOptions opts)
-        {
-            var totalNumbers = await _api.GetTotalGalleryCountAsync();
+            _console.WriteLine(response.ToReadable());
 
-            while (true)
+            var prompt = Prompt.Confirm("Are you sure to download this one?", true);
+            if (!prompt)
             {
-                var randomCode = new Random().Next(1, totalNumbers);
-                var response = await _api.FetchSingleAsync(randomCode.ToString());
-
-                _console.WriteLine(response.ToReadable());
-
-                var prompt = Prompt.Confirm("Are you sure to download this one?", true);
-                if (!prompt)
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    continue;
-                }
-
-                await _download.DownloadAsync(response, opts.Output, opts.Pack);
-                break;
+                await Task.Delay(1000).ConfigureAwait(false);
+                continue;
             }
+
+            await _download.DownloadAsync(response, opts.Output, opts.Pack);
+            break;
         }
     }
 }

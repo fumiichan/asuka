@@ -9,49 +9,48 @@ using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public class RecommendCommandService : IRecommendCommandService
 {
-    public class RecommendCommandService : IRecommendCommandService
+    private readonly IValidator<IRequiresInputOption> _validator;
+    private readonly IGalleryRequestService _api;
+    private readonly IDownloadService _download;
+    private readonly IConsoleWriter _console;
+
+    public RecommendCommandService(
+        IValidator<IRequiresInputOption> validator,
+        IGalleryRequestService api,
+        IDownloadService download,
+        IConsoleWriter console)
     {
-        private readonly IValidator<IRequiresInputOption> _validator;
-        private readonly IGalleryRequestService _api;
-        private readonly IDownloadService _download;
-        private readonly IConsoleWriter _console;
+        _validator = validator;
+        _api = api;
+        _download = download;
+        _console = console;
+    }
 
-        public RecommendCommandService(
-            IValidator<IRequiresInputOption> validator,
-            IGalleryRequestService api,
-            IDownloadService download,
-            IConsoleWriter console)
+    public async Task RunAsync(RecommendOptions opts)
+    {
+        var validator = await _validator.ValidateAsync(opts);
+        if (!validator.IsValid)
         {
-            _validator = validator;
-            _api = api;
-            _download = download;
-            _console = console;
+            _console.ErrorLine("Invalid gallery code.");
+            return;
         }
-        
-        public async Task RunAsync(RecommendOptions opts)
+
+        var responses = await _api.FetchRecommendedAsync(opts.Input.ToString());
+
+        var selection = responses.FilterByUserSelected();
+
+        // Initialise the Progress bar.
+        using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
+            ProgressBarConfiguration.BarOption);
+
+        foreach (var response in selection)
         {
-            var validator = await _validator.ValidateAsync(opts);
-            if (!validator.IsValid)
-            {
-                _console.ErrorLine("Invalid gallery code.");
-                return;
-            }
-            
-            var responses = await _api.FetchRecommendedAsync(opts.Input.ToString());
-
-            var selection = responses.FilterByUserSelected();
-            
-            // Initialise the Progress bar.
-            using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
-                ProgressBarConfiguration.BarOption);
-
-            foreach (var response in selection)
-            {
-                await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
-                progress.Tick();
-            }
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+            progress.Tick();
         }
     }
 }

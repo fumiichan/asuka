@@ -1,22 +1,21 @@
 using Newtonsoft.Json;
 
-namespace asuka.Api.Responses
+namespace asuka.Api.Responses;
+
+public record GalleryTagResponse
 {
-    public record GalleryTagResponse
-    {
-        [JsonProperty("id")]
-        public int Id { get; init; }
-        
-        [JsonProperty("type")]
-        public string Type { get; init; }
-        
-        [JsonProperty("name")]
-        public string Name { get; init; }
-        
-        [JsonProperty("url")]
-        public string Url { get; init; }
-        
-        [JsonProperty("count")]
-        public int Count { get; init; }
-    }
+    [JsonProperty("id")]
+    public int Id { get; init; }
+
+    [JsonProperty("type")]
+    public string Type { get; init; }
+
+    [JsonProperty("name")]
+    public string Name { get; init; }
+
+    [JsonProperty("url")]
+    public string Url { get; init; }
+
+    [JsonProperty("count")]
+    public int Count { get; init; }
 }

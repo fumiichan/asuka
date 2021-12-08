@@ -2,11 +2,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
-namespace asuka.Api
+namespace asuka.Api;
+
+public interface IGalleryImage
 {
-    public interface IGalleryImage
-    {
-        [Get("/galleries/{mediaId}/{filename}")]
-        Task<HttpContent> GetImage(string mediaId, string filename);
-    }
+    [Get("/galleries/{mediaId}/{filename}")]
+    Task<HttpContent> GetImage(string mediaId, string filename);
 }

@@ -1,16 +1,15 @@
 using Refit;
 
-namespace asuka.Api.Queries
+namespace asuka.Api.Queries;
+
+public record SearchQuery
 {
-    public record SearchQuery
-    {
-        [AliasAs("query")]
-        public string Queries { get; init; }
+    [AliasAs("query")]
+    public string Queries { get; init; }
 
-        [AliasAs("page")]
-        public int PageNumber { get; init; }
+    [AliasAs("page")]
+    public int PageNumber { get; init; }
 
-        [AliasAs("sort")]
-        public string Sort { get; init; }
-    }
+    [AliasAs("sort")]
+    public string Sort { get; init; }
 }

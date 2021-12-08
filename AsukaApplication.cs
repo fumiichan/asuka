@@ -6,54 +6,53 @@ using asuka.CommandOptions;
 using asuka.CommandParsers;
 using asuka.Output;
 
-namespace asuka
+namespace asuka;
+
+public class AsukaApplication
 {
-    public class AsukaApplication
+    private readonly IGetCommandService _getCommand;
+    private readonly IRecommendCommandService _recommendCommand;
+    private readonly ISearchCommandService _searchCommand;
+    private readonly IRandomCommandService _randomCommand;
+    private readonly IFileCommandService _fileCommand;
+    private readonly IConsoleWriter _console;
+
+    public AsukaApplication(
+        IGetCommandService getCommand,
+        IRecommendCommandService recommendCommand,
+        IConsoleWriter console,
+        ISearchCommandService searchCommand,
+        IRandomCommandService randomCommand,
+        IFileCommandService fileCommand)
     {
-        private readonly IGetCommandService _getCommand;
-        private readonly IRecommendCommandService _recommendCommand;
-        private readonly ISearchCommandService _searchCommand;
-        private readonly IRandomCommandService _randomCommand;
-        private readonly IFileCommandService _fileCommand;
-        private readonly IConsoleWriter _console;
+        _getCommand = getCommand;
+        _recommendCommand = recommendCommand;
+        _console = console;
+        _searchCommand = searchCommand;
+        _randomCommand = randomCommand;
+        _fileCommand = fileCommand;
+    }
 
-        public AsukaApplication(
-            IGetCommandService getCommand,
-            IRecommendCommandService recommendCommand,
-            IConsoleWriter console,
-            ISearchCommandService searchCommand,
-            IRandomCommandService randomCommand,
-            IFileCommandService fileCommand)
+    public async Task RunAsync(IEnumerable<string> args)
+    {
+        try
         {
-            _getCommand = getCommand;
-            _recommendCommand = recommendCommand;
-            _console = console;
-            _searchCommand = searchCommand;
-            _randomCommand = randomCommand;
-            _fileCommand = fileCommand;
+            var parser = Parser.Default
+                .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
+            await parser.MapResult(
+                async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
+                async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts); },
+                async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
+                async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
+                async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
+                _ => Task.FromResult(1));
+            _console.SuccessLine("Task completed.");
         }
-
-        public async Task RunAsync(IEnumerable<string> args)
+        catch (Exception err)
         {
-            try
-            {
-                var parser = Parser.Default
-                    .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
-                await parser.MapResult(
-                    async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
-                    async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts); },
-                    async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
-                    async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
-                    async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
-                    _ => Task.FromResult(1));
-                _console.SuccessLine("Task completed.");
-            }
-            catch (Exception err)
-            {
-                _console.ErrorLine($"An exception occured. Error: {err.Message}");
-                _console.ErrorLine("Full Error:");
-                _console.WriteLine(err);
-            }
+            _console.ErrorLine($"An exception occured. Error: {err.Message}");
+            _console.ErrorLine("Full Error:");
+            _console.WriteLine(err);
         }
     }
 }

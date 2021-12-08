@@ -11,71 +11,70 @@ using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
 
-namespace asuka.CommandParsers
-{
-    public class SearchCommandService : ISearchCommandService
-    {
-        private readonly IGalleryRequestService _api;
-        private readonly IValidator<SearchOptions> _validator;
-        private readonly IConsoleWriter _console;
-        private readonly IDownloadService _download;
+namespace asuka.CommandParsers;
 
-        public SearchCommandService(
-            IGalleryRequestService api,
-            IValidator<SearchOptions> validator,
-            IConsoleWriter console,
-            IDownloadService download)
+public class SearchCommandService : ISearchCommandService
+{
+    private readonly IGalleryRequestService _api;
+    private readonly IValidator<SearchOptions> _validator;
+    private readonly IConsoleWriter _console;
+    private readonly IDownloadService _download;
+
+    public SearchCommandService(
+        IGalleryRequestService api,
+        IValidator<SearchOptions> validator,
+        IConsoleWriter console,
+        IDownloadService download)
+    {
+        _api = api;
+        _validator = validator;
+        _console = console;
+        _download = download;
+    }
+
+    public async Task RunAsync(SearchOptions opts)
+    {
+        var validationResult = await _validator.ValidateAsync(opts);
+        if (!validationResult.IsValid)
         {
-            _api = api;
-            _validator = validator;
-            _console = console;
-            _download = download;
+            foreach (var error in validationResult.Errors)
+            {
+                _console.ErrorLine($"Validation Failure: {error.ErrorMessage}");
+            }
+            return;
         }
 
-        public async Task RunAsync(SearchOptions opts)
+        // Construct search query
+        var searchQueries = new List<string>();
+        searchQueries.AddRange(opts.Queries);
+        searchQueries.AddRange(opts.Exclude.Select(q => $"-{q}"));
+        searchQueries.AddRange(opts.DateRange.Select(d => $"uploaded:{d}"));
+        searchQueries.AddRange(opts.PageRange.Select(p => $"pages:{p}"));
+
+        var query = new SearchQuery
         {
-            var validationResult = await _validator.ValidateAsync(opts);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    _console.ErrorLine($"Validation Failure: {error.ErrorMessage}");
-                }
-                return;
-            }
+            Queries = string.Join(" ", searchQueries),
+            PageNumber = opts.Page,
+            Sort = opts.Sort
+        };
 
-            // Construct search query
-            var searchQueries = new List<string>();
-            searchQueries.AddRange(opts.Queries);
-            searchQueries.AddRange(opts.Exclude.Select(q => $"-{q}"));
-            searchQueries.AddRange(opts.DateRange.Select(d => $"uploaded:{d}"));
-            searchQueries.AddRange(opts.PageRange.Select(p => $"pages:{p}"));
+        var responses = await _api.SearchAsync(query);
+        if (responses.Count < 1)
+        {
+            _console.ErrorLine("No results found.");
+            return;
+        }
 
-            var query = new SearchQuery
-            {
-                Queries = string.Join(" ", searchQueries),
-                PageNumber = opts.Page,
-                Sort = opts.Sort
-            };
+        var selection = responses.FilterByUserSelected();
 
-            var responses = await _api.SearchAsync(query);
-            if (responses.Count < 1)
-            {
-                _console.ErrorLine("No results found.");
-                return;
-            }
+        // Initialise the Progress bar.
+        using var progress = new ProgressBar(selection.Count, $"[task] search download",
+            ProgressBarConfiguration.BarOption);
 
-            var selection = responses.FilterByUserSelected();
-
-            // Initialise the Progress bar.
-            using var progress = new ProgressBar(selection.Count, $"[task] search download",
-                ProgressBarConfiguration.BarOption);
-
-            foreach (var response in selection)
-            {
-                await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
-                progress.Tick();
-            }
+        foreach (var response in selection)
+        {
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+            progress.Tick();
         }
     }
 }

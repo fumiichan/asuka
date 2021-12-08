@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
 using asuka.CommandOptions;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public interface IRandomCommandService
 {
-    public interface IRandomCommandService
-    {
-        Task RunAsync(RandomOptions opts);
-    }
+    Task RunAsync(RandomOptions opts);
 }

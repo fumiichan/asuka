@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
 using asuka.CommandOptions;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public interface IGetCommandService
 {
-    public interface IGetCommandService
-    {
-        Task RunAsync(GetOptions opts);
-    }
+    Task RunAsync(GetOptions opts);
 }

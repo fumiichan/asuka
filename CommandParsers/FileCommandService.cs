@@ -11,75 +11,74 @@ using asuka.Services;
 using asuka.Utils;
 using ShellProgressBar;
 
-namespace asuka.CommandParsers
+namespace asuka.CommandParsers;
+
+public class FileCommandService : IFileCommandService
 {
-    public class FileCommandService : IFileCommandService
+    private readonly IGalleryRequestService _api;
+    private readonly IConsoleWriter _console;
+    private readonly IDownloadService _download;
+
+    public FileCommandService(IGalleryRequestService api, IConsoleWriter console, IDownloadService download)
     {
-        private readonly IGalleryRequestService _api;
-        private readonly IConsoleWriter _console;
-        private readonly IDownloadService _download;
+        _api = api;
+        _console = console;
+        _download = download;
+    }
 
-        public FileCommandService(IGalleryRequestService api, IConsoleWriter console, IDownloadService download)
+    public async Task RunAsync(FileCommandOptions opts)
+    {
+        if (!File.Exists(opts.FilePath))
         {
-            _api = api;
-            _console = console;
-            _download = download;
+            _console.ErrorLine("File doesn't exist.");
+            return;
         }
 
-        public async Task RunAsync(FileCommandOptions opts)
+        if (IsFileExceedingToFileSizeLimit(opts.FilePath))
         {
-            if (!File.Exists(opts.FilePath))
-            {
-                _console.ErrorLine("File doesn't exist.");
-                return;
-            }
-
-            if (IsFileExceedingToFileSizeLimit(opts.FilePath))
-            {
-                _console.ErrorLine("The file size is exceeding 5MB file size limit.");
-                return;
-            }
-
-            var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8)
-                .ConfigureAwait(false);
-            var validUrls = FilterValidUrls(textFile);
-
-            if (validUrls.Count == 0)
-            {
-                _console.ErrorLine("No valid URLs found.");
-                return;
-            }
-
-            using var progress = new ProgressBar(
-                validUrls.Count,
-                "downloading from text file...",
-                ProgressBarConfiguration.BarOption);
-
-            foreach (var url in validUrls)
-            {
-                var code = Regex.Match(url, @"\d+").Value;
-                var response = await _api.FetchSingleAsync(code);
-
-                await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
-                progress.Tick();
-            }
+            _console.ErrorLine("The file size is exceeding 5MB file size limit.");
+            return;
         }
 
-        private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
-        {
-            return urls.Where(url =>
-            {
-                const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
-                var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
+        var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8)
+            .ConfigureAwait(false);
+        var validUrls = FilterValidUrls(textFile);
 
-                return regexp.IsMatch(url);
-            }).ToList();
+        if (validUrls.Count == 0)
+        {
+            _console.ErrorLine("No valid URLs found.");
+            return;
         }
 
-        private static bool IsFileExceedingToFileSizeLimit(string inputFile)
+        using var progress = new ProgressBar(
+            validUrls.Count,
+            "downloading from text file...",
+            ProgressBarConfiguration.BarOption);
+
+        foreach (var url in validUrls)
         {
-            var fileSize = new FileInfo(inputFile).Length;
-            return fileSize > 5242880;
+            var code = Regex.Match(url, @"\d+").Value;
+            var response = await _api.FetchSingleAsync(code);
+
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, progress);
+            progress.Tick();
         }
+    }
+
+    private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
+    {
+        return urls.Where(url =>
+        {
+            const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
+            var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            return regexp.IsMatch(url);
+        }).ToList();
+    }
+
+    private static bool IsFileExceedingToFileSizeLimit(string inputFile)
+    {
+        var fileSize = new FileInfo(inputFile).Length;
+        return fileSize > 5242880;
     }
 }
