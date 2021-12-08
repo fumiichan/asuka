@@ -47,7 +47,7 @@ public class PackArchiveToCbz : IPackArchiveToCbz
         var archiveEntry = archive.GetEntry(entryName);
         archiveEntry?.Delete();
 
-        await WriteEntry(archive, entryName, imageFile);
+        await WriteEntry(archive, entryName, imageFile).ConfigureAwait(false);
     }
 
     private static async Task WriteEntry(ZipArchive archive, string entryName, string inputFile)

@@ -41,7 +41,7 @@ public class RandomCommandService : IRandomCommandService
             }
 
             var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout);
+            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, null);
             break;
         }
     }

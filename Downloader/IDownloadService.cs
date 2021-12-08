@@ -10,6 +10,6 @@ public interface IDownloadService
     GalleryResult result,
     string outputPath,
     bool pack,
-    bool useTachiyomiFolderLayout = false,
-    IProgressBar progress = null);
+    bool useTachiyomiFolderLayout,
+    IProgressBar progress);
 }

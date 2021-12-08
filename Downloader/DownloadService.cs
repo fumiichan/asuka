@@ -31,8 +31,8 @@ public class DownloadService : IDownloadService
     public async Task DownloadAsync(GalleryResult result,
         string outputPath,
         bool pack,
-        bool useTachiyomiFolderLayout = false,
-        IProgressBar progress = null)
+        bool useTachiyomiFolderLayout,
+        IProgressBar progress)
     {
         // Prepare the download.
         await PrepareAsync(result, outputPath, useTachiyomiFolderLayout).ConfigureAwait(false);

@@ -49,7 +49,10 @@ public static class DisplayInformation
   {
     // By default use the Pretty name, if not present then use English
     // if not then Japanese
-    if (!string.IsNullOrEmpty(titles.Pretty)) return titles.Pretty;
+    if (!string.IsNullOrEmpty(titles.Pretty))
+    {
+      return titles.Pretty;
+    }
     return !string.IsNullOrEmpty(titles.English) ? titles.English : titles.Japanese;
   }
 

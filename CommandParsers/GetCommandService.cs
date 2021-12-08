@@ -47,6 +47,6 @@ public class GetCommandService : IGetCommandService
         }
 
         var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
-        await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout);
+        await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, null);
     }
 }

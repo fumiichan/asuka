@@ -70,7 +70,7 @@ internal class Program
         services.AddRefitClient<IGalleryImage>()
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
                 retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                (exception, timeSpan, _) =>
+                (_, timeSpan, _) =>
                 {
                     Colorful.Console.WriteLine($"Download will retry in {timeSpan}", Color.Yellow);
                 }))

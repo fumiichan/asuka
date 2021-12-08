@@ -7,7 +7,7 @@ public class ConsoleWriter : IConsoleWriter
 {
     public void WriteLine(object message)
     {
-        System.Console.WriteLine(message);
+        Console.WriteLine(message, Color.Aqua);
     }
 
     public void WarningLine(object message)
