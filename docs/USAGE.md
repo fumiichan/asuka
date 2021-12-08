@@ -2,18 +2,19 @@
 
 ## Basic Usage
 
-Asuka has 4 main Commands:
+Asuka has 5 main Commands:
 
 -   `get` is used to retrieve and download manga either by code or a collection of links in a text file.
 -   `recommend` is used to get recommendations on specific manga.
 -   `search` is used to search a manga.
+-   `file` is used to download entire list of manga in a text file.
 -   `random` is used to get really a random manga.
 
 ### `get`
 
 Usage:
 
-```
+```text
 asuka get <-i|--input <code|url>> [-r|--readonly] [-p|--pack] [-o|--output <path>]
 ```
 
@@ -23,10 +24,11 @@ asuka get <-i|--input <code|url>> [-r|--readonly] [-p|--pack] [-o|--output <path
 | `-r \| --readonly`          | No        | View the information only.                         |
 | `-p \| --pack`              | No        | Pack the downloaded doujinshi as CBZ archive       |
 | `-o \| --output <path>`     | No        | Path to save the downloaded doujinshi.             |
+| `--useTachiyomiLayout`      | No        | Use Tachiyomi Folder Structure                     |
 
 **Usage Examples**
 
-```
+```text
 asuka get -i 177013
 ```
 
@@ -34,13 +36,13 @@ You need to add the links seperated by a new line.
 
 #### Get the information only
 
-```
+```text
 asuka get -i https://nhentai.net/g/177013 -r
 ```
 
 #### Pack the downloaded archive
 
-```
+```text
 asuka get -i https://nhentai.net/g/177013 -p
 ```
 
@@ -52,15 +54,16 @@ asuka get -i https://nhentai.net/g/177013 -p
 
 Usage:
 
-```
+```text
 asuka recommend <-i|--input <code>> [-p|--pack] [-o|--output <path>]
 ```
 
-| Option                  | Required? | Description                                        |
-|-------------------------|-----------|----------------------------------------------------|
-| `-i \| --input <code>`  | Yes       | Specify a gallery code to download.                |
-| `-p \| --pack`          | No        | Pack the downloaded doujinshi as CBZ archive       |
-| `-o \| --output <path>` | No        | Path to save the downloaded doujinshi.             |
+| Option                  | Required?   | Description                                        |
+|-------------------------|-------------|----------------------------------------------------|
+| `-i \| --input <code>`  | Yes         | Specify a gallery code to download.                |
+| `-p \| --pack`          | No          | Pack the downloaded doujinshi as CBZ archive       |
+| `--useTachiyomiLayout`  | No          | Use Tachiyomi Folder Structure                     |
+| `-o \| --output <path>` | No          | Path to save the downloaded doujinshi.             |
 
 **Usage Examples**
 
@@ -70,7 +73,7 @@ Usage is the same as on the `get` command except that it doesn't accept file pat
 
 Usage:
 
-```
+```text
 asuka search [options]
 ```
 
@@ -84,6 +87,7 @@ asuka search [options]
 | `--pack`                     | No        | Pack the downloaded manga as CBZ archive             |
 | `--sort <sort>`              | No        | Sort results. (default: `date`)                      |
 | `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
+| `--useTachiyomiLayout`       | No        | Use Tachiyomi Folder Structure                       |
 
 **Sort Options:**
 
@@ -117,11 +121,26 @@ asuka search [options]
     -   `m` for months
     -   `y` for years
 
+### `file`
+
+Usage:
+
+```text
+asuka file <-f|--file <filepath>> [options]
+```
+
+| Option                       | Required? | Description                                          |
+|------------------------------|-----------|------------------------------------------------------|
+| `-f \| --file <file>`        | Yes       | Path to the text file with list of URLs              |
+| `--pack`                     | No        | Pack the downloaded manga as CBZ archive             |
+| `-o \| --output <path>`      | No        | Path to save the downloaded doujinshi.               |
+| `--useTachiyomiLayout`       | No        | Use Tachiyomi Folder Structure                       |
+
 ### `random`
 
 Usage:
 
-```
+```text
 asuka random [-p|--pack] [-o|--output <path>]
 ```
 
