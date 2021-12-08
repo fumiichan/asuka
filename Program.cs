@@ -73,7 +73,6 @@ internal class Program
                 (exception, timeSpan, _) =>
                 {
                     Colorful.Console.WriteLine($"Download will retry in {timeSpan}", Color.Yellow);
-                    Colorful.Console.WriteLine($"Exception: {exception.Exception.Message}", Color.Yellow);
                 }))
             .ConfigureHttpClient(httpClient =>
             {
