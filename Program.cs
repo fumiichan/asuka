@@ -52,18 +52,6 @@ internal class Program
         ConfigureRefit(services, configuration);
     }
 
-    private static Cookie GenerateCookie(string name, string value, string domain = ".nhentai.net", bool secure = true, bool httpOnly = true)
-    {
-        var cookie = new Cookie(name, value)
-        {
-            Domain = domain,
-            Secure = secure,
-            HttpOnly = httpOnly
-        };
-
-        return cookie;
-    }
-
     private static void ConfigureRefit(IServiceCollection services, IConfiguration configuration)
     {
         var cookies = FetchCookiesFromFile.load();
