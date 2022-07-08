@@ -7,4 +7,7 @@ public record ConfigureOptions
 {
     [Option('c', "setDefaultCookies", HelpText = "Sets/Updates the cookies")]
     public string SetDefaultCookies { get; init; }
+    
+    [Option('u', "setUserAgent", HelpText = "Set default User Agent")]
+    public string SetUserAgent { get; set; }
 }

@@ -21,7 +21,7 @@ Cross-platform nhentai downloader on Console.
 
 By running `asuka --help` you mostly see everything you need to know how to use the client.
 
-**Before using this, run `asuka config --setDefaultCookies <path to cookie.txt file>` to set cookies. Without this your requests will fail. To obtain `cookies.txt` file, you have to install [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid/related?hl=ja-JP) extension and dump the cookies from the site.**
+**Before using this, run `asuka config --setDefaultCookies <path to cookie.txt file>` to set cookies. Without this your requests will fail. To obtain `cookies.txt` file, you have to install [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) extension and export the cookies and save it on a text file. Then, set your user agent by finding out your [User Agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent/) and use `asuka config -u "<your user agent>"` to set it.**
 
 If you want in-depth explanation and examples, see [here](docs/USAGE.md).
 

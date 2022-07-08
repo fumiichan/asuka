@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -9,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Refit;
 using asuka.Api;
-using asuka.Cloudflare;
 using asuka.CommandParsers;
 using asuka.Compression;
+using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
@@ -54,7 +53,13 @@ internal class Program
 
     private static void ConfigureRefit(IServiceCollection services, IConfiguration configuration)
     {
-        var cookies = FetchCookiesFromFile.load();
+        var cookies = new CloudflareBypass();
+
+        if (cookies.CloudflareClearance == null || cookies.CsrfToken == null)
+        {
+            Colorful.Console.WriteLine("WARNING: Cookies are unset! Your request might fail. See README for more information.",
+                Color.Red);
+        }
         
         var configureRefit = new RefitSettings
         {
@@ -63,21 +68,16 @@ internal class Program
             {
                 var handler = new HttpClientHandler();
 
-                if (cookies?.getCloudflareClearance() != null)
+                if (cookies.CloudflareClearance != null)
                 {
-                    handler.CookieContainer.Add(cookies.getCloudflareClearance());
+                    handler.CookieContainer.Add(cookies.CloudflareClearance);
                 }
 
-                if (cookies?.getCsrfToken() != null)
+                if (cookies.CsrfToken != null)
                 {
-                    handler.CookieContainer.Add(cookies.getCsrfToken());
+                    handler.CookieContainer.Add(cookies.CsrfToken);
                 }
 
-                if (cookies?.getSession() != null)
-                {
-                    handler.CookieContainer.Add(cookies.getSession());
-                }
-                
                 return handler;
             }
         };
@@ -91,7 +91,7 @@ internal class Program
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(configuration["ApiBaseAddress"]);
-                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36");
+                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(cookies.UserAgent);
             });
         services.AddRefitClient<IGalleryImage>()
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
