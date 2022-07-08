@@ -84,10 +84,10 @@ internal class Program
         services.AddRefitClient<IGalleryApi>(configureRefit)
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
                 retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                ((_, i, _) =>
+                (_, i, timeSpan) =>
                 {
-                    Colorful.Console.WriteLine($"Attempting in {i}s...", Color.Yellow);
-                })))
+                    Colorful.Console.WriteLine($"Attempting in {timeSpan.Seconds}s... (Attempt: {i})", Color.Yellow);
+                }))
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(configuration["ApiBaseAddress"]);
