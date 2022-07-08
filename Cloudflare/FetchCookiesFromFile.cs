@@ -75,8 +75,9 @@ public class FetchCookiesFromFile
         foreach (var line in cookies.Split('\n'))
         {
             var data = line.Split();
+            if (data.Length < 7) continue;
 
-            switch (data[5])
+                switch (data[5])
             {
                 case "cf_clearance":
                     cookieData.CloudflareClearance = data[6];

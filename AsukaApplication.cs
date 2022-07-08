@@ -42,7 +42,7 @@ public class AsukaApplication
         try
         {
             var parser = Parser.Default
-                .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions>(args);
+                .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions>(args);
             await parser.MapResult(
                 async (GetOptions opts) => { await _getCommand.RunAsync(opts, configuration); },
                 async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts, configuration); },
