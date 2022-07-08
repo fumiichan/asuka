@@ -17,6 +17,7 @@ public class AsukaApplication
     private readonly IRandomCommandService _randomCommand;
     private readonly IFileCommandService _fileCommand;
     private readonly IConsoleWriter _console;
+    private readonly IConfigureCommand _configureCommand;
 
     public AsukaApplication(
         IGetCommandService getCommand,
@@ -24,7 +25,8 @@ public class AsukaApplication
         IConsoleWriter console,
         ISearchCommandService searchCommand,
         IRandomCommandService randomCommand,
-        IFileCommandService fileCommand)
+        IFileCommandService fileCommand,
+        IConfigureCommand configureCommand)
     {
         _getCommand = getCommand;
         _recommendCommand = recommendCommand;
@@ -32,6 +34,7 @@ public class AsukaApplication
         _searchCommand = searchCommand;
         _randomCommand = randomCommand;
         _fileCommand = fileCommand;
+        _configureCommand = configureCommand;
     }
 
     public async Task RunAsync(IEnumerable<string> args, IConfiguration configuration)
@@ -46,6 +49,7 @@ public class AsukaApplication
                 async (SearchOptions opts) => { await _searchCommand.RunAsync(opts, configuration); },
                 async (RandomOptions opts) => { await _randomCommand.RunAsync(opts, configuration); },
                 async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts, configuration); },
+                async (ConfigureOptions opts) => { await _configureCommand.RunAsync(opts); },
                 _ => Task.FromResult(1));
             _console.SuccessLine("Task completed.");
         }

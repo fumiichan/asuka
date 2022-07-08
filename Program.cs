@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Refit;
 using asuka.Api;
+using asuka.Cloudflare;
 using asuka.CommandParsers;
 using asuka.Compression;
 using asuka.Downloader;
@@ -43,29 +46,64 @@ internal class Program
         services.AddSingleton<IRandomCommandService, RandomCommandService>();
         services.AddSingleton<IFileCommandService, FileCommandService>();
         services.AddSingleton<IPackArchiveToCbz, PackArchiveToCbz>();
+        services.AddSingleton<IConfigureCommand, ConfigureCommand>();
         services.AddValidatorsFromAssemblyContaining<Program>();
 
         ConfigureRefit(services, configuration);
     }
 
+    private static Cookie GenerateCookie(string name, string value, string domain = ".nhentai.net", bool secure = true, bool httpOnly = true)
+    {
+        var cookie = new Cookie(name, value)
+        {
+            Domain = domain,
+            Secure = secure,
+            HttpOnly = httpOnly
+        };
+
+        return cookie;
+    }
+
     private static void ConfigureRefit(IServiceCollection services, IConfiguration configuration)
     {
+        var cookies = FetchCookiesFromFile.load();
+        
         var configureRefit = new RefitSettings
         {
-            ContentSerializer = new NewtonsoftJsonContentSerializer()
+            ContentSerializer = new NewtonsoftJsonContentSerializer(),
+            HttpMessageHandlerFactory = () =>
+            {
+                var handler = new HttpClientHandler();
+
+                if (cookies?.getCloudflareClearance() != null)
+                {
+                    handler.CookieContainer.Add(cookies.getCloudflareClearance());
+                }
+
+                if (cookies?.getCsrfToken() != null)
+                {
+                    handler.CookieContainer.Add(cookies.getCsrfToken());
+                }
+
+                if (cookies?.getSession() != null)
+                {
+                    handler.CookieContainer.Add(cookies.getSession());
+                }
+                
+                return handler;
+            }
         };
         services.AddRefitClient<IGalleryApi>(configureRefit)
-            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
-            {
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(5),
-                TimeSpan.FromSeconds(10),
-                TimeSpan.FromSeconds(20),
-                TimeSpan.FromSeconds(50)
-            }))
+            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                ((_, i, _) =>
+                {
+                    Colorful.Console.WriteLine($"Attempting in {i}s...", Color.Yellow);
+                })))
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(configuration["ApiBaseAddress"]);
+                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36");
             });
         services.AddRefitClient<IGalleryImage>()
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
