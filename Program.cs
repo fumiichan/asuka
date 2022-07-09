@@ -14,6 +14,7 @@ using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
+using ConfigurationManager = asuka.Configuration.ConfigurationManager;
 
 namespace asuka;
 
@@ -45,6 +46,7 @@ internal class Program
         services.AddSingleton<IRandomCommandService, RandomCommandService>();
         services.AddSingleton<IFileCommandService, FileCommandService>();
         services.AddSingleton<IPackArchiveToCbz, PackArchiveToCbz>();
+        services.AddSingleton<IConfigurationManager, ConfigurationManager>();
         services.AddSingleton<IConfigureCommand, ConfigureCommand>();
         services.AddValidatorsFromAssemblyContaining<Program>();
 

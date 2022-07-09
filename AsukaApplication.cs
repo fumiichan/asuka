@@ -44,11 +44,11 @@ public class AsukaApplication
             var parser = Parser.Default
                 .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions>(args);
             await parser.MapResult(
-                async (GetOptions opts) => { await _getCommand.RunAsync(opts, configuration); },
-                async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts, configuration); },
-                async (SearchOptions opts) => { await _searchCommand.RunAsync(opts, configuration); },
-                async (RandomOptions opts) => { await _randomCommand.RunAsync(opts, configuration); },
-                async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts, configuration); },
+                async (GetOptions opts) => { await _getCommand.RunAsync(opts); },
+                async (RecommendOptions opts) => { await _recommendCommand.RunAsync(opts); },
+                async (SearchOptions opts) => { await _searchCommand.RunAsync(opts); },
+                async (RandomOptions opts) => { await _randomCommand.RunAsync(opts); },
+                async (FileCommandOptions opts) => { await _fileCommand.RunAsync(opts); },
                 async (ConfigureOptions opts) => { await _configureCommand.RunAsync(opts); },
                 _ => Task.FromResult(1));
             _console.SuccessLine("Task completed.");

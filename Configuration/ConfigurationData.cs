@@ -12,4 +12,7 @@ public class ConfigurationData
     
     [JsonProperty("user_agent")]
     public string UserAgent { get; set; }
+
+    [JsonProperty("use_tachiyomi_layout")]
+    public bool UseTachiyomiLayout { get; set; }
 }

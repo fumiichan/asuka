@@ -9,5 +9,8 @@ public record ConfigureOptions
     public string SetDefaultCookies { get; init; }
     
     [Option('u', "setUserAgent", HelpText = "Set default User Agent")]
-    public string SetUserAgent { get; set; }
+    public string SetUserAgent { get; init; }
+    
+    [Option('l', "useTachiyomiLayout", HelpText = "Toggle Tachiyomi Layout")]
+    public string UseTachiyomiLayoutToggle { get; init; }
 }

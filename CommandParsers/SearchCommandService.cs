@@ -5,6 +5,7 @@ using FluentValidation;
 using ShellProgressBar;
 using asuka.Api.Queries;
 using asuka.CommandOptions;
+using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Mappings;
 using asuka.Output;
@@ -20,20 +21,23 @@ public class SearchCommandService : ISearchCommandService
     private readonly IValidator<SearchOptions> _validator;
     private readonly IConsoleWriter _console;
     private readonly IDownloadService _download;
+    private readonly IConfigurationManager _configurationManager;
 
     public SearchCommandService(
         IGalleryRequestService api,
         IValidator<SearchOptions> validator,
         IConsoleWriter console,
-        IDownloadService download)
+        IDownloadService download,
+        IConfigurationManager configurationManager)
     {
         _api = api;
         _validator = validator;
         _console = console;
         _download = download;
+        _configurationManager = configurationManager;
     }
 
-    public async Task RunAsync(SearchOptions opts, IConfiguration configuration)
+    public async Task RunAsync(SearchOptions opts)
     {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
@@ -72,7 +76,7 @@ public class SearchCommandService : ISearchCommandService
         using var progress = new ProgressBar(selection.Count, $"[task] search download",
             ProgressBarConfiguration.BarOption);
 
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
 
         foreach (var response in selection)
         {

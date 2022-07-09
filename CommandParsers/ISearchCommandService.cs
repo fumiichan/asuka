@@ -6,5 +6,5 @@ namespace asuka.CommandParsers;
 
 public interface ISearchCommandService
 {
-    Task RunAsync(SearchOptions opts, IConfiguration configuration);
+    Task RunAsync(SearchOptions opts);
 }

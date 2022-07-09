@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using ShellProgressBar;
 using asuka.CommandOptions;
+using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Mappings;
 using asuka.Output;
@@ -18,20 +19,23 @@ public class RecommendCommandService : IRecommendCommandService
     private readonly IGalleryRequestService _api;
     private readonly IDownloadService _download;
     private readonly IConsoleWriter _console;
+    private readonly IConfigurationManager _configurationManager;
 
     public RecommendCommandService(
         IValidator<IRequiresInputOption> validator,
         IGalleryRequestService api,
         IDownloadService download,
-        IConsoleWriter console)
+        IConsoleWriter console,
+        IConfigurationManager configurationManager)
     {
         _validator = validator;
         _api = api;
         _download = download;
         _console = console;
+        _configurationManager = configurationManager;
     }
 
-    public async Task RunAsync(RecommendOptions opts, IConfiguration configuration)
+    public async Task RunAsync(RecommendOptions opts)
     {
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
@@ -48,7 +52,7 @@ public class RecommendCommandService : IRecommendCommandService
         using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
             ProgressBarConfiguration.BarOption);
 
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
 
         foreach (var response in selection)
         {

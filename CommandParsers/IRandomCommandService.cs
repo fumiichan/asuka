@@ -6,5 +6,5 @@ namespace asuka.CommandParsers;
 
 public interface IRandomCommandService
 {
-    Task RunAsync(RandomOptions opts, IConfiguration configuration);
+    Task RunAsync(RandomOptions opts);
 }

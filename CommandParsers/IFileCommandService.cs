@@ -6,5 +6,5 @@ namespace asuka.CommandParsers;
 
 public interface IFileCommandService
 {
-    Task RunAsync(FileCommandOptions opts, IConfiguration configuration);
+    Task RunAsync(FileCommandOptions opts);
 }

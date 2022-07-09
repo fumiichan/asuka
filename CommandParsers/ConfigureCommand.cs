@@ -6,18 +6,28 @@ namespace asuka.CommandParsers;
 
 public class ConfigureCommand : IConfigureCommand
 {
+    private readonly IConfigurationManager _configurationManager;
+
+    public ConfigureCommand(IConfigurationManager configurationManager)
+    {
+        _configurationManager = configurationManager;
+    }
+    
     public async Task RunAsync(ConfigureOptions opts)
     {
-        var config = new ConfigurationManager();
-        
         if (!string.IsNullOrEmpty(opts.SetDefaultCookies))
         {
-            await config.SetCookies(opts.SetDefaultCookies);
+            await _configurationManager.SetCookiesAsync(opts.SetDefaultCookies);
         }
 
         if (!string.IsNullOrEmpty(opts.SetUserAgent))
         {
-            await config.SetUserAgent(opts.SetUserAgent);
+            await _configurationManager.SetUserAgentAsync(opts.SetUserAgent);
+        }
+
+        if (opts.UseTachiyomiLayoutToggle == bool.FalseString || opts.UseTachiyomiLayoutToggle == bool.TrueString)
+        {
+            await _configurationManager.ToggleTachiyomiLayoutAsync(bool.Parse(opts.UseTachiyomiLayoutToggle));
         }
     }
 }

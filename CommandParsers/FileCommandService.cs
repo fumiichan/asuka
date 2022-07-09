@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using asuka.CommandOptions;
+using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
@@ -19,15 +20,17 @@ public class FileCommandService : IFileCommandService
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
     private readonly IDownloadService _download;
+    private readonly IConfigurationManager _configurationManager;
 
-    public FileCommandService(IGalleryRequestService api, IConsoleWriter console, IDownloadService download)
+    public FileCommandService(IGalleryRequestService api, IConsoleWriter console, IDownloadService download, IConfigurationManager configurationManager)
     {
         _api = api;
         _console = console;
         _download = download;
+        _configurationManager = configurationManager;
     }
 
-    public async Task RunAsync(FileCommandOptions opts, IConfiguration configuration)
+    public async Task RunAsync(FileCommandOptions opts)
     {
         if (!File.Exists(opts.FilePath))
         {
@@ -56,7 +59,7 @@ public class FileCommandService : IFileCommandService
             "downloading from text file...",
             ProgressBarConfiguration.BarOption);
 
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
 
         foreach (var url in validUrls)
         {

@@ -6,5 +6,5 @@ namespace asuka.CommandParsers;
 
 public interface IRecommendCommandService
 {
-    Task RunAsync(RecommendOptions opts, IConfiguration configuration);
+    Task RunAsync(RecommendOptions opts);
 }

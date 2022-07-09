@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace asuka.Configuration;
 
-public class ConfigurationManager
+public class ConfigurationManager : IConfigurationManager
 {
     protected readonly ConfigurationData Configuration;
 
@@ -26,7 +26,7 @@ public class ConfigurationManager
         Configuration = JsonConvert.DeserializeObject<ConfigurationData>(data);
     }
 
-    public async Task SetCookies(string path)
+    public async Task SetCookiesAsync(string path)
     {
         if (!File.Exists(path))
         {
@@ -50,16 +50,24 @@ public class ConfigurationManager
                     break;
             }
         }
-        await Flush();
+        await FlushAsync();
     }
 
-    public async Task SetUserAgent(string userAgent)
+    public async Task SetUserAgentAsync(string userAgent)
     {
         Configuration.UserAgent = userAgent;
-        await Flush();
+        await FlushAsync();
     }
 
-    private async Task Flush()
+    public async Task ToggleTachiyomiLayoutAsync(bool value)
+    {
+        Configuration.UseTachiyomiLayout = value;
+        await FlushAsync();
+    }
+
+    public ConfigurationData Values => Configuration;
+
+    private async Task FlushAsync()
     {
         var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".asuka/config.json");

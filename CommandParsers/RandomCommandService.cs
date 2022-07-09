@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Sharprompt;
 using asuka.CommandOptions;
+using asuka.Configuration;
 using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
@@ -14,15 +15,21 @@ public class RandomCommandService : IRandomCommandService
     private readonly IDownloadService _download;
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
+    private readonly IConfigurationManager _configurationManager;
 
-    public RandomCommandService(IDownloadService download, IGalleryRequestService api, IConsoleWriter console)
+    public RandomCommandService(
+        IDownloadService download,
+        IGalleryRequestService api,
+        IConsoleWriter console,
+        IConfigurationManager configurationManager)
     {
         _download = download;
         _api = api;
         _console = console;
+        _configurationManager = configurationManager;
     }
 
-    public async Task RunAsync(RandomOptions opts, IConfiguration configuration)
+    public async Task RunAsync(RandomOptions opts)
     {
         var totalNumbers = await _api.GetTotalGalleryCountAsync();
 
@@ -40,7 +47,7 @@ public class RandomCommandService : IRandomCommandService
                 continue;
             }
 
-            var useTachiyomiLayout = opts.UseTachiyomiLayout || bool.Parse(configuration["UseTachiyomiFolderStructure"]);
+            var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
             await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, null);
             break;
         }

@@ -6,5 +6,5 @@ namespace asuka.CommandParsers;
 
 public interface IGetCommandService
 {
-    Task RunAsync(GetOptions opts, IConfiguration configuration);
+    Task RunAsync(GetOptions opts);
 }
