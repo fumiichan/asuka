@@ -13,4 +13,7 @@ public record ConfigureOptions
     
     [Option('l', "useTachiyomiLayout", HelpText = "Toggle Tachiyomi Layout")]
     public string UseTachiyomiLayoutToggle { get; init; }
+    
+    [Option("list", HelpText = "List values of configuration")]
+    public bool JustList { get; init; }
 }
