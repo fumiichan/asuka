@@ -105,6 +105,7 @@ internal class Program
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(configuration["ImageBaseAddress"]);
+                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(cookies.UserAgent);
             });
     }
 }
