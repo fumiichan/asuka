@@ -98,9 +98,9 @@ internal class Program
         services.AddRefitClient<IGalleryImage>()
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryForeverAsync(
                 retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                (_, timeSpan, _) =>
+                (_, _, timeSpan) =>
                 {
-                    Colorful.Console.WriteLine($"Download will retry in {timeSpan}", Color.Yellow);
+                    Colorful.Console.WriteLine($"Download will retry in {timeSpan.Seconds}s...", Color.Yellow);
                 }))
             .ConfigureHttpClient(httpClient =>
             {
