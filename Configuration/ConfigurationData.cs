@@ -12,4 +12,7 @@ public class ConfigurationData
 
     [JsonProperty("use_tachiyomi_layout")]
     public bool UseTachiyomiLayout { get; set; }
+    
+    [JsonProperty("console_theme")]
+    public string ConsoleTheme { get; set; }
 }

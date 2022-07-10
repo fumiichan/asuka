@@ -42,10 +42,7 @@ public class SearchCommandService : ISearchCommandService
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            foreach (var error in validationResult.Errors)
-            {
-                _console.ErrorLine($"Validation Failure: {error.ErrorMessage}");
-            }
+            _console.ValidationErrors(validationResult.Errors);
             return;
         }
 

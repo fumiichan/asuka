@@ -38,7 +38,7 @@ public class GetCommandService : IGetCommandService
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ErrorLine("Invalid gallery code.");
+            _console.ValidationErrors(validationResult.Errors);
             return;
         }
 

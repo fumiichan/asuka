@@ -8,5 +8,6 @@ public interface IConfigurationManager
     Task SetUserAgentAsync(string userAgent);
     Task ToggleTachiyomiLayoutAsync(bool value);
     Task ResetAsync();
+    Task ChangeColourThemeAsync(string value);
     ConfigurationData Values { get; }
 }

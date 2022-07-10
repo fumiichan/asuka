@@ -40,7 +40,7 @@ public class RecommendCommandService : IRecommendCommandService
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {
-            _console.ErrorLine("Invalid gallery code.");
+            _console.ValidationErrors(validator.Errors);
             return;
         }
 

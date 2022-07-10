@@ -14,6 +14,9 @@ public record ConfigureOptions
     [Option('l', "useTachiyomiLayout", HelpText = "Toggle Tachiyomi Layout")]
     public string UseTachiyomiLayoutToggle { get; init; }
     
+    [Option('t', "theme", HelpText = "Use a colour scheme according to your console background. Supported values are light and dark")]
+    public string Theme { get; init; }
+    
     [Option("reset", HelpText = "Reset configuration values")]
     public bool ResetConfig { get; init; }
     

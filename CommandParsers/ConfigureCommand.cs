@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using asuka.CommandOptions;
 using asuka.Configuration;
 using asuka.Output;
+using FluentValidation;
 using Newtonsoft.Json;
 
 namespace asuka.CommandParsers;
@@ -11,22 +12,32 @@ public class ConfigureCommand : IConfigureCommand
 {
     private readonly IConfigurationManager _configurationManager;
     private readonly IConsoleWriter _consoleWriter;
+    private readonly IValidator<ConfigureOptions> _validator;
 
-    public ConfigureCommand(IConfigurationManager configurationManager, IConsoleWriter consoleWriter)
+    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigurationManager configurationManager, IConsoleWriter consoleWriter)
     {
         _configurationManager = configurationManager;
         _consoleWriter = consoleWriter;
+        _validator = validator;
     }
 
     private void ListAllConfigurationValues()
     {
         _consoleWriter.WriteLine($"Cookies: {JsonConvert.SerializeObject(_configurationManager.Values.Cookies)}");
         _consoleWriter.WriteLine($"User Agent: {_configurationManager.Values.UserAgent}");
+        _consoleWriter.WriteLine($"Theme: {_configurationManager.Values.ConsoleTheme}");
         _consoleWriter.WriteLine($"UseTachiyomiLayout: {_configurationManager.Values.UseTachiyomiLayout}");
     }
     
     public async Task RunAsync(ConfigureOptions opts)
     {
+        var validation = await _validator.ValidateAsync(opts);
+        if (!validation.IsValid)
+        {
+            _consoleWriter.ValidationErrors(validation.Errors);
+            return;
+        }
+        
         if (opts.JustList)
         {
             ListAllConfigurationValues();
@@ -53,6 +64,11 @@ public class ConfigureCommand : IConfigureCommand
         if (opts.UseTachiyomiLayoutToggle == bool.FalseString || opts.UseTachiyomiLayoutToggle == bool.TrueString)
         {
             await _configurationManager.ToggleTachiyomiLayoutAsync(bool.Parse(opts.UseTachiyomiLayoutToggle));
+        }
+
+        if (!string.IsNullOrEmpty(opts.Theme))
+        {
+            await _configurationManager.ChangeColourThemeAsync(opts.Theme);
         }
     }
 }

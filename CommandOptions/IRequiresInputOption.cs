@@ -6,6 +6,6 @@ public interface IRequiresInputOption
 {
     [Option('i', "input",
         Required = true,
-        HelpText = "Input URL")]
+        HelpText = "Input Numeric Code")]
     int Input { get; init; }
 }

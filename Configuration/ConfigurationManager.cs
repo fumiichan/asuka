@@ -54,6 +54,12 @@ public class ConfigurationManager : IConfigurationManager
         await FlushAsync();
     }
 
+    public async Task ChangeColourThemeAsync(string value)
+    {
+        Configuration.ConsoleTheme = value;
+        await FlushAsync();
+    }
+
     public async Task ResetAsync()
     {
         Configuration = new ConfigurationData();

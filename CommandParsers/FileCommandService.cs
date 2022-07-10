@@ -10,7 +10,6 @@ using asuka.Downloader;
 using asuka.Output;
 using asuka.Services;
 using asuka.Utils;
-using Microsoft.Extensions.Configuration;
 using ShellProgressBar;
 
 namespace asuka.CommandParsers;
