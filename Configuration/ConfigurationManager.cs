@@ -8,7 +8,7 @@ namespace asuka.Configuration;
 
 public class ConfigurationManager : IConfigurationManager
 {
-    protected readonly ConfigurationData Configuration;
+    protected ConfigurationData Configuration;
 
     public ConfigurationManager()
     {
@@ -38,18 +38,7 @@ public class ConfigurationManager : IConfigurationManager
 
         if (cookieData == null) return;
 
-        foreach (var cookie in cookieData)
-        {
-            switch (cookie.Name)
-            {
-                case "cf_clearance":
-                    Configuration.CloudflareClearance = cookie.Value;
-                    break;
-                case "csrftoken":
-                    Configuration.CsrfToken = cookie.Value;
-                    break;
-            }
-        }
+        Configuration.Cookies = cookieData;
         await FlushAsync();
     }
 
@@ -62,6 +51,12 @@ public class ConfigurationManager : IConfigurationManager
     public async Task ToggleTachiyomiLayoutAsync(bool value)
     {
         Configuration.UseTachiyomiLayout = value;
+        await FlushAsync();
+    }
+
+    public async Task ResetAsync()
+    {
+        Configuration = new ConfigurationData();
         await FlushAsync();
     }
 

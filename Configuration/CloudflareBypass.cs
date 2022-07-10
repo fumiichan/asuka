@@ -1,37 +1,25 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 
 namespace asuka.Configuration;
 
 public class CloudflareBypass : ConfigurationManager
 {
-    public Cookie CloudflareClearance
+    public Cookie GetCookieByName(string name)
     {
-        get
+        var cookie = Configuration.Cookies?.FirstOrDefault(x => x.Name == name);
+        
+        if (cookie == null)
         {
-            if (!string.IsNullOrEmpty(Configuration.CloudflareClearance))
-                return new Cookie("cf_clearance", Configuration.CloudflareClearance)
-                {
-                    Domain = ".nhentai.net",
-                    HttpOnly = true,
-                    Secure = true
-                };
             return null;
         }
-    }
 
-    public Cookie CsrfToken
-    {
-        get
+        return new Cookie(cookie.Name, cookie.Value)
         {
-            if (!string.IsNullOrEmpty(Configuration.CsrfToken))
-                return new Cookie("csrftoken", Configuration.CsrfToken)
-                {
-                    Domain = "nhentai.net",
-                    HttpOnly = false,
-                    Secure = false
-                };
-            return null;
-        }
+            Domain = cookie.Domain,
+            HttpOnly = cookie.HttpOnly,
+            Secure = cookie.Secure
+        };
     }
 
     public string UserAgent => !string.IsNullOrEmpty(Configuration.UserAgent)

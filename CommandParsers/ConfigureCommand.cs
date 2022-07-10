@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using asuka.CommandOptions;
 using asuka.Configuration;
 using asuka.Output;
+using Newtonsoft.Json;
 
 namespace asuka.CommandParsers;
 
@@ -18,8 +20,8 @@ public class ConfigureCommand : IConfigureCommand
 
     private void ListAllConfigurationValues()
     {
-        _consoleWriter.WriteLine($"CloudflareClearance: {_configurationManager.Values.CloudflareClearance}");
-        _consoleWriter.WriteLine($"CsrfToken: {_configurationManager.Values.CsrfToken}");
+        _consoleWriter.WriteLine($"Cookies: {JsonConvert.SerializeObject(_configurationManager.Values.Cookies)}");
+        _consoleWriter.WriteLine($"User Agent: {_configurationManager.Values.UserAgent}");
         _consoleWriter.WriteLine($"UseTachiyomiLayout: {_configurationManager.Values.UseTachiyomiLayout}");
     }
     
@@ -28,6 +30,13 @@ public class ConfigureCommand : IConfigureCommand
         if (opts.JustList)
         {
             ListAllConfigurationValues();
+            return;
+        }
+
+        if (opts.ResetConfig)
+        {
+            await _configurationManager.ResetAsync();
+            _consoleWriter.SuccessLine("Configuration has been reset.");
             return;
         }
         

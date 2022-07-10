@@ -57,7 +57,10 @@ internal class Program
     {
         var cookies = new CloudflareBypass();
 
-        if (cookies.CloudflareClearance == null || cookies.CsrfToken == null)
+        var cloudflareClearance = cookies.GetCookieByName("cf_clearance");
+        var csrfToken = cookies.GetCookieByName("csrftoken");
+
+        if (cloudflareClearance == null || csrfToken == null)
         {
             Colorful.Console.WriteLine("WARNING: Cookies are unset! Your request might fail. See README for more information.",
                 Color.Red);
@@ -70,14 +73,14 @@ internal class Program
             {
                 var handler = new HttpClientHandler();
 
-                if (cookies.CloudflareClearance != null)
+                if (cloudflareClearance != null)
                 {
-                    handler.CookieContainer.Add(cookies.CloudflareClearance);
+                    handler.CookieContainer.Add(cloudflareClearance);
                 }
 
-                if (cookies.CsrfToken != null)
+                if (csrfToken != null)
                 {
-                    handler.CookieContainer.Add(cookies.CsrfToken);
+                    handler.CookieContainer.Add(csrfToken);
                 }
 
                 return handler;
