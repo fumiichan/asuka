@@ -8,7 +8,7 @@
         <ApplicationIcon>appicon.ico</ApplicationIcon>
         <Configurations>Release;Debug</Configurations>
         <Platforms>x64</Platforms>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <Company>Aiko Fujimoto</Company>
         <Description>Cross Platform nhentai downloader</Description>
         <Copyright>Copyright 2021 Aiko Fujimoto</Copyright>
@@ -28,6 +28,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.7" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
       <PackageReference Include="Refit" Version="6.3.2" />
       <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
       <PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
