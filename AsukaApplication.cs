@@ -5,7 +5,6 @@ using CommandLine;
 using asuka.CommandOptions;
 using asuka.CommandParsers;
 using asuka.Output;
-using Microsoft.Extensions.Configuration;
 
 namespace asuka;
 
@@ -37,7 +36,7 @@ public class AsukaApplication
         _configureCommand = configureCommand;
     }
 
-    public async Task RunAsync(IEnumerable<string> args, IConfiguration configuration)
+    public async Task RunAsync(IEnumerable<string> args)
     {
         try
         {
