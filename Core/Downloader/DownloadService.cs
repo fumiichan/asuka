@@ -45,7 +45,6 @@ public class DownloadService : IDownloadService
         {
             await throttler.WaitAsync().ConfigureAwait(false);
 
-            var referenceBar = bar;
             var referenceThrottler = throttler;
             taskList.Add(Task.Run(async () =>
             {
@@ -57,7 +56,7 @@ public class DownloadService : IDownloadService
                     TaskId = prepare.Id
                 };
 
-                await FetchImageAsync(param, referenceBar).ConfigureAwait(false);
+                await FetchImageAsync(param, bar).ConfigureAwait(false);
                 referenceThrottler.Release();
             }));
         }
@@ -131,10 +130,16 @@ public class DownloadService : IDownloadService
 
     private async Task FetchImageAsync(FetchImageParameter data, IProgressBar bar)
     {
+        var filePath = Path.Combine(data.DestinationPath, data.Page.Filename);
+        if (File.Exists(filePath))
+        {
+            bar.Tick($"[skipped existing] id: {data.TaskId}");
+            return;
+        }
+
         var image = await _api.GetImage(data.MediaId.ToString(), data.Page.ServerFilename);
         var imageContents = await image.ReadAsByteArrayAsync();
-
-        var filePath = Path.Combine(data.DestinationPath, data.Page.Filename);
+        
         await File.WriteAllBytesAsync(filePath, imageContents)
             .ConfigureAwait(false);
 
