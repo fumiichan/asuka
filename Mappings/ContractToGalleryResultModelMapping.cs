@@ -7,7 +7,7 @@ public static class ContractToGalleryResultModelMapping
 {
     public static GalleryResult ToGalleryResult(this GalleryResponse response)
     {
-        return new()
+        return new GalleryResult
         {
             Id = response.Id,
             MediaId = response.MediaId,
