@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using asuka.Api;
-using asuka.Api.Queries;
+using asuka.Core.Api;
+using asuka.Core.Api.Queries;
 using asuka.Core.Mappings;
 using asuka.Core.Models;
 
-namespace asuka.Core.Api;
+namespace asuka.Core.Requests;
 
 public class GalleryRequestService : IGalleryRequestService
 {

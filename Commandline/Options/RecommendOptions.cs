@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("recommend", HelpText = "Download recommendation from the gallery URL.")]
 public record RecommendOptions : ICommonOptions, IRequiresInputOption

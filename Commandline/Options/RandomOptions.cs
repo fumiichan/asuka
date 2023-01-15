@@ -1,7 +1,6 @@
 using CommandLine;
-using CommandLine.Text;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("random", HelpText = "Randomly pick a gallery.")]
 public record RandomOptions : ICommonOptions

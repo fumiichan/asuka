@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace asuka.Models;
+namespace asuka.Core.Models;
 
 public record GalleryResult
 {

@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("get", HelpText = "Download a Single Gallery from URL.")]
 public record GetOptions : IRequiresInputOption, ICommonOptions

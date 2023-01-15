@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using asuka.Api.Responses;
-using asuka.Models;
+using asuka.Core.Api.Responses;
+using asuka.Core.Models;
 
-namespace asuka.Mappings;
+namespace asuka.Core.Mappings;
 
 public static class ContractToGalleryImageResultModelMapping
 {

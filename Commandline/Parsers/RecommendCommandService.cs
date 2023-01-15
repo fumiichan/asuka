@@ -1,17 +1,14 @@
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using asuka.Commandline.Options;
+using asuka.Core.Compression;
+using asuka.Core.Downloader;
+using asuka.Core.Mappings;
+using asuka.Core.Requests;
+using asuka.Output.ProgressService;
+using asuka.Output.Writer;
 using FluentValidation;
-using ShellProgressBar;
-using asuka.CommandOptions;
-using asuka.Configuration;
-using asuka.Downloader;
-using asuka.Mappings;
-using asuka.Output;
-using asuka.Services;
-using asuka.Utils;
-using Microsoft.Extensions.Configuration;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public class RecommendCommandService : IRecommendCommandService
 {
@@ -19,20 +16,23 @@ public class RecommendCommandService : IRecommendCommandService
     private readonly IGalleryRequestService _api;
     private readonly IDownloadService _download;
     private readonly IConsoleWriter _console;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IProgressService _progressService;
+    private readonly IPackArchiveToCbz _pack;
 
     public RecommendCommandService(
         IValidator<IRequiresInputOption> validator,
         IGalleryRequestService api,
         IDownloadService download,
         IConsoleWriter console,
-        IConfigurationManager configurationManager)
+        IProgressService progressService,
+        IPackArchiveToCbz pack)
     {
         _validator = validator;
         _api = api;
         _download = download;
         _console = console;
-        _configurationManager = configurationManager;
+        _progressService = progressService;
+        _pack = pack;
     }
 
     public async Task RunAsync(RecommendOptions opts)
@@ -45,19 +45,20 @@ public class RecommendCommandService : IRecommendCommandService
         }
 
         var responses = await _api.FetchRecommendedAsync(opts.Input.ToString());
-
         var selection = responses.FilterByUserSelected();
 
         // Initialise the Progress bar.
-        using var progress = new ProgressBar(selection.Count, $"[task] recommend from id: {opts.Input}",
-            ProgressBarConfiguration.BarOption);
-
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
+        _progressService.CreateMasterProgress(selection.Count, $"[task] recommend from id: {opts.Input}");
+        var progress = _progressService.GetMasterProgress();
 
         foreach (var response in selection)
         {
-
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
+            var result = await _download.DownloadAsync(response, opts.Output);
+            if (opts.Pack)
+            {
+                var destination = result.DestinationPath[..^1] + ".cbz";
+                await _pack.RunAsync(result.FolderName, result.ImageFiles, destination);
+            }
             progress.Tick();
         }
     }

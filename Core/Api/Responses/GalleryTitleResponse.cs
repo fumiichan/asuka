@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace asuka.Api.Responses;
+namespace asuka.Core.Api.Responses;
 
 public record GalleryTitleResponse
 {

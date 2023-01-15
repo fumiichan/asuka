@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace asuka.Models;
+namespace asuka.Core.Models;
 
 public record TachiyomiDetails
 {

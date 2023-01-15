@@ -4,7 +4,7 @@ using asuka.Configuration;
 using FluentValidation.Results;
 using Console = Colorful.Console;
 
-namespace asuka.Output;
+namespace asuka.Output.Writer;
 
 public class ConsoleWriter : IConsoleWriter
 {

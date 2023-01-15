@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("file", HelpText = "Download galleries from text file")]
 public record FileCommandOptions : ICommonOptions

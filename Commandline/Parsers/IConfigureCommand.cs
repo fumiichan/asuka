@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using asuka.CommandOptions;
+using asuka.Commandline.Options;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public interface IConfigureCommand
 {

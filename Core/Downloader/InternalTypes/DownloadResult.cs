@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace asuka.Core.Downloader;
+namespace asuka.Core.Downloader.InternalTypes;
 
 public record DownloadResult
 {

@@ -1,15 +1,11 @@
 using System.Threading.Tasks;
-using asuka.Models;
+using asuka.Core.Downloader.InternalTypes;
+using asuka.Core.Models;
 using ShellProgressBar;
 
-namespace asuka.Downloader;
+namespace asuka.Core.Downloader;
 
 public interface IDownloadService
 {
-  Task DownloadAsync(
-    GalleryResult result,
-    string outputPath,
-    bool pack,
-    bool useTachiyomiFolderLayout,
-    IProgressBar progress);
+    Task<DownloadResult> DownloadAsync(GalleryResult result, string outputPath);
 }

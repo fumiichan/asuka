@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
-using asuka.Models;
+using asuka.Core.Models;
 
 namespace asuka.Output;
 

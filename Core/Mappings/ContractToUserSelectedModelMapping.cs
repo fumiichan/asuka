@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using asuka.Core.Models;
 using Sharprompt;
-using asuka.Models;
 
-namespace asuka.Mappings;
+namespace asuka.Core.Mappings;
 
 public static class ContractToUserSelectedModelMapping
 {

@@ -1,19 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using asuka.Commandline.Options;
+using asuka.Core.Api.Queries;
+using asuka.Core.Compression;
+using asuka.Core.Downloader;
+using asuka.Core.Mappings;
+using asuka.Core.Requests;
+using asuka.Output.ProgressService;
+using asuka.Output.Writer;
 using FluentValidation;
-using ShellProgressBar;
-using asuka.Api.Queries;
-using asuka.CommandOptions;
-using asuka.Configuration;
-using asuka.Downloader;
-using asuka.Mappings;
-using asuka.Output;
-using asuka.Services;
-using asuka.Utils;
-using Microsoft.Extensions.Configuration;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public class SearchCommandService : ISearchCommandService
 {
@@ -21,20 +19,23 @@ public class SearchCommandService : ISearchCommandService
     private readonly IValidator<SearchOptions> _validator;
     private readonly IConsoleWriter _console;
     private readonly IDownloadService _download;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IProgressService _progressService;
+    private readonly IPackArchiveToCbz _pack;
 
     public SearchCommandService(
         IGalleryRequestService api,
         IValidator<SearchOptions> validator,
         IConsoleWriter console,
         IDownloadService download,
-        IConfigurationManager configurationManager)
+        IProgressService progressService,
+        IPackArchiveToCbz pack)
     {
         _api = api;
         _validator = validator;
         _console = console;
         _download = download;
-        _configurationManager = configurationManager;
+        _progressService = progressService;
+        _pack = pack;
     }
 
     public async Task RunAsync(SearchOptions opts)
@@ -70,14 +71,17 @@ public class SearchCommandService : ISearchCommandService
         var selection = responses.FilterByUserSelected();
 
         // Initialise the Progress bar.
-        using var progress = new ProgressBar(selection.Count, $"[task] search download",
-            ProgressBarConfiguration.BarOption);
-
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
-
+        _progressService.CreateMasterProgress(selection.Count, "[task] search download");
+        var progress = _progressService.GetMasterProgress();
+        
         foreach (var response in selection)
         {
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
+            var result = await _download.DownloadAsync(response, opts.Output);
+            if (opts.Pack)
+            {
+                var destination = result.DestinationPath[..^1] + ".cbz";
+                await _pack.RunAsync(result.FolderName, result.ImageFiles, destination);
+            }
             progress.Tick();
         }
     }

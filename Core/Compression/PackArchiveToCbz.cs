@@ -1,19 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using asuka.Utils;
+using asuka.Output.ProgressService;
 using ShellProgressBar;
 
-namespace asuka.Compression;
+namespace asuka.Core.Compression;
 
 public class PackArchiveToCbz : IPackArchiveToCbz
 {
-    public async Task RunAsync(string folderName, string[] imageFiles, string output, IProgressBar parentBar)
-    {
-        var progressTheme = ProgressBarConfiguration.CompressOption;
-        var childBar = parentBar.Spawn(imageFiles.Length, "compressing...", progressTheme);
+    private readonly IProgressService _progressService;
 
+    public PackArchiveToCbz(IProgressService progressService)
+    {
+        _progressService = progressService;
+    }
+    
+    public async Task RunAsync(string folderName, IList<string> imageFiles, string output)
+    {
+        if (string.IsNullOrEmpty(output))
+        {
+            return;
+        }
+        
+        var childBar = _progressService.NestToMaster(imageFiles.Count, $"compressing...: {output}");
         await ValidateArchive(output, childBar).ConfigureAwait(false);
 
         var fileMode = File.Exists(output) ? FileMode.Open : FileMode.Create;

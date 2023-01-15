@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FluentValidation.Results;
 
-namespace asuka.Output;
+namespace asuka.Output.Writer;
 
 public interface IConsoleWriter
 {

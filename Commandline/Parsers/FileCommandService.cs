@@ -4,29 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using asuka.CommandOptions;
-using asuka.Configuration;
-using asuka.Downloader;
-using asuka.Output;
-using asuka.Services;
-using asuka.Utils;
-using ShellProgressBar;
+using asuka.Commandline.Options;
+using asuka.Core.Compression;
+using asuka.Core.Downloader;
+using asuka.Core.Requests;
+using asuka.Output.ProgressService;
+using asuka.Output.Writer;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
-public class FileCommandService : IFileCommandService
+public partial class FileCommandService : IFileCommandService
 {
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
     private readonly IDownloadService _download;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IProgressService _progressService;
+    private readonly IPackArchiveToCbz _pack;
 
-    public FileCommandService(IGalleryRequestService api, IConsoleWriter console, IDownloadService download, IConfigurationManager configurationManager)
+    public FileCommandService(
+        IGalleryRequestService api,
+        IConsoleWriter console,
+        IDownloadService download,
+        IProgressService progressService,
+        IPackArchiveToCbz pack)
     {
         _api = api;
         _console = console;
         _download = download;
-        _configurationManager = configurationManager;
+        _progressService = progressService;
+        _pack = pack;
     }
 
     public async Task RunAsync(FileCommandOptions opts)
@@ -53,32 +59,28 @@ public class FileCommandService : IFileCommandService
             return;
         }
 
-        using var progress = new ProgressBar(
-            validUrls.Count,
-            "downloading from text file...",
-            ProgressBarConfiguration.BarOption);
-
-        var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
+        _progressService.CreateMasterProgress(validUrls.Count, "downloading from text file...");
+        var progress = _progressService.GetMasterProgress();
 
         foreach (var url in validUrls)
         {
-            var code = Regex.Match(url, @"\d+").Value;
+            var code = NumericRegex().Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, progress);
+            var result = await _download.DownloadAsync(response, opts.Output);
+            
+            if (opts.Pack)
+            {
+                var destination = result.DestinationPath[..^1] + ".cbz";
+                await _pack.RunAsync(result.FolderName, result.ImageFiles, destination);
+            }
             progress.Tick();
         }
     }
 
     private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
     {
-        return urls.Where(url =>
-        {
-            const string pattern = @"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$";
-            var regexp = new Regex(pattern, RegexOptions.IgnoreCase);
-
-            return regexp.IsMatch(url);
-        }).ToList();
+        return urls.Where(url => WebUrlRegex().IsMatch(url)).ToList();
     }
 
     private static bool IsFileExceedingToFileSizeLimit(string inputFile)
@@ -86,4 +88,10 @@ public class FileCommandService : IFileCommandService
         var fileSize = new FileInfo(inputFile).Length;
         return fileSize > 5242880;
     }
+
+    [GeneratedRegex("\\d+")]
+    private static partial Regex NumericRegex();
+
+    [GeneratedRegex("^http(s)?:\\/\\/(nhentai\\.net)\\b([//g]*)\\b([\\d]{1,6})\\/?$", RegexOptions.IgnoreCase, "en-JP")]
+    private static partial Regex WebUrlRegex();
 }

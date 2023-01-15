@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("config", HelpText = "Configure the client")]
 public record ConfigureOptions

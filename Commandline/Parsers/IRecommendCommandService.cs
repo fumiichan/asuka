@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
-using asuka.CommandOptions;
-using Microsoft.Extensions.Configuration;
+using asuka.Commandline.Options;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public interface IRecommendCommandService
 {

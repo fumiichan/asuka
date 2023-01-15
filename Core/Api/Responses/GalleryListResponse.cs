@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace asuka.Api.Responses;
+namespace asuka.Core.Api.Responses;
 
 public record GalleryListResponse
 {

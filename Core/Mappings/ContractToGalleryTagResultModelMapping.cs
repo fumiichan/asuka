@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using asuka.Api.Responses;
+using asuka.Core.Api.Responses;
 
-namespace asuka.Mappings;
+namespace asuka.Core.Mappings;
 
 public static class ContractToGalleryTagResultModelMapping
 {

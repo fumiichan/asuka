@@ -4,46 +4,39 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ShellProgressBar;
-using asuka.Api;
-using asuka.Compression;
-using asuka.Models;
+using asuka.Configuration;
+using asuka.Core.Api;
+using asuka.Core.Downloader.InternalTypes;
+using asuka.Core.Models;
 using asuka.Output;
-using asuka.Utils;
+using asuka.Output.ProgressService;
 using Newtonsoft.Json;
+using ShellProgressBar;
 
-namespace asuka.Downloader;
+namespace asuka.Core.Downloader;
 
 public class DownloadService : IDownloadService
 {
     private readonly IGalleryImage _api;
-    private readonly IPackArchiveToCbz _packer;
-    private int _taskId;
-    private string _destinationPath;
-    private string _folderName;
+    private readonly IProgressService _progress;
+    private readonly IConfigurationManager _configurationManager;
 
-    public DownloadService(IGalleryImage api, IPackArchiveToCbz packer)
+    public DownloadService(IGalleryImage api, IProgressService progress, IConfigurationManager configurationManager)
     {
         _api = api;
-        _packer = packer;
+        _progress = progress;
+        _configurationManager = configurationManager;
     }
 
-    public async Task DownloadAsync(GalleryResult result,
-        string outputPath,
-        bool pack,
-        bool useTachiyomiFolderLayout,
-        IProgressBar progress)
+    public async Task<DownloadResult> DownloadAsync(GalleryResult result, string outputPath)
     {
+        var useTachiyomiFolderLayout = _configurationManager.Values.UseTachiyomiLayout;
         // Prepare the download.
-        await PrepareAsync(result, outputPath, useTachiyomiFolderLayout).ConfigureAwait(false);
+        var prepare = await PrepareAsync(result, outputPath, useTachiyomiFolderLayout).ConfigureAwait(false);
 
         // If the progress is null, we create a new one.
-        var progressTheme = ProgressBarConfiguration.BarOption;
-        var progressInitialTitle = $"[queued] id: {_taskId}";
-
-        using var bar = progress == null
-            ? new ProgressBar(result.TotalPages, progressInitialTitle, progressTheme)
-            : (IProgressBar) progress.Spawn(result.TotalPages, progressInitialTitle, progressTheme);
+        var progressInitialTitle = $"[queued] id: {prepare.Id}";
+        var bar = _progress.NestToMaster(result.TotalPages, progressInitialTitle);
 
         using var throttler = new SemaphoreSlim(2);
         var taskList = new List<Task>();
@@ -56,18 +49,29 @@ public class DownloadService : IDownloadService
             var referenceThrottler = throttler;
             taskList.Add(Task.Run(async () =>
             {
-                await FetchImageAsync(result.MediaId, page, referenceBar).ConfigureAwait(false);
+                var param = new FetchImageParameter
+                {
+                    DestinationPath = prepare.DestinationPath,
+                    MediaId = result.MediaId,
+                    Page = page,
+                    TaskId = prepare.Id
+                };
+
+                await FetchImageAsync(param, referenceBar).ConfigureAwait(false);
                 referenceThrottler.Release();
             }));
         }
 
         await Task.WhenAll(taskList).ConfigureAwait(false);
 
-        if (pack)
+        var destination = useTachiyomiFolderLayout
+            ? Path.GetFullPath($"{prepare.DestinationPath}/../") : prepare.DestinationPath;
+        return new DownloadResult
         {
-            var imageFiles = Directory.GetFiles(_destinationPath);
-            await _packer.RunAsync(_folderName, imageFiles, $"{_destinationPath}.cbz", bar);
-        }
+            FolderName = useTachiyomiFolderLayout ? Path.GetFullPath($"{prepare.FolderName}/../") : prepare.FolderName,
+            ImageFiles = Directory.GetFiles(destination),
+            DestinationPath = destination
+        };
     }
 
     private static string SantizeFolderName(string folderName)
@@ -83,13 +87,12 @@ public class DownloadService : IDownloadService
         return folderName;
     }
 
-    private async Task PrepareAsync(GalleryResult result, string outputPath, bool useTachiyomiFolderLayout)
+    private async Task<PrepareResult> PrepareAsync(GalleryResult result, string outputPath, bool useTachiyomiFolderLayout)
     {
-        _taskId = result.Id;
-        _destinationPath = Environment.CurrentDirectory;
+        var destinationPath = Environment.CurrentDirectory;
         if (!string.IsNullOrEmpty(outputPath))
         {
-            _destinationPath = outputPath;
+            destinationPath = outputPath;
         }
 
         var galleryTitle = string.IsNullOrEmpty(result.Title.Japanese)
@@ -97,13 +100,12 @@ public class DownloadService : IDownloadService
             : result.Title.Japanese;
 
         var folderName = SantizeFolderName($"{result.Id} - {galleryTitle}");
-        _folderName = folderName;
 
-        var mangaRootPath = Path.Join(_destinationPath, folderName);
-        _destinationPath = useTachiyomiFolderLayout ? Path.Join(mangaRootPath, "ch1") : mangaRootPath;
-        if (!Directory.Exists(_destinationPath))
+        var mangaRootPath = Path.Join(destinationPath, folderName);
+        destinationPath = useTachiyomiFolderLayout ? Path.Join(mangaRootPath, "ch1") : mangaRootPath;
+        if (!Directory.Exists(destinationPath))
         {
-            Directory.CreateDirectory(_destinationPath);
+            Directory.CreateDirectory(destinationPath);
         }
 
         var metadataPath = Path.Combine(mangaRootPath, "info.txt");
@@ -119,17 +121,24 @@ public class DownloadService : IDownloadService
             await File.WriteAllTextAsync(tachiyomiMetadataPath, tachiyomiMetadata)
                 .ConfigureAwait(false);
         }
+
+        return new PrepareResult
+        {
+            FolderName = folderName,
+            Id = result.Id,
+            DestinationPath = destinationPath
+        };
     }
 
-    private async Task FetchImageAsync(int mediaId, GalleryImageResult page, IProgressBar bar)
+    private async Task FetchImageAsync(FetchImageParameter data, IProgressBar bar)
     {
-        var image = await _api.GetImage(mediaId.ToString(), page.ServerFilename);
+        var image = await _api.GetImage(data.MediaId.ToString(), data.Page.ServerFilename);
         var imageContents = await image.ReadAsByteArrayAsync();
 
-        var filePath = Path.Combine(_destinationPath, page.Filename);
+        var filePath = Path.Combine(data.DestinationPath, data.Page.Filename);
         await File.WriteAllBytesAsync(filePath, imageContents)
             .ConfigureAwait(false);
 
-        bar.Tick($"[downloading] id: {_taskId}");
+        bar.Tick($"[downloading] id: {data.TaskId}");
     }
 }

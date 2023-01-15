@@ -1,32 +1,33 @@
 using System;
 using System.Threading.Tasks;
-using Sharprompt;
-using asuka.CommandOptions;
+using asuka.Commandline.Options;
 using asuka.Configuration;
-using asuka.Downloader;
+using asuka.Core.Compression;
+using asuka.Core.Downloader;
+using asuka.Core.Requests;
 using asuka.Output;
-using asuka.Services;
-using Microsoft.Extensions.Configuration;
+using asuka.Output.Writer;
+using Sharprompt;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public class RandomCommandService : IRandomCommandService
 {
     private readonly IDownloadService _download;
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IPackArchiveToCbz _pack;
 
     public RandomCommandService(
         IDownloadService download,
         IGalleryRequestService api,
         IConsoleWriter console,
-        IConfigurationManager configurationManager)
+        IPackArchiveToCbz pack)
     {
         _download = download;
         _api = api;
         _console = console;
-        _configurationManager = configurationManager;
+        _pack = pack;
     }
 
     public async Task RunAsync(RandomOptions opts)
@@ -47,8 +48,12 @@ public class RandomCommandService : IRandomCommandService
                 continue;
             }
 
-            var useTachiyomiLayout = opts.UseTachiyomiLayout || _configurationManager.Values.UseTachiyomiLayout;
-            await _download.DownloadAsync(response, opts.Output, opts.Pack, useTachiyomiLayout, null);
+            var result = await _download.DownloadAsync(response, opts.Output);
+            if (opts.Pack)
+            {
+                var destination = result.DestinationPath[..^1] + ".cbz";
+                await _pack.RunAsync(result.FolderName, result.ImageFiles, destination);
+            }
             break;
         }
     }

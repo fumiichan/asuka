@@ -1,7 +1,7 @@
 using System;
 using ShellProgressBar;
 
-namespace asuka.Utils;
+namespace asuka.Output.ProgressService;
 
 public static class ProgressBarConfiguration
 {

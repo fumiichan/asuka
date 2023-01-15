@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using asuka.Api.Queries;
 using CommandLine;
 
-namespace asuka.CommandOptions;
+namespace asuka.Commandline.Options;
 
 [Verb("search", HelpText = "Search something in the gallery")]
 public record SearchOptions : ICommonOptions

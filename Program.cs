@@ -8,8 +8,7 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 var services = new ServiceCollection();
-services.InstallServices();
-services.InstallRefitServices(configuration);
+services.InstallServicesInAssembly(configuration);
 var serviceProvider = services.BuildServiceProvider();
 
 var app = serviceProvider.GetRequiredService<AsukaApplication>();

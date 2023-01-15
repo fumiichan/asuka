@@ -1,12 +1,12 @@
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using asuka.CommandOptions;
+using asuka.Commandline.Options;
 using asuka.Configuration;
 using asuka.Output;
+using asuka.Output.Writer;
 using FluentValidation;
 using Newtonsoft.Json;
 
-namespace asuka.CommandParsers;
+namespace asuka.Commandline.Parsers;
 
 public class ConfigureCommand : IConfigureCommand
 {

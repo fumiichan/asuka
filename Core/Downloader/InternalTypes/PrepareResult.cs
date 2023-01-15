@@ -1,4 +1,4 @@
-namespace asuka.Core.Downloader;
+namespace asuka.Core.Downloader.InternalTypes;
 
 internal record PrepareResult
 {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using asuka.Api.Queries;
+using asuka.Core.Api.Queries;
 using asuka.Core.Models;
 
-namespace asuka.Core.Api;
+namespace asuka.Core.Requests;
 
 public interface IGalleryRequestService
 {
