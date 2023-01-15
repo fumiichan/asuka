@@ -8,4 +8,5 @@ public interface IProgressService
     IProgressBar NestToMaster(int totalTicks, string title);
     IProgressBar GetMasterProgress();
     bool HasMasterProgress();
+    IProgressBar HookToInstance(IProgressBar bar, int totalTicks, string title);
 }

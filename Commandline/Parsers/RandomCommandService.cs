@@ -51,8 +51,7 @@ public class RandomCommandService : IRandomCommandService
             var result = await _download.DownloadAsync(response, opts.Output);
             if (opts.Pack)
             {
-                var destination = result.DestinationPath[..^1] + ".cbz";
-                await _pack.RunAsync(result.FolderName, result.ImageFiles, destination);
+                await _pack.RunAsync(result.DestinationPath, opts.Output, result.ProgressBar);
             }
             break;
         }

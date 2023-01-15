@@ -28,4 +28,9 @@ public class ProgressService : IProgressService
         CreateMasterProgress(totalTicks, title);
         return GetMasterProgress();
     }
+
+    public IProgressBar HookToInstance(IProgressBar bar, int totalTicks, string title)
+    {
+        return bar.Spawn(totalTicks, title, ProgressBarConfiguration.BarOption);
+    }
 }

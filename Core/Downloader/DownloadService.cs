@@ -68,9 +68,8 @@ public class DownloadService : IDownloadService
             ? Path.GetFullPath($"{prepare.DestinationPath}/../") : prepare.DestinationPath;
         return new DownloadResult
         {
-            FolderName = useTachiyomiFolderLayout ? Path.GetFullPath($"{prepare.FolderName}/../") : prepare.FolderName,
-            ImageFiles = Directory.GetFiles(destination),
-            DestinationPath = destination
+            DestinationPath = destination,
+            ProgressBar = bar
         };
     }
 
