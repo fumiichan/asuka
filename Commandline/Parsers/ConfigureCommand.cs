@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
-using asuka.Output;
 using asuka.Output.Writer;
 using FluentValidation;
 using Newtonsoft.Json;

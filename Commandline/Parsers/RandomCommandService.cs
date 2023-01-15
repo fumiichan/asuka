@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
-using asuka.Configuration;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
