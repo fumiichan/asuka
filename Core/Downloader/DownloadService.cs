@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,28 +38,29 @@ public class DownloadService : IDownloadService
         var progressInitialTitle = $"[queued] id: {prepare.Id}";
         var bar = _progress.NestToMaster(result.TotalPages, progressInitialTitle);
 
-        using var throttler = new SemaphoreSlim(2);
-        var taskList = new List<Task>();
-
-        foreach (var page in result.Images)
-        {
-            await throttler.WaitAsync().ConfigureAwait(false);
-
-            var referenceThrottler = throttler;
-            taskList.Add(Task.Run(async () =>
+        var throttler = new SemaphoreSlim(2);
+        var taskList = result.Images
+            .Select(x => Task.Run(async () =>
             {
-                var param = new FetchImageParameter
-                {
-                    DestinationPath = prepare.DestinationPath,
-                    MediaId = result.MediaId,
-                    Page = page,
-                    TaskId = prepare.Id
-                };
+                await throttler.WaitAsync().ConfigureAwait(false);
 
-                await FetchImageAsync(param, bar).ConfigureAwait(false);
-                referenceThrottler.Release();
+                try
+                {
+                    var param = new FetchImageParameter
+                    {
+                        DestinationPath = prepare.DestinationPath,
+                        MediaId = result.MediaId,
+                        Page = x,
+                        TaskId = prepare.Id
+                    };
+
+                    await FetchImageAsync(param, bar).ConfigureAwait(false);
+                }
+                finally
+                {
+                    throttler.Release();
+                }
             }));
-        }
 
         await Task.WhenAll(taskList).ConfigureAwait(false);
 
