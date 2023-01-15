@@ -1,12 +1,13 @@
 ﻿![The Banner](docs/banner.png)
 
 [![Maintenance](https://badgen.net/badge/maintained%3F/yes/green)](https://github.com/aikoofujimotoo/asuka/graphs/commit-activity)
-[![CircleCI](https://circleci.com/gh/aikoofujimotoo/asuka.svg?style=shield&circle-token=488813c48d642cdb1ff63cdb2483fdab55df8c19)](https://circleci.com/gh/aikoofujimotoo/asuka)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fd7d1abe2865463c93e091fc1f205dbe)](https://www.codacy.com/gh/aikoofujimotoo/asuka/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aikoofujimotoo/asuka&amp;utm_campaign=Badge_Grade)
 [![Age Rating](https://badgen.net/badge/age%20rating/18+/red)](https://en.wikipedia.org/wiki/Age_of_majority)
 [![MIT license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 
 Cross-platform nhentai downloader on Console.
+
+**Use .NET 7 builds for latest updates. However, it will require you to have at least Windows 10 Version 1607+. Still, this branch will be remain usable until foreseeable future.**
 
 ## Requirements
 
