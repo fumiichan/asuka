@@ -10,7 +10,7 @@ using Sharprompt;
 
 namespace asuka.Commandline.Parsers;
 
-public class RandomCommandService : IRandomCommandService
+public class RandomCommandService : ICommandLineParser
 {
     private readonly IDownloadService _download;
     private readonly IGalleryRequestService _api;
@@ -29,8 +29,9 @@ public class RandomCommandService : IRandomCommandService
         _pack = pack;
     }
 
-    public async Task RunAsync(RandomOptions opts)
+    public async Task RunAsync(object options)
     {
+        var opts = (RandomOptions)options;
         var totalNumbers = await _api.GetTotalGalleryCountAsync();
 
         while (true)

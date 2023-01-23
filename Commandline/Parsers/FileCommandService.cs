@@ -13,7 +13,7 @@ using asuka.Output.Writer;
 
 namespace asuka.Commandline.Parsers;
 
-public partial class FileCommandService : IFileCommandService
+public partial class FileCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
@@ -35,8 +35,9 @@ public partial class FileCommandService : IFileCommandService
         _pack = pack;
     }
 
-    public async Task RunAsync(FileCommandOptions opts)
+    public async Task RunAsync(object options)
     {
+        var opts = (FileCommandOptions)options;
         if (!File.Exists(opts.FilePath))
         {
             _console.ErrorLine("File doesn't exist.");

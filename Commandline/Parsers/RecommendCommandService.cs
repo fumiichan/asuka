@@ -10,7 +10,7 @@ using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
 
-public class RecommendCommandService : IRecommendCommandService
+public class RecommendCommandService : ICommandLineParser
 {
     private readonly IValidator<IRequiresInputOption> _validator;
     private readonly IGalleryRequestService _api;
@@ -35,8 +35,9 @@ public class RecommendCommandService : IRecommendCommandService
         _pack = pack;
     }
 
-    public async Task RunAsync(RecommendOptions opts)
+    public async Task RunAsync(object options)
     {
+        var opts = (RecommendOptions)options;
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {

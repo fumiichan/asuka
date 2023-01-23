@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace asuka.Commandline.Parsers;
 
-public class ConfigureCommand : IConfigureCommand
+public class ConfigureCommand : ICommandLineParser
 {
     private readonly IConfigurationManager _configurationManager;
     private readonly IConsoleWriter _consoleWriter;
@@ -28,8 +28,9 @@ public class ConfigureCommand : IConfigureCommand
         _consoleWriter.WriteLine($"UseTachiyomiLayout: {_configurationManager.Values.UseTachiyomiLayout}");
     }
     
-    public async Task RunAsync(ConfigureOptions opts)
+    public async Task RunAsync(object options)
     {
+        var opts = (ConfigureOptions)options;
         var validation = await _validator.ValidateAsync(opts);
         if (!validation.IsValid)
         {

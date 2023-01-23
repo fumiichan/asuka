@@ -1,3 +1,4 @@
+using asuka.Commandline;
 using asuka.Commandline.Parsers;
 using asuka.Configuration;
 using asuka.Core.Compression;
@@ -22,15 +23,16 @@ public class InstallServices : IInstaller
         services.AddSingleton<IConsoleWriter, ConsoleWriter>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
+        services.AddScoped<IConfigurationManager, ConfigurationManager>();
 
         // Command parsers
-        services.AddScoped<IGetCommandService, GetCommandService>();
-        services.AddScoped<IRecommendCommandService, RecommendCommandService>();
-        services.AddScoped<ISearchCommandService, SearchCommandService>();
-        services.AddScoped<IRandomCommandService, RandomCommandService>();
-        services.AddScoped<IFileCommandService, FileCommandService>();
-        services.AddScoped<IConfigurationManager, ConfigurationManager>();
-        services.AddScoped<IConfigureCommand, ConfigureCommand>();
+        services.AddScoped<ICommandLineParser, GetCommandService>();
+        services.AddScoped<ICommandLineParser, RecommendCommandService>();
+        services.AddScoped<ICommandLineParser, SearchCommandService>();
+        services.AddScoped<ICommandLineParser, RandomCommandService>();
+        services.AddScoped<ICommandLineParser, FileCommandService>();
+        services.AddScoped<ICommandLineParser, ConfigureCommand>();
+        services.AddScoped<ICommandLineParserFactory, CommandLineParserFactory>();
         services.AddValidatorsFromAssemblyContaining<Program>();
     }
 }

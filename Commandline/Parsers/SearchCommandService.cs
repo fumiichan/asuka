@@ -13,7 +13,7 @@ using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
 
-public class SearchCommandService : ISearchCommandService
+public class SearchCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
     private readonly IValidator<SearchOptions> _validator;
@@ -38,8 +38,9 @@ public class SearchCommandService : ISearchCommandService
         _pack = pack;
     }
 
-    public async Task RunAsync(SearchOptions opts)
+    public async Task RunAsync(object options)
     {
+        var opts = (SearchOptions)options;
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
