@@ -5,6 +5,7 @@ using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
 using asuka.Output;
+using asuka.Output.ProgressService;
 using asuka.Output.Writer;
 using Sharprompt;
 
@@ -12,20 +13,23 @@ namespace asuka.Commandline.Parsers;
 
 public class RandomCommandService : ICommandLineParser
 {
-    private readonly IDownloadService _download;
+    private readonly IDownloader _download;
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
+    private readonly IProgressService _progress;
     private readonly IPackArchiveToCbz _pack;
 
     public RandomCommandService(
-        IDownloadService download,
+        IDownloader download,
         IGalleryRequestService api,
         IConsoleWriter console,
+        IProgressService progress,
         IPackArchiveToCbz pack)
     {
         _download = download;
         _api = api;
         _console = console;
+        _progress = progress;
         _pack = pack;
     }
 
@@ -48,10 +52,20 @@ public class RandomCommandService : ICommandLineParser
                 continue;
             }
 
-            var result = await _download.DownloadAsync(response, opts.Output);
+            await _download.Initialize(response, opts.Output, 1);
+            
+            _progress.CreateMasterProgress(response.TotalPages, $"downloading random id: {response.Id}");
+            var progress = _progress.GetMasterProgress();
+            _download.OnImageDownload = () =>
+            {
+                progress.Tick();
+            };
+
+            await _download.Start();
+            
             if (opts.Pack)
             {
-                await _pack.RunAsync(result.DestinationPath, opts.Output, result.ProgressBar);
+                await _pack.RunAsync(_download.DownloadRoot, opts.Output, progress);
             }
             break;
         }

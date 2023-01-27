@@ -18,7 +18,7 @@ public class SearchCommandService : ICommandLineParser
     private readonly IGalleryRequestService _api;
     private readonly IValidator<SearchOptions> _validator;
     private readonly IConsoleWriter _console;
-    private readonly IDownloadService _download;
+    private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly IPackArchiveToCbz _pack;
 
@@ -26,7 +26,7 @@ public class SearchCommandService : ICommandLineParser
         IGalleryRequestService api,
         IValidator<SearchOptions> validator,
         IConsoleWriter console,
-        IDownloadService download,
+        IDownloader download,
         IProgressService progressService,
         IPackArchiveToCbz pack)
     {
@@ -77,10 +77,19 @@ public class SearchCommandService : ICommandLineParser
         
         foreach (var response in selection)
         {
-            var result = await _download.DownloadAsync(response, opts.Output);
+            await _download.Initialize(response, opts.Output, 1);
+
+            var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
+            _download.OnImageDownload = () =>
+            {
+                innerProgress.Tick();
+            };
+
+            await _download.Start();
+            
             if (opts.Pack)
             {
-                await _pack.RunAsync(result.DestinationPath, opts.Output, result.ProgressBar);
+                await _pack.RunAsync(_download.DownloadRoot, opts.Output, innerProgress);
             }
             progress.Tick();
         }

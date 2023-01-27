@@ -21,7 +21,7 @@ public class InstallServices : IInstaller
         services.AddSingleton<IProgressService, ProgressService>();
         services.AddSingleton<IGalleryRequestService, GalleryRequestService>();
         services.AddSingleton<IConsoleWriter, ConsoleWriter>();
-        services.AddScoped<IDownloadService, DownloadService>();
+        services.AddScoped<IDownloader, Downloader>();
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
         services.AddScoped<IConfigurationManager, ConfigurationManager>();
 

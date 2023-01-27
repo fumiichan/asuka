@@ -17,14 +17,14 @@ public partial class FileCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
-    private readonly IDownloadService _download;
+    private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly IPackArchiveToCbz _pack;
 
     public FileCommandService(
         IGalleryRequestService api,
         IConsoleWriter console,
-        IDownloadService download,
+        IDownloader download,
         IProgressService progressService,
         IPackArchiveToCbz pack)
     {
@@ -68,11 +68,22 @@ public partial class FileCommandService : ICommandLineParser
             var code = NumericRegex().Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
-            var result = await _download.DownloadAsync(response, opts.Output);
+            await _download.Initialize(response, opts.Output, 1);
             
+            // Create progress bar
+            var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
+            _download.OnImageDownload = () =>
+            {
+                internalProgress.Tick($"downloading: {response.Id}");
+            };
+
+            // Start downloading
+            await _download.Start();
+            
+            // If --pack option is specified, compresss the file into cbz
             if (opts.Pack)
             {
-                await _pack.RunAsync(result.DestinationPath, opts.Output, result.ProgressBar);
+                await _pack.RunAsync(_download.DownloadRoot, opts.Output, internalProgress);
             }
             progress.Tick();
         }
