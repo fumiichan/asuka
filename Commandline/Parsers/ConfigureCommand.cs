@@ -1,9 +1,9 @@
+using System.Text.Json;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
 using asuka.Output.Writer;
 using FluentValidation;
-using Newtonsoft.Json;
 
 namespace asuka.Commandline.Parsers;
 
@@ -22,7 +22,7 @@ public class ConfigureCommand : ICommandLineParser
 
     private void ListAllConfigurationValues()
     {
-        _consoleWriter.WriteLine($"Cookies: {JsonConvert.SerializeObject(_configurationManager.Values.Cookies)}");
+        _consoleWriter.WriteLine($"Cookies: {JsonSerializer.Serialize(_configurationManager.Values.Cookies)}");
         _consoleWriter.WriteLine($"User Agent: {_configurationManager.Values.UserAgent}");
         _consoleWriter.WriteLine($"Theme: {_configurationManager.Values.ConsoleTheme}");
         _consoleWriter.WriteLine($"UseTachiyomiLayout: {_configurationManager.Values.UseTachiyomiLayout}");

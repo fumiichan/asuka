@@ -28,11 +28,9 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="7.0.2" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
       <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
       <PackageReference Include="Refit" Version="6.3.2" />
       <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
-      <PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
       <PackageReference Include="Sharprompt" Version="2.4.5" />
       <PackageReference Include="ShellProgressBar" Version="5.2.0" />
     </ItemGroup>

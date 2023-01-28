@@ -29,13 +29,23 @@ public class AsukaApplication
             async (RandomOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Random); },
             async (FileCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.File); },
             async (ConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Configure); },
-            _ => Task.FromResult(1));
-        _console.SuccessLine("Task completed.");
+            async (SeriesCreatorCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Series); },
+            errors =>
+            {
+                foreach (var error in errors)
+                {
+                    _console.ErrorLine($"An error occured. Type: {error.Tag}");
+                }
+
+                return Task.FromResult(1);
+            });
     }
 
     private async Task RunCommand(object opts, CommandLineParserTokens token)
     {
         var service = _command.GetInstance(token);
         await service.RunAsync(opts);
+        
+        _console.SuccessLine("Task completed.");
     }
 }

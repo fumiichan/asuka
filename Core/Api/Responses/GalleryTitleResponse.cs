@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GalleryTitleResponse
 {
-    [JsonProperty("japanese")]
-    public string Japanese { get; init; }
+    [JsonPropertyName("japanese")]
+    public string Japanese { get; set; }
 
-    [JsonProperty("english")]
-    public string English { get; init; }
+    [JsonPropertyName("english")]
+    public string English { get; set; }
 
-    [JsonProperty("pretty")]
-    public string Pretty { get; init; }
+    [JsonPropertyName("pretty")]
+    public string Pretty { get; set; }
 }

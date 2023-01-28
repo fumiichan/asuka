@@ -1,25 +1,25 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Models;
 
 public record TachiyomiDetails
 {
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; init; }
 
-    [JsonProperty("author")]
+    [JsonPropertyName("author")]
     public string Author { get; init; }
 
-    [JsonProperty("artist")]
+    [JsonPropertyName("artist")]
     public string Artist { get; init; }
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; init; }
 
-    [JsonProperty("genre")]
+    [JsonPropertyName("genre")]
     public IReadOnlyList<string> Genres { get; init; }
 
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public string Status { get; init; } = "2";
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Net.Http;
+using System.Text.Json;
 using asuka.Configuration;
 using asuka.Core.Api;
 using Microsoft.Extensions.Configuration;
@@ -25,9 +26,15 @@ public class ConfigureRefitService : IInstaller
             Colorful.Console.WriteLine("WARNING: Cookies are unset! Your request might fail.", Color.Red);
         }
 
+        var contentSerializerSettings = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         var configureRefit = new RefitSettings
         {
-            ContentSerializer = new NewtonsoftJsonContentSerializer(),
+            ContentSerializer = new SystemTextJsonContentSerializer(contentSerializerSettings),
             HttpMessageHandlerFactory = () =>
             {
                 var handler = new HttpClientHandler();

@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GalleryImageResponse
 {
-    [JsonProperty("t")]
-    public string Type { get; init; }
+    [JsonPropertyName("t")]
+    public string Type { get; set; }
 
-    [JsonProperty("h")]
-    public int Height { get; init; }
+    [JsonPropertyName("h")]
+    public int Height { get; set; }
 
-    [JsonProperty("w")]
-    public int Width { get; init; }
+    [JsonPropertyName("w")]
+    public int Width { get; set; }
 }

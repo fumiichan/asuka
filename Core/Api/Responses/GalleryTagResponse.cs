@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GalleryTagResponse
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public int Id { get; init; }
 
-    [JsonProperty("type")]
-    public string Type { get; init; }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
 
-    [JsonProperty("name")]
-    public string Name { get; init; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-    [JsonProperty("url")]
-    public string Url { get; init; }
+    [JsonPropertyName("url")]
+    public string Url { get; set; }
 
-    [JsonProperty("count")]
-    public int Count { get; init; }
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace asuka.Configuration;
 
@@ -23,7 +23,7 @@ public class ConfigurationManager : IConfigurationManager
         }
 
         var data = File.ReadAllText(configPath, Encoding.UTF8);
-        Configuration = JsonConvert.DeserializeObject<ConfigurationData>(data);
+        Configuration = JsonSerializer.Deserialize<ConfigurationData>(data);
     }
 
     public async Task SetCookiesAsync(string path)
@@ -34,7 +34,7 @@ public class ConfigurationManager : IConfigurationManager
         }
 
         var cookies = await File.ReadAllTextAsync(path, Encoding.UTF8);
-        var cookieData = JsonConvert.DeserializeObject<CookieDump[]>(cookies);
+        var cookieData = JsonSerializer.Deserialize<CookieDump[]>(cookies);
 
         if (cookieData == null) return;
 
@@ -72,8 +72,9 @@ public class ConfigurationManager : IConfigurationManager
     {
         var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".asuka/config.json");
-        
-        var data = JsonConvert.SerializeObject(Configuration);
+
+        var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
+        var data = JsonSerializer.Serialize(Configuration, serializerOptions);
         await File.WriteAllTextAsync(configPath, data);
     }
 }

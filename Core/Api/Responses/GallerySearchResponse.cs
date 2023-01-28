@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GallerySearchResponse : GalleryListResponse
 {
-    [JsonProperty("num_pages")]
-    public int TotalPages { get; init; }
+    [JsonPropertyName("num_pages")]
+    public int TotalPages { get; set; }
 
-    [JsonProperty("per_page")]
-    public int TotalItemsPerPage { get; init; }
+    [JsonPropertyName("per_page")]
+    public int TotalItemsPerPage { get; set; }
 }

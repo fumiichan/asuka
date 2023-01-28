@@ -1,28 +1,28 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GalleryResponse
 {
-    [JsonProperty("id")]
-    public int Id { get; init; }
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
 
-    [JsonProperty("media_id")]
-    public int MediaId { get; init; }
+    [JsonPropertyName("media_id")]
+    public string MediaId { get; set; }
 
-    [JsonProperty("title")]
-    public GalleryTitleResponse Title { get; init; }
+    [JsonPropertyName("title")]
+    public GalleryTitleResponse Title { get; set; }
 
-    [JsonProperty("images")]
-    public GalleryImageObjectResponse Images { get; init; }
+    [JsonPropertyName("images")]
+    public GalleryImageObjectResponse Images { get; set; }
 
-    [JsonProperty("tags")]
-    public IReadOnlyList<GalleryTagResponse> Tags { get; init; }
+    [JsonPropertyName("tags")]
+    public IReadOnlyList<GalleryTagResponse> Tags { get; set; }
 
-    [JsonProperty("num_pages")]
-    public int TotalPages { get; init; }
+    [JsonPropertyName("num_pages")]
+    public int TotalPages { get; set; }
 
-    [JsonProperty("num_favorites")]
-    public int TotalFavorites { get; init; }
+    [JsonPropertyName("num_favorites")]
+    public int TotalFavorites { get; set; }
 }

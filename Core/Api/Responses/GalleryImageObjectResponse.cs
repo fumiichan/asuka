@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace asuka.Core.Api.Responses;
 
 public record GalleryImageObjectResponse
 {
-    [JsonProperty("pages")]
-    public IReadOnlyList<GalleryImageResponse> Images { get; init; }
+    [JsonPropertyName("pages")]
+    public IReadOnlyList<GalleryImageResponse> Images { get; set; }
 }

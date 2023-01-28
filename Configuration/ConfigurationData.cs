@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace asuka.Configuration;
 
 public class ConfigurationData
 {
-    [JsonProperty("cookies")]
+    [JsonPropertyName("cookies")]
     public CookieDump[] Cookies { get; set; }
     
-    [JsonProperty("user_agent")]
+    [JsonPropertyName("user_agent")]
     public string UserAgent { get; set; }
 
-    [JsonProperty("use_tachiyomi_layout")]
+    [JsonPropertyName("use_tachiyomi_layout")]
     public bool UseTachiyomiLayout { get; set; }
     
-    [JsonProperty("console_theme")]
+    [JsonPropertyName("console_theme")]
     public string ConsoleTheme { get; set; }
 }

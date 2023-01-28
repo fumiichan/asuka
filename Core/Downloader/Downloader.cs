@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using asuka.Configuration;
@@ -8,7 +9,6 @@ using asuka.Core.Api;
 using asuka.Core.Models;
 using asuka.Core.Utilities;
 using asuka.Output;
-using Newtonsoft.Json;
 
 namespace asuka.Core.Downloader;
 
@@ -52,8 +52,9 @@ public class Downloader : IDownloader
         if (_configurationManager.Values.UseTachiyomiLayout && chapter != -1)
         {
             var metaPath = Path.Combine(output, "details.json");
-            var metadata = JsonConvert
-                .SerializeObject(result.ToTachiyomiMetadata(), Formatting.Indented);
+            var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
+            var metadata = JsonSerializer
+                .Serialize(result.ToTachiyomiMetadata(), serializerOptions);
 
             await File.WriteAllTextAsync(metaPath, metadata).ConfigureAwait(false);
             return;
