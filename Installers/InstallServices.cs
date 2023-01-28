@@ -24,6 +24,7 @@ public class InstallServices : IInstaller
         services.AddScoped<IDownloader, Downloader>();
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
         services.AddSingleton<IConfigurationManager, ConfigurationManager>();
+        services.AddSingleton<IRequestConfigurator, RequestConfigurator>();
 
         // Command parsers
         services.AddScoped<ICommandLineParser, GetCommandService>();
@@ -33,6 +34,7 @@ public class InstallServices : IInstaller
         services.AddScoped<ICommandLineParser, FileCommandService>();
         services.AddScoped<ICommandLineParser, ConfigureCommand>();
         services.AddScoped<ICommandLineParser, SeriesCreatorCommandService>();
+        services.AddScoped<ICommandLineParser, CookieConfigureService>();
         services.AddScoped<ICommandLineParserFactory, CommandLineParserFactory>();
         services.AddValidatorsFromAssemblyContaining<Program>();
     }

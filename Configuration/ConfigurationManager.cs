@@ -26,26 +26,6 @@ public class ConfigurationManager : IConfigurationManager
         Configuration = JsonSerializer.Deserialize<ConfigurationData>(data);
     }
 
-    public async Task SetCookies(string path)
-    {
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException("Cookie file specified cannot be found.");
-        }
-
-        var cookies = await File.ReadAllTextAsync(path, Encoding.UTF8);
-        var cookieData = JsonSerializer.Deserialize<CookieDump[]>(cookies);
-
-        if (cookieData == null) return;
-
-        Configuration.Cookies = cookieData;
-    }
-
-    public void SetUserAgent(string userAgent)
-    {
-        Configuration.UserAgent = userAgent;
-    }
-
     public void ToggleTachiyomiLayout(bool value)
     {
         Configuration.UseTachiyomiLayout = value;

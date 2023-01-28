@@ -51,16 +51,6 @@ public class ConfigureCommand : ICommandLineParser
             _consoleWriter.SuccessLine("Configuration has been reset.");
             return;
         }
-        
-        if (!string.IsNullOrEmpty(opts.SetDefaultCookies))
-        {
-            await _configurationManager.SetCookies(opts.SetDefaultCookies);
-        }
-
-        if (!string.IsNullOrEmpty(opts.SetUserAgent))
-        {
-            _configurationManager.SetUserAgent(opts.SetUserAgent);
-        }
 
         if (opts.UseTachiyomiLayoutToggle == bool.FalseString || opts.UseTachiyomiLayoutToggle == bool.TrueString)
         {

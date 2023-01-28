@@ -21,7 +21,7 @@ public class AsukaApplication
     public async Task RunAsync(IEnumerable<string> args)
     {
         var parser = Parser.Default
-            .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions, SeriesCreatorCommandOptions>(args);
+            .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions, SeriesCreatorCommandOptions, CookieConfigureOptions>(args);
         await parser.MapResult(
             async (GetOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Get); },
             async (RecommendOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Recommend); },
@@ -30,6 +30,7 @@ public class AsukaApplication
             async (FileCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.File); },
             async (ConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Configure); },
             async (SeriesCreatorCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Series); },
+            async (CookieConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Cookie); },
             errors =>
             {
                 foreach (var error in errors)

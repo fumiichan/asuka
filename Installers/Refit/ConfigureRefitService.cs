@@ -1,8 +1,7 @@
 using System;
-using System.Drawing;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using asuka.Configuration;
 using asuka.Core.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,21 +15,20 @@ public class ConfigureRefitService : IInstaller
 {
     public void ConfigureService(IServiceCollection services, IConfiguration configuration)
     {
-        var cookies = new CloudflareBypass();
-
-        var cloudflareClearance = cookies.GetCookieByName("cf_clearance");
-        var csrfToken = cookies.GetCookieByName("csrftoken");
-
-        if (cloudflareClearance == null || csrfToken == null)
-        {
-            Colorful.Console.WriteLine("WARNING: Cookies are unset! Your request might fail.", Color.Red);
-        }
-
         var contentSerializerSettings = new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+
+        var cloudflare = CreateCookieFromConfig(configuration, "CloudflareClearance");
+        var csrf = CreateCookieFromConfig(configuration, "CsrfToken");
+
+        // Warn about cookies.
+        if (cloudflare == null || csrf == null)
+        {
+            Console.WriteLine("Cookies might be unset! Run \"asuka cookie\" command to set your cookies!");
+        }
 
         var configureRefit = new RefitSettings
         {
@@ -39,14 +37,14 @@ public class ConfigureRefitService : IInstaller
             {
                 var handler = new HttpClientHandler();
 
-                if (cloudflareClearance != null)
+                if (cloudflare != null)
                 {
-                    handler.CookieContainer.Add(cloudflareClearance);
+                    handler.CookieContainer.Add(cloudflare);
                 }
 
-                if (csrfToken != null)
+                if (csrf != null)
                 {
-                    handler.CookieContainer.Add(csrfToken);
+                    handler.CookieContainer.Add(csrf);
                 }
 
                 return handler;
@@ -57,20 +55,22 @@ public class ConfigureRefitService : IInstaller
                              ?? "https://nhentai.net";
         var imageBaseAddress = configuration.GetSection("BaseAddresses")["ImageBaseAddress"]
                                ?? "https://i.nhentai.net";
-        
+        var userAgent = configuration.GetSection("RequestOptions")
+            .GetValue<string>("UserAgent");
+
         services.AddRefitClient<IGalleryApi>(configureRefit)
             .AddTransientHttpErrorPolicy(ConfigureErrorPolicyBuilder)
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(apiBaseAddress);
-                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(cookies.UserAgent);
+                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
             });
         services.AddRefitClient<IGalleryImage>()
             .AddTransientHttpErrorPolicy(ConfigureErrorPolicyBuilder)
             .ConfigureHttpClient(httpClient =>
             {
                 httpClient.BaseAddress = new Uri(imageBaseAddress);
-                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(cookies.UserAgent);
+                httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
             });
     }
     
@@ -83,5 +83,25 @@ public class ConfigureRefitService : IInstaller
         {
             Colorful.Console.WriteLine($"Retrying in {span.Seconds}");
         });
+    }
+    
+    private static Cookie CreateCookieFromConfig(IConfiguration configuration, string name)
+    {
+        var option = configuration
+            .GetSection("RequestOptions")
+            .GetSection("Cookies")
+            .GetSection(name);
+
+        if (string.IsNullOrEmpty(option.GetValue<string>("Name")))
+        {
+            return null;
+        }
+
+        return new Cookie(option.GetValue<string>("Name"), option.GetValue<string>("Value"))
+        {
+            Domain = option.GetValue<string>("Domain"),
+            HttpOnly = option.GetValue<bool>("HttpOnly"),
+            Secure = option.GetValue<bool>("Secure")
+        };
     }
 }
