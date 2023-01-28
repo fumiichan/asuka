@@ -26,7 +26,7 @@ public class ConfigurationManager : IConfigurationManager
         Configuration = JsonSerializer.Deserialize<ConfigurationData>(data);
     }
 
-    public async Task SetCookiesAsync(string path)
+    public async Task SetCookies(string path)
     {
         if (!File.Exists(path))
         {
@@ -39,36 +39,31 @@ public class ConfigurationManager : IConfigurationManager
         if (cookieData == null) return;
 
         Configuration.Cookies = cookieData;
-        await FlushAsync();
     }
 
-    public async Task SetUserAgentAsync(string userAgent)
+    public void SetUserAgent(string userAgent)
     {
         Configuration.UserAgent = userAgent;
-        await FlushAsync();
     }
 
-    public async Task ToggleTachiyomiLayoutAsync(bool value)
+    public void ToggleTachiyomiLayout(bool value)
     {
         Configuration.UseTachiyomiLayout = value;
-        await FlushAsync();
     }
 
-    public async Task ChangeColourThemeAsync(string value)
+    public void ChangeColourTheme(string value)
     {
         Configuration.ConsoleTheme = value;
-        await FlushAsync();
     }
 
-    public async Task ResetAsync()
+    public void Reset()
     {
         Configuration = new ConfigurationData();
-        await FlushAsync();
     }
 
     public ConfigurationData Values => Configuration;
 
-    private async Task FlushAsync()
+    public async Task Flush()
     {
         var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".asuka/config.json");

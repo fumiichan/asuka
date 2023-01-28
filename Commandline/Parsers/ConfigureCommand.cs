@@ -46,29 +46,32 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.ResetConfig)
         {
-            await _configurationManager.ResetAsync();
+            _configurationManager.Reset();
+            await _configurationManager.Flush();
             _consoleWriter.SuccessLine("Configuration has been reset.");
             return;
         }
         
         if (!string.IsNullOrEmpty(opts.SetDefaultCookies))
         {
-            await _configurationManager.SetCookiesAsync(opts.SetDefaultCookies);
+            await _configurationManager.SetCookies(opts.SetDefaultCookies);
         }
 
         if (!string.IsNullOrEmpty(opts.SetUserAgent))
         {
-            await _configurationManager.SetUserAgentAsync(opts.SetUserAgent);
+            _configurationManager.SetUserAgent(opts.SetUserAgent);
         }
 
         if (opts.UseTachiyomiLayoutToggle == bool.FalseString || opts.UseTachiyomiLayoutToggle == bool.TrueString)
         {
-            await _configurationManager.ToggleTachiyomiLayoutAsync(bool.Parse(opts.UseTachiyomiLayoutToggle));
+            _configurationManager.ToggleTachiyomiLayout(bool.Parse(opts.UseTachiyomiLayoutToggle));
         }
 
         if (!string.IsNullOrEmpty(opts.Theme))
         {
-            await _configurationManager.ChangeColourThemeAsync(opts.Theme);
+            _configurationManager.ChangeColourTheme(opts.Theme);
         }
+
+        await _configurationManager.Flush();
     }
 }

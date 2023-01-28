@@ -6,10 +6,12 @@ namespace asuka.Core.Api.Responses;
 public record GalleryResponse
 {
     [JsonPropertyName("id")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public int Id { get; set; }
 
     [JsonPropertyName("media_id")]
-    public string MediaId { get; set; }
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public int MediaId { get; set; }
 
     [JsonPropertyName("title")]
     public GalleryTitleResponse Title { get; set; }

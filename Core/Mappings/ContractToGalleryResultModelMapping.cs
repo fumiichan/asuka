@@ -5,18 +5,12 @@ namespace asuka.Core.Mappings;
 
 public static class ContractToGalleryResultModelMapping
 {
-    private static int ParseNumber(string number)
-    {
-        var parse = int.TryParse(number, out var result);
-        return parse ? result : 0;
-    }
-
     public static GalleryResult ToGalleryResult(this GalleryResponse response)
     {
         return new GalleryResult
         {
             Id = response.Id,
-            MediaId = ParseNumber(response.MediaId),
+            MediaId = response.MediaId,
             Title = new GalleryTitleResult
             {
                 Japanese = response.Title.Japanese,

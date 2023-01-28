@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using asuka.Core.Models;
 
@@ -8,6 +9,8 @@ public interface IDownloader
 {
     public Action OnImageDownload { set; }
     public string DownloadRoot { get; }
+    void CreateSeries(GalleryTitleResult title, string outputPath);
+    void CreateChapter(GalleryResult result, int chapter = -1);
     Task Start();
-    Task Initialize(GalleryResult result, string outputPath, int chapter = -1);
+    Task Finalize(GalleryResult result = null);
 }

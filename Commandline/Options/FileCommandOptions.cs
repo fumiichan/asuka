@@ -12,5 +12,4 @@ public record FileCommandOptions : ICommonOptions
 
     public bool Pack { get; init; }
     public string Output { get; init; }
-    public bool UseTachiyomiLayout { get; init; }
 }

@@ -21,7 +21,7 @@ public class AsukaApplication
     public async Task RunAsync(IEnumerable<string> args)
     {
         var parser = Parser.Default
-            .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions>(args);
+            .ParseArguments<GetOptions, RecommendOptions, SearchOptions, RandomOptions, FileCommandOptions, ConfigureOptions, SeriesCreatorCommandOptions>(args);
         await parser.MapResult(
             async (GetOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Get); },
             async (RecommendOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Recommend); },

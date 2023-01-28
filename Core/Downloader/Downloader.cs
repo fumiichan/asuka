@@ -14,8 +14,8 @@ namespace asuka.Core.Downloader;
 
 internal record DownloadTaskDetails
 {
-    internal GalleryResult Result { get; init; }
-    internal string ChapterPath { get; init; }
+    internal GalleryResult Result { get; set; }
+    internal string ChapterPath { get; set; }
     internal string ChapterRoot { get; init; }
 }
 
@@ -47,9 +47,9 @@ public class Downloader : IDownloader
         return "Unknown title";
     }
 
-    private async Task WriteMetadata(string output, GalleryResult result, int chapter = 0)
+    private async Task WriteMetadata(string output, GalleryResult result)
     {
-        if (_configurationManager.Values.UseTachiyomiLayout && chapter != -1)
+        if (_configurationManager.Values.UseTachiyomiLayout)
         {
             var metaPath = Path.Combine(output, "details.json");
             var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -65,24 +65,26 @@ public class Downloader : IDownloader
             .ConfigureAwait(false);
     }
 
-    public async Task Initialize(GalleryResult result, string outputPath, int chapter = -1)
+    public void CreateSeries(GalleryTitleResult title, string outputPath)
     {
-        // Override given chapter when using the layout is false.
-        var chapterNumber = _configurationManager.Values.UseTachiyomiLayout ? chapter : -1;
-        var destination = PathUtils.NormalizeJoin(outputPath, GetTitle(result.Title), chapterNumber);
-        if (!Directory.Exists(destination.ChapterPath))
-        {
-            Directory.CreateDirectory(destination.ChapterPath!);
-        }
-
-        await WriteMetadata(destination.ChapterRoot, result, chapter);
-
+        var destination = PathUtils.NormalizeJoin(outputPath, GetTitle(title));
         _details = new DownloadTaskDetails
         {
-            ChapterPath = destination.ChapterPath,
-            ChapterRoot = destination.ChapterRoot,
-            Result = result
+            ChapterRoot = destination
         };
+    }
+
+    public void CreateChapter(GalleryResult result, int chapter = -1)
+    {
+        _details.ChapterPath = _configurationManager.Values.UseTachiyomiLayout && chapter > 0
+            ? Path.Combine(_details.ChapterRoot, $"ch{chapter}")
+            : _details.ChapterRoot;
+        _details.Result = result;
+        
+        if (!Directory.Exists(_details.ChapterPath))
+        {
+            Directory.CreateDirectory(_details.ChapterPath!);
+        }
     }
 
     public Action OnImageDownload { get; set; } = () => { };
@@ -120,6 +122,11 @@ public class Downloader : IDownloader
             }));
 
         await Task.WhenAll(taskList).ConfigureAwait(false);
+    }
+    
+    public async Task Finalize(GalleryResult result = null)
+    {
+        await WriteMetadata(_details.ChapterRoot, result ?? _details.Result);
     }
 
     private async Task DownloadImage(FetchImageParameter data)

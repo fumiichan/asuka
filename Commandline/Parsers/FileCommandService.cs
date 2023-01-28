@@ -68,7 +68,8 @@ public partial class FileCommandService : ICommandLineParser
             var code = NumericRegex().Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
-            await _download.Initialize(response, opts.Output, 1);
+            _download.CreateSeries(response.Title, opts.Output);
+            _download.CreateChapter(response, 1);
             
             // Create progress bar
             var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
@@ -79,6 +80,7 @@ public partial class FileCommandService : ICommandLineParser
 
             // Start downloading
             await _download.Start();
+            await _download.Finalize();
             
             // If --pack option is specified, compresss the file into cbz
             if (opts.Pack)

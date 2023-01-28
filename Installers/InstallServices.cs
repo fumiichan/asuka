@@ -23,7 +23,7 @@ public class InstallServices : IInstaller
         services.AddSingleton<IConsoleWriter, ConsoleWriter>();
         services.AddScoped<IDownloader, Downloader>();
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
-        services.AddScoped<IConfigurationManager, ConfigurationManager>();
+        services.AddSingleton<IConfigurationManager, ConfigurationManager>();
 
         // Command parsers
         services.AddScoped<ICommandLineParser, GetCommandService>();
@@ -32,6 +32,7 @@ public class InstallServices : IInstaller
         services.AddScoped<ICommandLineParser, RandomCommandService>();
         services.AddScoped<ICommandLineParser, FileCommandService>();
         services.AddScoped<ICommandLineParser, ConfigureCommand>();
+        services.AddScoped<ICommandLineParser, SeriesCreatorCommandService>();
         services.AddScoped<ICommandLineParserFactory, CommandLineParserFactory>();
         services.AddValidatorsFromAssemblyContaining<Program>();
     }

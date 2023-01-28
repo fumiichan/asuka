@@ -7,5 +7,6 @@ public enum CommandLineParserTokens
     Get,
     Random,
     Recommend,
-    Search
+    Search,
+    Series
 }

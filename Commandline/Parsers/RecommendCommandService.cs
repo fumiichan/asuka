@@ -54,7 +54,8 @@ public class RecommendCommandService : ICommandLineParser
 
         foreach (var response in selection)
         {
-            await _download.Initialize(response, opts.Output, 1);
+            _download.CreateSeries(response.Title, opts.Output);
+            _download.CreateChapter(response, 1);
 
             var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
             _download.OnImageDownload = () =>
@@ -63,6 +64,7 @@ public class RecommendCommandService : ICommandLineParser
             };
 
             await _download.Start();
+            await _download.Finalize();
             
             if (opts.Pack)
             {
