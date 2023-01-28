@@ -7,10 +7,12 @@ namespace asuka.Core.Downloader;
 
 public interface IDownloader
 {
-    public Action OnImageDownload { set; }
+    public Action SetOnImageDownload { set; }
     public string DownloadRoot { get; }
     void CreateSeries(GalleryTitleResult title, string outputPath);
-    void CreateChapter(GalleryResult result, int chapter = -1);
+    void CreateChapter(GalleryResult result);
+    void CreateChapter(GalleryResult result, int chapter);
     Task Start();
-    Task Finalize(GalleryResult result = null);
+    Task Final();
+    Task Final(GalleryResult result);
 }

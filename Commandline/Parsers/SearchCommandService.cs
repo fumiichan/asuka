@@ -81,13 +81,13 @@ public class SearchCommandService : ICommandLineParser
             _download.CreateChapter(response, 1);
 
             var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
-            _download.OnImageDownload = () =>
+            _download.SetOnImageDownload = () =>
             {
                 innerProgress.Tick();
             };
 
             await _download.Start();
-            await _download.Finalize();
+            await _download.Final();
             
             if (opts.Pack)
             {

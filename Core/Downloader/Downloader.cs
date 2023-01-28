@@ -40,11 +40,15 @@ public class Downloader : IDownloader
 
     private static string GetTitle(GalleryTitleResult result)
     {
-        if (!string.IsNullOrEmpty(result.Japanese)) return result.Japanese;
-        if (!string.IsNullOrEmpty(result.English)) return result.English;
-        if (!string.IsNullOrEmpty(result.Pretty)) return result.Pretty;
-
-        return "Unknown title";
+        if (!string.IsNullOrEmpty(result.Japanese))
+        {
+            return result.Japanese;
+        }
+        if (!string.IsNullOrEmpty(result.English))
+        {
+            return result.English;
+        }
+        return !string.IsNullOrEmpty(result.Pretty) ? result.Pretty : "Unknown title";
     }
 
     private async Task WriteMetadata(string output, GalleryResult result)
@@ -74,7 +78,7 @@ public class Downloader : IDownloader
         };
     }
 
-    public void CreateChapter(GalleryResult result, int chapter = -1)
+    public void CreateChapter(GalleryResult result, int chapter)
     {
         _details.ChapterPath = _configurationManager.Values.UseTachiyomiLayout && chapter > 0
             ? Path.Combine(_details.ChapterRoot, $"ch{chapter}")
@@ -87,7 +91,12 @@ public class Downloader : IDownloader
         }
     }
 
-    public Action OnImageDownload { get; set; } = () => { };
+    public void CreateChapter(GalleryResult result)
+    {
+        CreateChapter(result, 1);
+    }
+
+    public Action SetOnImageDownload { get; set; } = () => { };
     public string DownloadRoot => _details.ChapterRoot;
 
     public async Task Start()
@@ -95,7 +104,7 @@ public class Downloader : IDownloader
         // Break when necessary.
         if (_details is null)
         {
-            throw new NullReferenceException("Data required for download task is missing.");
+            throw new Exception("Data required for download task is missing.");
         }
 
         var throttler = new SemaphoreSlim(2);
@@ -124,9 +133,14 @@ public class Downloader : IDownloader
         await Task.WhenAll(taskList).ConfigureAwait(false);
     }
     
-    public async Task Finalize(GalleryResult result = null)
+    public async Task Final()
     {
-        await WriteMetadata(_details.ChapterRoot, result ?? _details.Result);
+        await WriteMetadata(_details.ChapterRoot, _details.Result);
+    }
+
+    public async Task Final(GalleryResult result)
+    {
+        await WriteMetadata(_details.ChapterRoot, result);
     }
 
     private async Task DownloadImage(FetchImageParameter data)
@@ -134,7 +148,7 @@ public class Downloader : IDownloader
         var filePath = Path.Combine(data.DestinationPath, data.Page.Filename);
         if (File.Exists(filePath))
         {
-            OnImageDownload();
+            SetOnImageDownload();
             return;
         }
 
@@ -144,6 +158,6 @@ public class Downloader : IDownloader
         await File.WriteAllBytesAsync(filePath, imageData)
             .ConfigureAwait(false);
 
-        OnImageDownload();
+        SetOnImageDownload();
     }
 }

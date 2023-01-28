@@ -13,7 +13,7 @@ using asuka.Output.Writer;
 
 namespace asuka.Commandline.Parsers;
 
-public partial class FileCommandService : ICommandLineParser
+public class FileCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
     private readonly IConsoleWriter _console;
@@ -65,7 +65,7 @@ public partial class FileCommandService : ICommandLineParser
 
         foreach (var url in validUrls)
         {
-            var code = NumericRegex().Match(url).Value;
+            var code = new Regex("\\d+").Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
             _download.CreateSeries(response.Title, opts.Output);
@@ -73,14 +73,14 @@ public partial class FileCommandService : ICommandLineParser
             
             // Create progress bar
             var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
-            _download.OnImageDownload = () =>
+            _download.SetOnImageDownload = () =>
             {
                 internalProgress.Tick($"downloading: {response.Id}");
             };
 
             // Start downloading
             await _download.Start();
-            await _download.Finalize();
+            await _download.Final();
             
             // If --pack option is specified, compresss the file into cbz
             if (opts.Pack)
@@ -93,7 +93,7 @@ public partial class FileCommandService : ICommandLineParser
 
     private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
     {
-        return urls.Where(url => WebUrlRegex().IsMatch(url)).ToList();
+        return urls.Where(url => new Regex("^http(s)?:\\/\\/(nhentai\\.net)\\b([//g]*)\\b([\\d]{1,6})\\/?$").IsMatch(url)).ToList();
     }
 
     private static bool IsFileExceedingToFileSizeLimit(string inputFile)
@@ -101,10 +101,4 @@ public partial class FileCommandService : ICommandLineParser
         var fileSize = new FileInfo(inputFile).Length;
         return fileSize > 5242880;
     }
-
-    [GeneratedRegex("\\d+")]
-    private static partial Regex NumericRegex();
-
-    [GeneratedRegex("^http(s)?:\\/\\/(nhentai\\.net)\\b([//g]*)\\b([\\d]{1,6})\\/?$", RegexOptions.IgnoreCase, "en-JP")]
-    private static partial Regex WebUrlRegex();
 }

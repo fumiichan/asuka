@@ -59,13 +59,13 @@ public class GetCommandService : ICommandLineParser
         _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
 
         var progress = _progress.GetMasterProgress();
-        _download.OnImageDownload = () =>
+        _download.SetOnImageDownload = () =>
         {
             progress.Tick();
         };
 
         await _download.Start();
-        await _download.Finalize();
+        await _download.Final();
 
         if (opts.Pack)
         {

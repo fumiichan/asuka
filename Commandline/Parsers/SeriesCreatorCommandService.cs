@@ -54,7 +54,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
                 _downloader.CreateChapter(chapter, i + 1);
                 
                 var innerProgress = _progress.NestToMaster(chapter.TotalPages, $"downloading chapter {i + 1}");
-                _downloader.OnImageDownload = () =>
+                _downloader.SetOnImageDownload = () =>
                 {
                     innerProgress.Tick();
                 };
@@ -105,7 +105,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         
         _downloader.CreateSeries(chapters[0].Title, output);
         var destinationPath = await DownloadTask(chapters);
-        await _downloader.Finalize(chapters[0]);
+        await _downloader.Final(chapters[0]);
 
         if (pack)
         {

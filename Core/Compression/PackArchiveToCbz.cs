@@ -29,7 +29,10 @@ public class PackArchiveToCbz : IPackArchiveToCbz
         var childBar = _progressService.HookToInstance(bar, files.Count, $"compressing...");
 
         // Delete if file exists.
-        if (File.Exists(output)) File.Delete(output);
+        if (File.Exists(output))
+        {
+            File.Delete(output);
+        }
 
         var destination = $"{targetFolder[..^1]}.cbz";
         await using var archiveToOpen = new FileStream(destination, FileMode.Create);

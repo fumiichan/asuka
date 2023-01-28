@@ -23,7 +23,10 @@ public class ProgressService : IProgressService
 
     public IProgressBar NestToMaster(int totalTicks, string title)
     {
-        if (HasMasterProgress()) return _progressBar.Spawn(totalTicks, title, ProgressBarConfiguration.BarOption);
+        if (HasMasterProgress())
+        {
+            return _progressBar.Spawn(totalTicks, title, ProgressBarConfiguration.BarOption);
+        }
 
         CreateMasterProgress(totalTicks, title);
         return GetMasterProgress();
