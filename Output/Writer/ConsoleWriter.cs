@@ -17,9 +17,9 @@ public class ConsoleWriter : IConsoleWriter
 
     private Color GetColor(Color forWhiteTheme, Color forDarkTheme)
     {
-        return _configurationManager.Values.ConsoleTheme == "dark" ? forDarkTheme : forWhiteTheme;
+        return _configurationManager.GetValue("color.theme") == "dark" ? forDarkTheme : forWhiteTheme;
     }
-    
+
     public void WriteLine(object message)
     {
         Console.WriteLine(message, GetColor(Color.Red, Color.Aqua));

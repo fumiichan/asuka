@@ -1,4 +1,4 @@
-using System.IO;
+using System.Text.RegularExpressions;
 using asuka.Commandline.Options;
 using FluentValidation;
 
@@ -8,25 +8,22 @@ public class ConfigurationValidator : AbstractValidator<ConfigureOptions>
 {
     public ConfigurationValidator()
     {
-        When(opts => !string.IsNullOrEmpty(opts.Theme), () =>
+        When(opts => opts.ReadConfigMode, () =>
         {
-            RuleFor(opts => opts.Theme)
-                .Matches(@"(light|dark)")
-                .WithMessage("Invalid Configuration value. Must be either light or dark");
+            RuleFor(opts => opts.Key)
+                .Must(x => !string.IsNullOrEmpty(x))
+                .WithMessage("Invalid key");
         });
 
-        When(opts => !string.IsNullOrEmpty(opts.UseTachiyomiLayoutToggle), () =>
+        When(opts => opts.SetConfigMode, () =>
         {
-            RuleFor(opts => opts.UseTachiyomiLayoutToggle)
-                .Matches(@"(True|False)")
-                .WithMessage("Invalid values. Use True or False as values. (Case sensitive)");
-        });
+            RuleFor(opts => opts.Key)
+                .Must(x => !string.IsNullOrEmpty(x))
+                .WithMessage("Invalid key.");
 
-        When(opts => !string.IsNullOrEmpty(opts.SetDefaultCookies), () =>
-        {
-            RuleFor(opts => opts.SetDefaultCookies)
-                .Must(File.Exists)
-                .WithMessage("The Cookie file you specified cannot be found.");
+            RuleFor(opts => opts.Value)
+                .Must(x => !string.IsNullOrEmpty(x))
+                .WithMessage("Invalid value");
         });
     }
 }

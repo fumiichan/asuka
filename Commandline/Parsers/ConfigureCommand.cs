@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
@@ -20,14 +19,6 @@ public class ConfigureCommand : ICommandLineParser
         _validator = validator;
     }
 
-    private void ListAllConfigurationValues()
-    {
-        _consoleWriter.WriteLine($"Cookies: {JsonSerializer.Serialize(_configurationManager.Values.Cookies)}");
-        _consoleWriter.WriteLine($"User Agent: {_configurationManager.Values.UserAgent}");
-        _consoleWriter.WriteLine($"Theme: {_configurationManager.Values.ConsoleTheme}");
-        _consoleWriter.WriteLine($"UseTachiyomiLayout: {_configurationManager.Values.UseTachiyomiLayout}");
-    }
-    
     public async Task RunAsync(object options)
     {
         var opts = (ConfigureOptions)options;
@@ -37,31 +28,38 @@ public class ConfigureCommand : ICommandLineParser
             _consoleWriter.ValidationErrors(validation.Errors);
             return;
         }
-        
-        if (opts.JustList)
+
+        if (opts.SetConfigMode)
         {
-            ListAllConfigurationValues();
+            _configurationManager.SetValue(opts.Key, opts.Value);
+            await _configurationManager.Flush();
+            
+            return;
+        }
+
+        if (opts.ReadConfigMode)
+        {
+            var configValue = _configurationManager.GetValue(opts.Key);
+            _consoleWriter.WriteLine($"{opts.Key} = {configValue}");
+
+            return;
+        }
+
+        if (opts.ListConfigMode)
+        {
+            var keyValuePairs = _configurationManager.GetAllValues();
+
+            foreach (var (key, value) in keyValuePairs)
+            {
+                _consoleWriter.WriteLine($"{key} = {value}");
+            }
+
             return;
         }
 
         if (opts.ResetConfig)
         {
-            _configurationManager.Reset();
-            await _configurationManager.Flush();
-            _consoleWriter.SuccessLine("Configuration has been reset.");
-            return;
+            await _configurationManager.Reset();
         }
-
-        if (opts.UseTachiyomiLayoutToggle == bool.FalseString || opts.UseTachiyomiLayoutToggle == bool.TrueString)
-        {
-            _configurationManager.ToggleTachiyomiLayout(bool.Parse(opts.UseTachiyomiLayoutToggle));
-        }
-
-        if (!string.IsNullOrEmpty(opts.Theme))
-        {
-            _configurationManager.ChangeColourTheme(opts.Theme);
-        }
-
-        await _configurationManager.Flush();
     }
 }

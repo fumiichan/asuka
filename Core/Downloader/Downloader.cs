@@ -53,7 +53,7 @@ public class Downloader : IDownloader
 
     private async Task WriteMetadata(string output, GalleryResult result)
     {
-        if (_configurationManager.Values.UseTachiyomiLayout)
+        if (_configurationManager.GetValue("layout.tachiyomi") == "yes")
         {
             var metaPath = Path.Combine(output, "details.json");
             var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -80,7 +80,7 @@ public class Downloader : IDownloader
 
     public void CreateChapter(GalleryResult result, int chapter)
     {
-        _details.ChapterPath = _configurationManager.Values.UseTachiyomiLayout && chapter > 0
+        _details.ChapterPath = _configurationManager.GetValue("layout.tachiyomi") == "yes" && chapter > 0
             ? Path.Combine(_details.ChapterRoot, $"ch{chapter}")
             : _details.ChapterRoot;
         _details.Result = result;
@@ -96,7 +96,7 @@ public class Downloader : IDownloader
         CreateChapter(result, 1);
     }
 
-    public Action SetOnImageDownload { get; set; } = () => { };
+    public Action SetOnImageDownload { private get; set; } = () => { };
     public string DownloadRoot => _details.ChapterRoot;
 
     public async Task Start()

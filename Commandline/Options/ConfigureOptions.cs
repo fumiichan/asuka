@@ -5,21 +5,21 @@ namespace asuka.Commandline.Options;
 [Verb("config", HelpText = "Configure the client")]
 public record ConfigureOptions
 {
-    [Option('c', "setDefaultCookies", HelpText = "Sets/Updates the cookies")]
-    public string SetDefaultCookies { get; init; }
+    [Option('s', "set", HelpText = "Set value")]
+    public bool SetConfigMode { get; init; }
     
-    [Option('u', "setUserAgent", HelpText = "Set default User Agent")]
-    public string SetUserAgent { get; init; }
+    [Option('r', "read", HelpText = "Read configuration")]
+    public bool ReadConfigMode { get; init; }
     
-    [Option('l', "useTachiyomiLayout", HelpText = "Toggle Tachiyomi Layout")]
-    public string UseTachiyomiLayoutToggle { get; init; }
+    [Option('l', "list", HelpText = "List all configuration values")]
+    public bool ListConfigMode { get; init; }
     
-    [Option('t', "theme", HelpText = "Use a colour scheme according to your console background. Supported values are light and dark")]
-    public string Theme { get; init; }
+    [Option('k', "key", HelpText = "Configuration to set/read")]
+    public string Key { get; init; }
+    
+    [Option('v', "value", HelpText = "New value")]
+    public string Value { get; init; }
     
     [Option("reset", HelpText = "Reset configuration values")]
     public bool ResetConfig { get; init; }
-    
-    [Option("list", HelpText = "List values of configuration")]
-    public bool JustList { get; init; }
 }

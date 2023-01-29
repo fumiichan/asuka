@@ -51,10 +51,10 @@ public class ConfigureRefitService : IInstaller
             }
         };
 
-        var apiBaseAddress = configuration.GetSection("BaseAddresses")["ApiBaseAddress"]
-                             ?? "https://nhentai.net";
-        var imageBaseAddress = configuration.GetSection("BaseAddresses")["ImageBaseAddress"]
-                               ?? "https://i.nhentai.net";
+        var apiBaseAddress = configuration.GetSection("BaseAddresses")
+            .GetValue<string>("ApiBaseAddress") ?? "https://nhentai.net";
+        var imageBaseAddress = configuration.GetSection("BaseAddresses")
+            .GetValue<string>("ImageBaseAddress") ?? "https://i.nhentai.net";
         var userAgent = configuration.GetSection("RequestOptions")
             .GetValue<string>("UserAgent");
 

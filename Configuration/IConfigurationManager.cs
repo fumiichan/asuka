@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace asuka.Configuration;
 
 public interface IConfigurationManager
 {
-    void ToggleTachiyomiLayout(bool value);
-    void Reset();
-    void ChangeColourTheme(string value);
+    void SetValue(string key, string value);
+    string GetValue(string key);
+    IReadOnlyList<(string, string)> GetAllValues();
+    Task Reset();
     Task Flush();
-    ConfigurationData Values { get; }
 }

@@ -125,7 +125,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         }
 
         // Temporarily enable tachiyomi folder layout
-        _config.ToggleTachiyomiLayout(true);
+        _config.SetValue("layout.tachiyomi", "yes");
 
         var list = opts.FromList.ToList();
         await HandleArrayTask(list, opts.Output, opts.Pack);
