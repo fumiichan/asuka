@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
-
 namespace asuka.Output.ProgressService.Providers;
 
 public class VoidProgressProvider : IProgressProvider

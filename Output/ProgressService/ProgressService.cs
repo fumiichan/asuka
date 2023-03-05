@@ -1,7 +1,5 @@
 using asuka.Configuration;
 using asuka.Output.ProgressService.Providers;
-using asuka.Output.ProgressService.Providers.Wrappers;
-using ShellProgressBar;
 
 namespace asuka.Output.ProgressService;
 

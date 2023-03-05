@@ -1,5 +1,4 @@
 using asuka.Output.ProgressService.Providers;
-using asuka.Output.ProgressService.Providers.Wrappers;
 
 namespace asuka.Output.ProgressService;
 

@@ -9,7 +9,6 @@ public class ProgressWrapper : IProgressWrapper
     /// <summary>
     /// Initialize a Progress Wrapper with IProgressBar instance
     /// </summary>
-    /// <param name="configuration"></param>
     /// <param name="progress"></param>
     private ProgressWrapper(IProgressBar progress)
     {
@@ -19,7 +18,6 @@ public class ProgressWrapper : IProgressWrapper
     /// <summary>
     /// Initialize a Progress Wrapper with ProgressBar required parameters
     /// </summary>
-    /// <param name="configuration"></param>
     /// <param name="maxTicks"></param>
     /// <param name="title"></param>
     /// <param name="options"></param>
