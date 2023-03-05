@@ -9,7 +9,7 @@ public class GetValidator : AbstractValidator<GetOptions>
     public GetValidator()
     {
         RuleForEach(opts => opts.Input)
-            .Must(x => x > 0)
+            .GreaterThan(0)
             .WithMessage("IDs must not be lower than 0.");
     }
 }

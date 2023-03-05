@@ -12,7 +12,7 @@ namespace asuka.Commandline.Parsers;
 
 public class RecommendCommandService : ICommandLineParser
 {
-    private readonly IValidator<IRequiresInputOption> _validator;
+    private readonly IValidator<RecommendOptions> _validator;
     private readonly IGalleryRequestService _api;
     private readonly IDownloader _download;
     private readonly IConsoleWriter _console;
@@ -20,7 +20,7 @@ public class RecommendCommandService : ICommandLineParser
     private readonly IPackArchiveToCbz _pack;
 
     public RecommendCommandService(
-        IValidator<IRequiresInputOption> validator,
+        IValidator<RecommendOptions> validator,
         IGalleryRequestService api,
         IDownloader download,
         IConsoleWriter console,
