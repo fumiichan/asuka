@@ -3,9 +3,12 @@ using CommandLine;
 namespace asuka.Commandline.Options;
 
 [Verb("get", HelpText = "Download a Single Gallery from URL.")]
-public record GetOptions : IRequiresInputOption, ICommonOptions
+public record GetOptions : ICommonOptions
 {
-    public int Input { get; init; }
+    [Option('i', "input",
+        Required = true,
+        HelpText = "Input Numeric Code(s)")]
+    public int[] Input { get; init; }
 
     [Option('r', "readonly",
         Default = false,

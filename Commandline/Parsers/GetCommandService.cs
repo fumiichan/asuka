@@ -13,7 +13,7 @@ namespace asuka.Commandline.Parsers;
 public class GetCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
-    private readonly IValidator<IRequiresInputOption> _validator;
+    private readonly IValidator<GetOptions> _validator;
     private readonly IDownloader _download;
     private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
@@ -21,7 +21,7 @@ public class GetCommandService : ICommandLineParser
 
     public GetCommandService(
         IGalleryRequestService api,
-        IValidator<IRequiresInputOption> validator,
+        IValidator<GetOptions> validator,
         IDownloader download,
         IConsoleWriter console,
         IProgressService progress,
@@ -35,25 +35,18 @@ public class GetCommandService : ICommandLineParser
         _pack = pack;
     }
 
-    public async Task RunAsync(object options)
+    private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
     {
-        var opts = (GetOptions)options;
-        var validationResult = await _validator.ValidateAsync(opts);
-        if (!validationResult.IsValid)
-        {
-            _console.ValidationErrors(validationResult.Errors);
-            return;
-        }
-
-        var response = await _api.FetchSingleAsync(opts.Input.ToString());
+        var response = await _api.FetchSingleAsync(input.ToString());
         _console.WriteLine(response.ToReadable());
 
-        if (opts.ReadOnly)
+        // Don't download.
+        if (readOnly)
         {
             return;
         }
-
-        _download.CreateSeries(response.Title, opts.Output);
+        
+        _download.CreateSeries(response.Title, outputPath);
         _download.CreateChapter(response, 1);
 
         _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
@@ -67,9 +60,25 @@ public class GetCommandService : ICommandLineParser
         await _download.Start();
         await _download.Final();
 
-        if (opts.Pack)
+        if (pack)
         {
-            await _pack.RunAsync(_download.DownloadRoot, opts.Output, progress);
+            await _pack.RunAsync(_download.DownloadRoot, outputPath, progress);
+        }
+    }
+
+    public async Task RunAsync(object options)
+    {
+        var opts = (GetOptions)options;
+        var validationResult = await _validator.ValidateAsync(opts);
+        if (!validationResult.IsValid)
+        {
+            _console.ValidationErrors(validationResult.Errors);
+            return;
+        }
+
+        foreach (var code in opts.Input)
+        {
+            await DownloadTask(code, opts.Pack, opts.ReadOnly, opts.Output);
         }
     }
 }
