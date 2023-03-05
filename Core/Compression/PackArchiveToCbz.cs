@@ -3,6 +3,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Output.ProgressService;
+using asuka.Output.ProgressService.Providers;
+using asuka.Output.ProgressService.Providers.Wrappers;
 using ShellProgressBar;
 
 namespace asuka.Core.Compression;
@@ -16,7 +18,7 @@ public class PackArchiveToCbz : IPackArchiveToCbz
         _progressService = progressService;
     }
 
-    public async Task RunAsync(string targetFolder, string output, IProgressBar bar)
+    public async Task RunAsync(string targetFolder, string output, IProgressProvider bar)
     {
         if (string.IsNullOrEmpty(output))
         {

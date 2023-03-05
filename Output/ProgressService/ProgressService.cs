@@ -1,17 +1,27 @@
+using asuka.Configuration;
+using asuka.Output.ProgressService.Providers;
+using asuka.Output.ProgressService.Providers.Wrappers;
 using ShellProgressBar;
 
 namespace asuka.Output.ProgressService;
 
 public class ProgressService : IProgressService
 {
-    private IProgressBar _progressBar;
+    private IProgressProvider _progressBar;
+    private readonly IConfigurationManager _configuration;
+
+    public ProgressService(IConfigurationManager configuration)
+    {
+        _configuration = configuration;
+    }
 
     public void CreateMasterProgress(int totalTicks, string title)
     {
-        _progressBar = new ProgressBar(totalTicks, title, ProgressBarConfiguration.BarOption);
+        _progressBar = ProgressProviderFactory
+            .GetProvider(_configuration.GetValue("tui.progress"), totalTicks, title, ProgressBarConfiguration.BarOption);
     }
 
-    public IProgressBar GetMasterProgress()
+    public IProgressProvider GetMasterProgress()
     {
         return _progressBar;
     }
@@ -21,7 +31,7 @@ public class ProgressService : IProgressService
         return _progressBar is not null;
     }
 
-    public IProgressBar NestToMaster(int totalTicks, string title)
+    public IProgressProvider NestToMaster(int totalTicks, string title)
     {
         if (HasMasterProgress())
         {
@@ -32,7 +42,7 @@ public class ProgressService : IProgressService
         return GetMasterProgress();
     }
 
-    public IProgressBar HookToInstance(IProgressBar bar, int totalTicks, string title)
+    public IProgressProvider HookToInstance(IProgressProvider bar, int totalTicks, string title)
     {
         return bar.Spawn(totalTicks, title, ProgressBarConfiguration.BarOption);
     }

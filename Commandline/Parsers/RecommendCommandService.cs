@@ -5,6 +5,7 @@ using asuka.Core.Downloader;
 using asuka.Core.Mappings;
 using asuka.Core.Requests;
 using asuka.Output.ProgressService;
+using asuka.Output.ProgressService.Providers.Wrappers;
 using asuka.Output.Writer;
 using FluentValidation;
 

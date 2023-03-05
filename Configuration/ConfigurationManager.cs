@@ -38,6 +38,9 @@ public class ConfigurationManager : IConfigurationManager
             },
             {
                 "layout.tachiyomi", "yes"
+            },
+            {
+                "tui.progress", "progress"
             }
         };
     }
@@ -57,6 +60,15 @@ public class ConfigurationManager : IConfigurationManager
 
             var configValue = value.Split('=');
             dict.Add(configValue[0], configValue[1]);
+        }
+        
+        // Ensure we populate all configuraiton options
+        foreach (var value in GetDefaults())
+        {
+            if (!dict.ContainsKey(value.Key))
+            {
+                dict.Add(value.Key, value.Value);
+            }
         }
 
         return dict;
