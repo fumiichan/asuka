@@ -22,12 +22,22 @@ public class ExternalProgressProvider : IProgressProvider
         return new ExternalProgressProvider(_progress.Spawn(maxTicks, title, options));
     }
 
-    public void Tick(string message = null)
+    public void Tick()
+    {
+        _progress.Tick();
+    }
+
+    public void Tick(string message)
     {
         _progress.Tick(message);
     }
 
-    public void Tick(int newTickCount, string message = null)
+    public void Tick(int newTickCount)
+    {
+        _progress.Tick(newTickCount);
+    }
+
+    public void Tick(int newTickCount, string message)
     {
         _progress.Tick(newTickCount, message);
     }

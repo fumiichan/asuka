@@ -31,12 +31,22 @@ public class ProgressWrapper : IProgressWrapper
         return new ProgressWrapper(_progress.Spawn(maxTicks, title, (ProgressBarOptions)options));
     }
 
-    public void Tick(int newTickCount, string message = null)
+    public void Tick(int newTickCount)
+    {
+        _progress.Tick(newTickCount);
+    }
+
+    public void Tick(int newTickCount, string message)
     {
         _progress.Tick(newTickCount, message);
     }
 
-    public void Tick(string message = null)
+    public void Tick()
+    {
+        _progress.Tick();
+    }
+
+    public void Tick(string message)
     {
         _progress.Tick(message);
     }

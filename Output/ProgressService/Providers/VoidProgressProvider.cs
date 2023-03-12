@@ -7,11 +7,19 @@ public class VoidProgressProvider : IProgressProvider
         return new VoidProgressProvider();
     }
 
-    public void Tick(string message = null)
+    public void Tick()
     {
     }
 
-    public void Tick(int newTickCount, string message = null)
+    public void Tick(string message)
+    {
+    }
+
+    public void Tick(int newTickCount)
+    {
+    }
+
+    public void Tick(int newTickCount, string message)
     {
     }
 }

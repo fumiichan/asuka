@@ -33,7 +33,12 @@ public class TextProgressProvider : IProgressProvider
         return new TextProgressProvider(maxTicks, title, _parentId);
     }
 
-    public void Tick(string message = null)
+    public void Tick()
+    {
+        Tick(null);
+    }
+
+    public void Tick(string message)
     {
         _progress += 1;
         if (_isChild)
@@ -45,7 +50,12 @@ public class TextProgressProvider : IProgressProvider
         Console.WriteLine($"[Progress] {message ?? _title} : {_progress} out of {_maxTick}");
     }
 
-    public void Tick(int newTickCount, string message = null)
+    public void Tick(int newTickCount)
+    {
+        Tick(newTickCount, null);
+    }
+
+    public void Tick(int newTickCount, string message)
     {
         _maxTick = newTickCount;
         Tick(message);

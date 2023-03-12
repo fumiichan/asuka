@@ -104,7 +104,7 @@ public class Downloader : IDownloader
         // Break when necessary.
         if (_details is null)
         {
-            throw new Exception("Data required for download task is missing.");
+            return;
         }
 
         var throttler = new SemaphoreSlim(2);
