@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CommandLine;
 
 namespace asuka.Commandline.Options;
@@ -8,7 +9,7 @@ public record GetOptions : ICommonOptions
     [Option('i', "input",
         Required = true,
         HelpText = "Input Numeric Code(s)")]
-    public int[] Input { get; init; }
+    public IEnumerable<int> Input { get; init; }
 
     [Option('r', "readonly",
         Default = false,
