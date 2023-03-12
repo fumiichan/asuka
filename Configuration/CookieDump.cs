@@ -1,21 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace asuka.Configuration;
 
 public record CookieDump
 {
-    [JsonProperty("domain")]
-    public string Domain { get; init; }
+    [JsonPropertyName("domain")]
+    public string Domain { get; set; }
     
-    [JsonProperty("httpOnly")]
-    public bool HttpOnly { get; init; }
+    [JsonPropertyName("httpOnly")]
+    public bool HttpOnly { get; set; }
     
-    [JsonProperty("secure")]
-    public bool Secure { get; init; }
+    [JsonPropertyName("secure")]
+    public bool Secure { get; set; }
     
-    [JsonProperty("name")]
-    public string Name { get; init; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
     
-    [JsonProperty("value")]
-    public string Value { get; init; }
+    [JsonPropertyName("value")]
+    public string Value { get; set; }
 }

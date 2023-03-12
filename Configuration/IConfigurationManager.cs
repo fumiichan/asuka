@@ -1,13 +1,13 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace asuka.Configuration;
 
 public interface IConfigurationManager
 {
-    Task SetCookiesAsync(string path);
-    Task SetUserAgentAsync(string userAgent);
-    Task ToggleTachiyomiLayoutAsync(bool value);
-    Task ResetAsync();
-    Task ChangeColourThemeAsync(string value);
-    ConfigurationData Values { get; }
+    void SetValue(string key, string value);
+    string GetValue(string key);
+    IReadOnlyList<(string, string)> GetAllValues();
+    Task Reset();
+    Task Flush();
 }

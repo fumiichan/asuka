@@ -1,7 +1,6 @@
 ﻿![The Banner](docs/banner.png)
 
 [![Maintenance](https://badgen.net/badge/maintained%3F/yes/green)](https://github.com/aikoofujimotoo/asuka/graphs/commit-activity)
-[![CircleCI](https://circleci.com/gh/aikoofujimotoo/asuka.svg?style=shield&circle-token=488813c48d642cdb1ff63cdb2483fdab55df8c19)](https://circleci.com/gh/aikoofujimotoo/asuka)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fd7d1abe2865463c93e091fc1f205dbe)](https://www.codacy.com/gh/aikoofujimotoo/asuka/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aikoofujimotoo/asuka&amp;utm_campaign=Badge_Grade)
 [![Age Rating](https://badgen.net/badge/age%20rating/18+/red)](https://en.wikipedia.org/wiki/Age_of_majority)
 [![MIT license](https://badgen.net/badge/license/MIT/green)](LICENSE)
@@ -10,24 +9,20 @@ Cross-platform nhentai downloader on Console.
 
 ## Requirements
 
--   [.NET 6.0 Runtime](https://dotnet.microsoft.com/download/dotnet/6.0)
+-   [.NET 7.0 Runtime](https://dotnet.microsoft.com/download/dotnet/7.0)
 
 -   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/6.0/supported-os.md)*.
     -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from Source section for compiling builds for these platforms.*
 
 ## Usage
 
-By running `asuka --help` you mostly see everything you need to know how to use the client.
-
-**Before using this, run `asuka config --setDefaultCookies <path to cookie.txt file>` to set cookies. Without this your requests will fail. To obtain `cookies.txt` file, you have to install [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) extension and export the cookies and save it on a text file. Then, set your user agent by finding out your [User Agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent/) and use `asuka config -u "<your user agent>"` to set it.**
-
-If you want in-depth explanation and examples, see [here](docs/USAGE.md).
+[Getting Started](https://github.com/fumiichan/asuka/wiki/Getting-Started)
 
 ## Compiling from Source
 
 ### What do I need
 
--   [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+-   [.NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 
 ### Compiling
 

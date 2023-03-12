@@ -1,79 +1,111 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace asuka.Configuration;
 
 public class ConfigurationManager : IConfigurationManager
 {
-    protected ConfigurationData Configuration;
+    private Dictionary<string, string> _config;
 
     public ConfigurationManager()
     {
         var configRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".asuka");
-        var configPath = Path.Join(configRoot, "config.json");
+        var configPath = Path.Join(configRoot, "config.conf");
 
         if (!File.Exists(configPath))
         {
             Directory.CreateDirectory(configRoot);
-            Configuration = new ConfigurationData();
+            _config = GetDefaults();
+
             return;
         }
 
         var data = File.ReadAllText(configPath, Encoding.UTF8);
-        Configuration = JsonConvert.DeserializeObject<ConfigurationData>(data);
+        _config = ReadConfiguration(data);
     }
 
-    public async Task SetCookiesAsync(string path)
+    private Dictionary<string, string> GetDefaults()
     {
-        if (!File.Exists(path))
+        return new Dictionary<string, string>
         {
-            throw new FileNotFoundException("Cookie file specified cannot be found.");
+            {
+                "colors.theme", "dark"
+            },
+            {
+                "layout.tachiyomi", "yes"
+            },
+            {
+                "tui.progress", "progress"
+            }
+        };
+    }
+
+    private Dictionary<string, string> ReadConfiguration(string fileData)
+    {
+        var config = fileData.Split("\n");
+
+        var dict = new Dictionary<string, string>();
+        foreach (var value in config)
+        {
+            var regex = new Regex("^([a-z1-9.]+)=([a-z1-9])+$");
+            if (!regex.IsMatch(value))
+            {
+                continue;
+            }
+
+            var configValue = value.Split('=');
+            dict.Add(configValue[0], configValue[1]);
+        }
+        
+        // Ensure we populate all configuraiton options
+        foreach (var value in GetDefaults())
+        {
+            if (!dict.ContainsKey(value.Key))
+            {
+                dict.Add(value.Key, value.Value);
+            }
         }
 
-        var cookies = await File.ReadAllTextAsync(path, Encoding.UTF8);
-        var cookieData = JsonConvert.DeserializeObject<CookieDump[]>(cookies);
-
-        if (cookieData == null) return;
-
-        Configuration.Cookies = cookieData;
-        await FlushAsync();
+        return dict;
     }
 
-    public async Task SetUserAgentAsync(string userAgent)
+    public void SetValue(string key, string value)
     {
-        Configuration.UserAgent = userAgent;
-        await FlushAsync();
+        _config[key] = value;
     }
 
-    public async Task ToggleTachiyomiLayoutAsync(bool value)
+    public string GetValue(string key)
     {
-        Configuration.UseTachiyomiLayout = value;
-        await FlushAsync();
+        return _config.TryGetValue(key, out var data) ? data : null;
     }
 
-    public async Task ChangeColourThemeAsync(string value)
+    public IReadOnlyList<(string, string)> GetAllValues()
     {
-        Configuration.ConsoleTheme = value;
-        await FlushAsync();
+        return _config.Select(x => (x.Key, x.Value)).ToList();
     }
 
-    public async Task ResetAsync()
+    public async Task Reset()
     {
-        Configuration = new ConfigurationData();
-        await FlushAsync();
+        _config = GetDefaults();
+        await Flush();
     }
 
-    public ConfigurationData Values => Configuration;
-
-    private async Task FlushAsync()
+    public async Task Flush()
     {
         var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            ".asuka/config.json");
-        
-        var data = JsonConvert.SerializeObject(Configuration);
-        await File.WriteAllTextAsync(configPath, data);
+            ".asuka/config.conf");
+
+        var stringBuilder = new StringBuilder();
+        foreach (var (key, value) in _config)
+        {
+            stringBuilder.Append($"{key}={value}\n");
+        }
+
+        await File.WriteAllTextAsync(configPath, stringBuilder.ToString());
     }
 }
