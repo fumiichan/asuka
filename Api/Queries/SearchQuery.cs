@@ -1,6 +1,6 @@
 using Refit;
 
-namespace asuka.Core.Api.Queries;
+namespace asuka.Api.Queries;
 
 public record SearchQuery
 {

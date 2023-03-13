@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
-using asuka.Core.Api.Queries;
+using asuka.Api.Queries;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Mappings;

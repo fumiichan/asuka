@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace asuka.Core.Api.Responses;
+namespace asuka.Api.Responses;
 
 public record GalleryImageObjectResponse
 {

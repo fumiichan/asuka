@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using asuka.Core.Api.Responses;
+using asuka.Api.Responses;
 using asuka.Core.Models;
 
 namespace asuka.Core.Mappings;

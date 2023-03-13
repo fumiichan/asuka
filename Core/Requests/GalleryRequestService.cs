@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using asuka.Core.Api;
-using asuka.Core.Api.Queries;
+using asuka.Api;
+using asuka.Api.Queries;
 using asuka.Core.Mappings;
 using asuka.Core.Models;
 

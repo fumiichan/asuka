@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using asuka.Core.Api.Queries;
-using asuka.Core.Api.Responses;
+using asuka.Api.Queries;
+using asuka.Api.Responses;
 using Refit;
 
-namespace asuka.Core.Api;
+namespace asuka.Api;
 
 public interface IGalleryApi
 {

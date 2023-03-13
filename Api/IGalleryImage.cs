@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
-namespace asuka.Core.Api;
+namespace asuka.Api;
 
 public interface IGalleryImage
 {
