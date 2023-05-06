@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using asuka.Core.Models;
 using asuka.Core.Output.Progress;
 

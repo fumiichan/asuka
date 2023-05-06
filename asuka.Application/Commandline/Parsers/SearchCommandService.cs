@@ -38,7 +38,7 @@ public class SearchCommandService : ICommandLineParser
         _series = series;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (SearchOptions)options;
         var validationResult = await _validator.ValidateAsync(opts);

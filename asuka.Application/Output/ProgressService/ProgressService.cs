@@ -1,4 +1,3 @@
-using asuka.Application.Configuration;
 using asuka.Core.Configuration;
 
 namespace asuka.Application.Output.ProgressService;

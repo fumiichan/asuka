@@ -37,7 +37,7 @@ public class AsukaApplication
     private async Task RunCommand(object opts, CommandLineParserTokens token)
     {
         var service = _command.GetInstance(token);
-        await service.RunAsync(opts);
+        await service.Run(opts);
         
         _console.SuccessLine("Task completed.");
     }

@@ -25,7 +25,7 @@ public class CookieConfigureService : ICommandLineParser
         _validator = validator;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (CookieConfigureOptions)options;
 

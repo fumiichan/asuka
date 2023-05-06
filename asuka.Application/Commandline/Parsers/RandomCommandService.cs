@@ -6,6 +6,7 @@ using asuka.Application.Output;
 using asuka.Application.Output.Writer;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using Sharprompt;
@@ -34,7 +35,7 @@ public class RandomCommandService : ICommandLineParser
         _series = series;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (RandomOptions)options;
         var totalNumbers = await _api.GetTotalGalleryCount();
@@ -44,7 +45,7 @@ public class RandomCommandService : ICommandLineParser
             var randomCode = new Random().Next(1, totalNumbers);
             var response = await _api.FetchSingle(randomCode.ToString());
 
-            _console.WriteLine(response.ToReadable());
+            _console.WriteLine(response.BuildReadableInformation());
 
             var prompt = Prompt.Confirm("Are you sure to download this one?", true);
             if (!prompt)

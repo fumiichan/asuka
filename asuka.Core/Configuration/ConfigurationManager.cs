@@ -60,10 +60,7 @@ public class ConfigurationManager : IConfigurationManager
         // Ensure we populate all configuraiton options
         foreach (var value in GetDefaults())
         {
-            if (!dict.ContainsKey(value.Key))
-            {
-                dict.Add(value.Key, value.Value);
-            }
+            dict.TryAdd(value.Key, value.Value);
         }
 
         return dict;

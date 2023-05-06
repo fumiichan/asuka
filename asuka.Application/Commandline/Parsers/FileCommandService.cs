@@ -35,7 +35,7 @@ public class FileCommandService : ICommandLineParser
         _series = series;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (FileCommandOptions)options;
         if (!File.Exists(opts.FilePath))

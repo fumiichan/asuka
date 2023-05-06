@@ -4,5 +4,5 @@ namespace asuka.Application.Commandline;
 
 public interface ICommandLineParser
 {
-    public Task RunAsync(object options);
+    public Task Run(object options);
 }

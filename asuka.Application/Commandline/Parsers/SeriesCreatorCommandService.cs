@@ -91,7 +91,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         await _series.Close(pack ? _progress.GetMasterProgress() : null);
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (SeriesCreatorCommandOptions)options;
 

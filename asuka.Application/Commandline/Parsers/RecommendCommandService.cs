@@ -38,7 +38,7 @@ public class RecommendCommandService : ICommandLineParser
         _series = series;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (RecommendOptions)options;
         var validator = await _validator.ValidateAsync(opts);

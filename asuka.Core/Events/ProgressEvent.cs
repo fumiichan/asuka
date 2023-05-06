@@ -1,5 +1,3 @@
-using System;
-
 namespace asuka.Core.Events;
 
 public class ProgressEvent : EventArgs

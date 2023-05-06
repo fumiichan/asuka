@@ -6,6 +6,7 @@ using asuka.Application.Output.Writer;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
@@ -41,7 +42,7 @@ public class GetCommandService : ICommandLineParser
     private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
     {
         var response = await _api.FetchSingle(input.ToString());
-        _console.WriteLine(response.ToReadable());
+        _console.WriteLine(response.BuildReadableInformation());
 
         // Don't download.
         if (readOnly)
@@ -63,7 +64,7 @@ public class GetCommandService : ICommandLineParser
         await _series.Close(pack ? progress : null);
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (GetOptions)options;
         var validationResult = await _validator.ValidateAsync(opts);

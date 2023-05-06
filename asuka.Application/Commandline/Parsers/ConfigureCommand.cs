@@ -20,7 +20,7 @@ public class ConfigureCommand : ICommandLineParser
         _validator = validator;
     }
 
-    public async Task RunAsync(object options)
+    public async Task Run(object options)
     {
         var opts = (ConfigureOptions)options;
         var validation = await _validator.ValidateAsync(opts);
