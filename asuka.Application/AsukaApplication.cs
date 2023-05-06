@@ -31,15 +31,7 @@ public class AsukaApplication
             async (ConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Configure); },
             async (SeriesCreatorCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Series); },
             async (CookieConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Cookie); },
-            errors =>
-            {
-                foreach (var error in errors)
-                {
-                    _console.ErrorLine($"An error occured. Type: {error.Tag}");
-                }
-
-                return Task.FromResult(1);
-            });
+            _ => Task.FromResult(1));
     }
 
     private async Task RunCommand(object opts, CommandLineParserTokens token)

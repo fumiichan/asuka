@@ -97,4 +97,9 @@ public static class PathUtils
 
         return normalizedFolderName;
     }
+
+    public static string UsePathOrDefault(string location)
+    {
+        return string.IsNullOrEmpty(location) ? Environment.CurrentDirectory : location;
+    }
 }

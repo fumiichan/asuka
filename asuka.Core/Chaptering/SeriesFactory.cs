@@ -1,6 +1,3 @@
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using asuka.Core.Compression;
 using asuka.Core.Configuration;
 using asuka.Core.Extensions;
@@ -33,7 +30,8 @@ public class SeriesFactory : ISeriesFactory
     {
         if (_series == null)
         {
-            var output = PathUtils.NormalizeJoin(outputPath, result.Title.GetTitle());
+            var destination = PathUtils.UsePathOrDefault(outputPath);
+            var output = PathUtils.NormalizeJoin(destination, result.Title.GetTitle());
             _series = new Series(output, _configurationManager.GetValue("layout.tachiyomi") == "yes");
         }
         
