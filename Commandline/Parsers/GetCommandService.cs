@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
+using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
@@ -18,6 +20,7 @@ public class GetCommandService : ICommandLineParser
     private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
     private readonly IPackArchiveToCbz _pack;
+    private readonly ISeriesFactory _series;
 
     public GetCommandService(
         IGalleryRequestService api,
@@ -25,7 +28,8 @@ public class GetCommandService : ICommandLineParser
         IDownloader download,
         IConsoleWriter console,
         IProgressService progress,
-        IPackArchiveToCbz pack)
+        IPackArchiveToCbz pack,
+        ISeriesFactory series)
     {
         _api = api;
         _validator = validator;
@@ -33,6 +37,7 @@ public class GetCommandService : ICommandLineParser
         _console = console;
         _progress = progress;
         _pack = pack;
+        _series = series;
     }
 
     private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
@@ -46,24 +51,25 @@ public class GetCommandService : ICommandLineParser
             return;
         }
         
-        _download.CreateSeries(response.Title, outputPath);
-        _download.CreateChapter(response, 1);
+        _series.AddChapter(response, outputPath);
 
         _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
-
         var progress = _progress.GetMasterProgress();
-        _download.SetOnImageDownload = () =>
-        {
-            progress.Tick();
-        };
 
-        await _download.Start();
-        await _download.Final();
+        _download.HandleOnDownloadComplete((_, e) =>
+        {
+            progress.Tick($"{e.Message}: {response.Id}");
+        });
+
+        await _download.Start(_series.GetSeries().Chapters.First());
+        await _series.Close();
 
         if (pack)
         {
-            await _pack.RunAsync(_download.DownloadRoot, outputPath, progress);
+            await _pack.RunAsync(_series.GetSeries().Output, outputPath, progress);
         }
+        
+        _series.Reset();
     }
 
     public async Task RunAsync(object options)

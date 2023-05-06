@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
+using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
@@ -20,19 +21,22 @@ public class FileCommandService : ICommandLineParser
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly IPackArchiveToCbz _pack;
+    private readonly ISeriesFactory _series;
 
     public FileCommandService(
         IGalleryRequestService api,
         IConsoleWriter console,
         IDownloader download,
         IProgressService progressService,
-        IPackArchiveToCbz pack)
+        IPackArchiveToCbz pack,
+        ISeriesFactory series)
     {
         _api = api;
         _console = console;
         _download = download;
         _progressService = progressService;
         _pack = pack;
+        _series = series;
     }
 
     public async Task RunAsync(object options)
@@ -68,25 +72,25 @@ public class FileCommandService : ICommandLineParser
             var code = new Regex("\\d+").Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
+            _series.AddChapter(response, opts.Output);
             
             // Create progress bar
             var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
-            _download.SetOnImageDownload = () =>
+            _download.HandleOnDownloadComplete((_, e) =>
             {
-                internalProgress.Tick($"downloading: {response.Id}");
-            };
+                internalProgress.Tick($"{e.Message}: {response.Id}");
+            });
 
             // Start downloading
-            await _download.Start();
-            await _download.Final();
+            await _download.Start(_series.GetSeries().Chapters.First());
+            await _series.Close();
             
             // If --pack option is specified, compresss the file into cbz
             if (opts.Pack)
             {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, internalProgress);
+                await _pack.RunAsync(_series.GetSeries().Output, opts.Output, internalProgress);
             }
+            _series.Reset();
             progress.Tick();
         }
     }

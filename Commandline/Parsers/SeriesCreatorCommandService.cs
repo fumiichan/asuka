@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
+using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
-using asuka.Core.Models;
 using asuka.Core.Requests;
 using asuka.Output.ProgressService;
 using asuka.Output.Writer;
@@ -22,6 +22,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IPackArchiveToCbz _pack;
     private readonly IConfigurationManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
+    private readonly ISeriesFactory _series;
 
     public SeriesCreatorCommandService(
         IGalleryRequestService api,
@@ -30,7 +31,8 @@ public class SeriesCreatorCommandService : ICommandLineParser
         IProgressService progress,
         IPackArchiveToCbz pack,
         IConfigurationManager config,
-        IValidator<SeriesCreatorCommandOptions> validator)
+        IValidator<SeriesCreatorCommandOptions> validator,
+        ISeriesFactory series)
     {
         _api = api;
         _console = console;
@@ -39,77 +41,61 @@ public class SeriesCreatorCommandService : ICommandLineParser
         _pack = pack;
         _config = config;
         _validator = validator;
-    }
-
-    private async Task<string> DownloadTask(IList<GalleryResult> results)
-    {
-        _progress.CreateMasterProgress(results.Count, "downloading series");
-        var masterProgress = _progress.GetMasterProgress();
-        
-        for (var i = 0; i < results.Count; i++)
-        {
-            var chapter = results[i];
-            try
-            {
-                _downloader.CreateChapter(chapter, i + 1);
-                
-                var innerProgress = _progress.NestToMaster(chapter.TotalPages, $"downloading chapter {i + 1}");
-                _downloader.SetOnImageDownload = () =>
-                {
-                    innerProgress.Tick();
-                };
-
-                await _downloader.Start();
-            }
-            finally
-            {
-                masterProgress.Tick();
-            }
-        }
-
-        return _downloader.DownloadRoot;
-    }
-
-    private async Task<IList<GalleryResult>> GetChapterInformation(IEnumerable<string> ids)
-    {
-        // Queue list of chapters.
-        var chapters = new List<GalleryResult>();
-        foreach (var chapter in ids)
-        {
-            try
-            {
-                var galleryResponse = await _api.FetchSingleAsync(chapter);
-                chapters.Add(galleryResponse);
-            }
-            catch
-            {
-                _console.WarningLine($"Skipping: {chapter} because of an error.");
-            }
-        }
-
-        return chapters;
+        _series = series;
     }
 
     private async Task HandleArrayTask(IList<string> codes, string output, bool pack)
     {
         // Queue list of chapters.
-        var chapters = await GetChapterInformation(codes);
+        for (var i = 0; i < codes.Count; i++)
+        {
+            try
+            {
+                var response = await _api.FetchSingleAsync(codes[i]);
+                _series.AddChapter(response, output, i + 1);
+            }
+            catch
+            {
+                _console.WarningLine($"Skipping: {codes[i]} because of an error.");
+            }
+        }
 
         // If there's no chapters (due to likely most of them failed to fetch metadata)
         // Quit immediately.
-        if (chapters.Count <= 0)
+        if (_series.GetSeries() == null)
         {
             _console.SuccessLine("Nothing to do. Quitting...");
             return;
         }
+
+        // Download chapters.
+        var chapters = _series.GetSeries().Chapters;
+        _progress.CreateMasterProgress(chapters.Count, "downloading series");
+
+        foreach (var chapter in chapters)
+        {
+            try
+            {
+                var innerProgress =
+                    _progress.NestToMaster(chapter.Data.TotalPages, $"downloading chapter {chapter.ChapterId}");
+                _downloader.HandleOnDownloadComplete((_, _) =>
+                {
+                    innerProgress.Tick();
+                });
+
+                await _downloader.Start(chapter);
+            }
+            finally
+            {
+                _progress.GetMasterProgress().Tick();
+            }
+        }
         
-        _downloader.CreateSeries(chapters[0].Title, output);
-        var destinationPath = await DownloadTask(chapters);
-        await _downloader.Final(chapters[0]);
+        await _series.Close();
 
         if (pack)
         {
-            await _pack.RunAsync(destinationPath, output, _progress.GetMasterProgress());
+            await _pack.RunAsync(_series.GetSeries().Output, output, _progress.GetMasterProgress());
         }
     }
 

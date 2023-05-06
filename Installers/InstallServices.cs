@@ -1,6 +1,7 @@
 using asuka.Commandline;
 using asuka.Commandline.Parsers;
 using asuka.Configuration;
+using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
@@ -26,6 +27,7 @@ public class InstallServices : IInstaller
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
         services.AddSingleton<IConfigurationManager, ConfigurationManager>();
         services.AddSingleton<IRequestConfigurator, RequestConfigurator>();
+        services.AddTransient<ISeriesFactory, SeriesFactory>();
 
         // Command parsers
         services.AddScoped<ICommandLineParser, GetCommandService>();

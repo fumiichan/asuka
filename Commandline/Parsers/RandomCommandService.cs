@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
+using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Requests;
@@ -18,19 +20,22 @@ public class RandomCommandService : ICommandLineParser
     private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
     private readonly IPackArchiveToCbz _pack;
+    private readonly ISeriesFactory _series;
 
     public RandomCommandService(
         IDownloader download,
         IGalleryRequestService api,
         IConsoleWriter console,
         IProgressService progress,
-        IPackArchiveToCbz pack)
+        IPackArchiveToCbz pack,
+        ISeriesFactory series)
     {
         _download = download;
         _api = api;
         _console = console;
         _progress = progress;
         _pack = pack;
+        _series = series;
     }
 
     public async Task RunAsync(object options)
@@ -52,23 +57,25 @@ public class RandomCommandService : ICommandLineParser
                 continue;
             }
 
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
+            _series.AddChapter(response, opts.Output, 1);
             
-            _progress.CreateMasterProgress(response.TotalPages, $"downloading random id: {response.Id}");
+            _progress.CreateMasterProgress(response.TotalPages, $"starting random id: {response.Id}");
             var progress = _progress.GetMasterProgress();
-            _download.SetOnImageDownload = () =>
-            {
-                progress.Tick();
-            };
 
-            await _download.Start();
-            await _download.Final();
+            _download.HandleOnDownloadComplete((_, e) =>
+            {
+                progress.Tick($"{e.Message} random id: {response.Id}");
+            });
+
+            await _download.Start(_series.GetSeries().Chapters.First());
+            await _series.Close();
             
             if (opts.Pack)
             {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, progress);
+                await _pack.RunAsync(_series.GetSeries().Output, opts.Output, progress);
             }
+            
+            _series.Reset();
             break;
         }
     }
