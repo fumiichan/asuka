@@ -8,6 +8,6 @@ namespace asuka.Core.Downloader;
 
 public interface IDownloader
 {
-    void HandleOnDownloadComplete(Action<object, ProgressEvent> handler);
+    void HandleOnProgress(Action<object, ProgressEvent> handler);
     Task Start(Chapter chapter);
 }

@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using asuka.Output.ProgressService;
+using asuka.Core.Events;
 using asuka.Output.ProgressService.Providers;
-using asuka.Output.ProgressService.Providers.Wrappers;
-using ShellProgressBar;
 
 namespace asuka.Core.Compression;
 
 public interface IPackArchiveToCbz
 {
-    Task RunAsync(string targetFolder, string output, IProgressProvider bar);
+    void HandleProgress(Action<object, ProgressEvent> e);
+    Task RunAsync(IEnumerable<(string, string)> files, string targetFolder);
 }

@@ -1,8 +1,11 @@
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Configuration;
+using asuka.Core.Compression;
 using asuka.Core.Extensions;
 using asuka.Core.Models;
+using asuka.Core.Output.Progress;
 using asuka.Core.Utilities;
 
 namespace asuka.Core.Chaptering;
@@ -11,10 +14,14 @@ public class SeriesFactory : ISeriesFactory
 {
     private Series _series;
     private readonly IConfigurationManager _configurationManager;
+    private readonly IPackArchiveToCbz _pack;
+    private readonly IProgressService _progress;
 
-    public SeriesFactory(IConfigurationManager configurationManager)
+    public SeriesFactory(IConfigurationManager configurationManager, IPackArchiveToCbz pack, IProgressService progress)
     {
         _configurationManager = configurationManager;
+        _pack = pack;
+        _progress = progress;
     }
 
     public void AddChapter(GalleryResult result, string outputPath)
@@ -35,7 +42,7 @@ public class SeriesFactory : ISeriesFactory
 
     public Series GetSeries() => _series;
 
-    public async Task Close()
+    private async Task WriteMetadata()
     {
         var initialChapter = _series.Chapters.FirstOrDefault();
         if (initialChapter == null)
@@ -52,8 +59,27 @@ public class SeriesFactory : ISeriesFactory
         await initialChapter.Data.WriteTextMetadata(_series.Output);
     }
 
-    public void Reset()
+    public async Task Close(IProgressProvider provider)
     {
+        await WriteMetadata();
+
+        if (provider != null)
+        {
+            var outputRoot = Path.Combine(_series.Output, "../");
+            var files = Directory.GetFiles(_series.Output, "*.*", SearchOption.AllDirectories)
+                .Select(x => (x, Path.GetRelativePath(outputRoot, x)))
+                .ToArray();
+
+            var progress = _progress.HookToInstance(provider, files.Length, "compressing...");
+
+            _pack.HandleProgress((@object, @event) =>
+            {
+                progress.Tick();
+            });
+            await _pack.RunAsync(files, _series.Output);
+        }
+        
+        // Finally close.
         _series = null;
     }
 }

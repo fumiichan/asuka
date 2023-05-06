@@ -4,14 +4,14 @@ using asuka.Configuration;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
-using asuka.Output.ProgressService.Providers.Wrappers;
 using asuka.Output.Writer;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ConfigurationManager = asuka.Configuration.ConfigurationManager;
+using ProgressService = asuka.Output.ProgressService.ProgressService;
 
 namespace asuka.Installers;
 

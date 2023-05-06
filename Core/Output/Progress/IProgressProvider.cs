@@ -1,4 +1,4 @@
-namespace asuka.Output.ProgressService.Providers;
+namespace asuka.Core.Output.Progress;
 
 public interface IProgressProvider
 {

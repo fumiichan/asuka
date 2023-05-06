@@ -6,8 +6,8 @@ using asuka.Configuration;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
 using asuka.Output.Writer;
 using FluentValidation;
 
@@ -19,7 +19,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IConsoleWriter _console;
     private readonly IDownloader _downloader;
     private readonly IProgressService _progress;
-    private readonly IPackArchiveToCbz _pack;
     private readonly IConfigurationManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
     private readonly ISeriesFactory _series;
@@ -29,7 +28,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
         IConsoleWriter console,
         IDownloader downloader,
         IProgressService progress,
-        IPackArchiveToCbz pack,
         IConfigurationManager config,
         IValidator<SeriesCreatorCommandOptions> validator,
         ISeriesFactory series)
@@ -38,7 +36,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
         _console = console;
         _downloader = downloader;
         _progress = progress;
-        _pack = pack;
         _config = config;
         _validator = validator;
         _series = series;
@@ -78,7 +75,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
             {
                 var innerProgress =
                     _progress.NestToMaster(chapter.Data.TotalPages, $"downloading chapter {chapter.ChapterId}");
-                _downloader.HandleOnDownloadComplete((_, _) =>
+                _downloader.HandleOnProgress((_, _) =>
                 {
                     innerProgress.Tick();
                 });
@@ -91,12 +88,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
             }
         }
         
-        await _series.Close();
-
-        if (pack)
-        {
-            await _pack.RunAsync(_series.GetSeries().Output, output, _progress.GetMasterProgress());
-        }
+        await _series.Close(pack ? _progress.GetMasterProgress() : null);
     }
 
     public async Task RunAsync(object options)

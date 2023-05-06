@@ -1,4 +1,5 @@
 using System;
+using asuka.Core.Output.Progress;
 
 namespace asuka.Output.ProgressService.Providers;
 

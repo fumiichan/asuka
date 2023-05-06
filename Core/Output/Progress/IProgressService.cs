@@ -1,6 +1,6 @@
 using asuka.Output.ProgressService.Providers;
 
-namespace asuka.Output.ProgressService;
+namespace asuka.Core.Output.Progress;
 
 public interface IProgressService
 {

@@ -4,9 +4,9 @@ using asuka.Commandline.Options;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using asuka.Output;
-using asuka.Output.ProgressService;
 using asuka.Output.Writer;
 using FluentValidation;
 
@@ -19,7 +19,6 @@ public class GetCommandService : ICommandLineParser
     private readonly IDownloader _download;
     private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
-    private readonly IPackArchiveToCbz _pack;
     private readonly ISeriesFactory _series;
 
     public GetCommandService(
@@ -36,7 +35,6 @@ public class GetCommandService : ICommandLineParser
         _download = download;
         _console = console;
         _progress = progress;
-        _pack = pack;
         _series = series;
     }
 
@@ -56,20 +54,13 @@ public class GetCommandService : ICommandLineParser
         _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
         var progress = _progress.GetMasterProgress();
 
-        _download.HandleOnDownloadComplete((_, e) =>
+        _download.HandleOnProgress((_, e) =>
         {
             progress.Tick($"{e.Message}: {response.Id}");
         });
 
         await _download.Start(_series.GetSeries().Chapters.First());
-        await _series.Close();
-
-        if (pack)
-        {
-            await _pack.RunAsync(_series.GetSeries().Output, outputPath, progress);
-        }
-        
-        _series.Reset();
+        await _series.Close(pack ? progress : null);
     }
 
     public async Task RunAsync(object options)

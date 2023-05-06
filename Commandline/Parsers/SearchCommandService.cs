@@ -4,11 +4,10 @@ using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Api.Queries;
 using asuka.Core.Chaptering;
-using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Mappings;
+using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
 using asuka.Output.Writer;
 using FluentValidation;
 
@@ -21,7 +20,6 @@ public class SearchCommandService : ICommandLineParser
     private readonly IConsoleWriter _console;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
-    private readonly IPackArchiveToCbz _pack;
     private readonly ISeriesFactory _series;
 
     public SearchCommandService(
@@ -30,7 +28,6 @@ public class SearchCommandService : ICommandLineParser
         IConsoleWriter console,
         IDownloader download,
         IProgressService progressService,
-        IPackArchiveToCbz pack,
         ISeriesFactory series)
     {
         _api = api;
@@ -38,7 +35,6 @@ public class SearchCommandService : ICommandLineParser
         _console = console;
         _download = download;
         _progressService = progressService;
-        _pack = pack;
         _series = series;
     }
 
@@ -84,20 +80,14 @@ public class SearchCommandService : ICommandLineParser
             _series.AddChapter(response, opts.Output, 1);
 
             var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
-            _download.HandleOnDownloadComplete((_, e) =>
+            _download.HandleOnProgress((_, e) =>
             {
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
             await _download.Start(_series.GetSeries().Chapters.First());
-            await _series.Close();
+            await _series.Close(opts.Pack ? innerProgress : null);
             
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_series.GetSeries().Output, opts.Output, innerProgress);
-            }
-            
-            _series.Reset();
             progress.Tick();
         }
     }

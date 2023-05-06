@@ -25,7 +25,7 @@ public sealed class Downloader : IDownloader
         _progressEvent?.Invoke(this, e);
     }
 
-    public void HandleOnDownloadComplete(Action<object, ProgressEvent> handler)
+    public void HandleOnProgress(Action<object, ProgressEvent> handler)
     {
         _progressEvent += (o, e) =>
         {

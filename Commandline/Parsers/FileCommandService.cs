@@ -8,6 +8,7 @@ using asuka.Commandline.Options;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using asuka.Output.ProgressService;
 using asuka.Output.Writer;
@@ -20,7 +21,6 @@ public class FileCommandService : ICommandLineParser
     private readonly IConsoleWriter _console;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
-    private readonly IPackArchiveToCbz _pack;
     private readonly ISeriesFactory _series;
 
     public FileCommandService(
@@ -28,14 +28,12 @@ public class FileCommandService : ICommandLineParser
         IConsoleWriter console,
         IDownloader download,
         IProgressService progressService,
-        IPackArchiveToCbz pack,
         ISeriesFactory series)
     {
         _api = api;
         _console = console;
         _download = download;
         _progressService = progressService;
-        _pack = pack;
         _series = series;
     }
 
@@ -76,21 +74,15 @@ public class FileCommandService : ICommandLineParser
             
             // Create progress bar
             var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
-            _download.HandleOnDownloadComplete((_, e) =>
+            _download.HandleOnProgress((_, e) =>
             {
                 internalProgress.Tick($"{e.Message}: {response.Id}");
             });
 
             // Start downloading
             await _download.Start(_series.GetSeries().Chapters.First());
-            await _series.Close();
+            await _series.Close(opts.Pack ? internalProgress : null);
             
-            // If --pack option is specified, compresss the file into cbz
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_series.GetSeries().Output, opts.Output, internalProgress);
-            }
-            _series.Reset();
             progress.Tick();
         }
     }

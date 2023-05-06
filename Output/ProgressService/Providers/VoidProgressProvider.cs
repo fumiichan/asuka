@@ -1,3 +1,5 @@
+using asuka.Core.Output.Progress;
+
 namespace asuka.Output.ProgressService.Providers;
 
 public class VoidProgressProvider : IProgressProvider

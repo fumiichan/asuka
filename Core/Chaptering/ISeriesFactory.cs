@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using asuka.Core.Models;
+using asuka.Core.Output.Progress;
 
 namespace asuka.Core.Chaptering;
 
@@ -7,7 +8,6 @@ public interface ISeriesFactory
 {
     void AddChapter(GalleryResult result, string outputPath);
     void AddChapter(GalleryResult result, string outputPath, int chapterId);
-    void Reset();
     Series GetSeries();
-    Task Close();
+    Task Close(IProgressProvider provider);
 }
