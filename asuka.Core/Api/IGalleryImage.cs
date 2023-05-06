@@ -1,6 +1,6 @@
 namespace asuka.Core.Api;
 
-public class IGalleryImage
+public interface IGalleryImage
 {
-    
+    Task<HttpContent> GetImage(string mediaId, string filename);
 }

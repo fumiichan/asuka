@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka", "asuka.csproj", "{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Application", "asuka.Application\asuka.Application.csproj", "{2BB1F788-66C3-41BA-B30E-6D002BAFF317}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Core", "asuka.Core\asuka.Core.csproj", "{3E961924-0359-4329-909B-F8C5681D2B29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +10,13 @@ Global
 		Debug|x64 = Debug|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Release|x64.ActiveCfg = Release|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Release|x64.Build.0 = Release|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Debug|x64.ActiveCfg = Debug|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Debug|x64.Build.0 = Debug|x64
+		{2BB1F788-66C3-41BA-B30E-6D002BAFF317}.Release|x64.ActiveCfg = Release|Any CPU
+		{2BB1F788-66C3-41BA-B30E-6D002BAFF317}.Release|x64.Build.0 = Release|Any CPU
+		{2BB1F788-66C3-41BA-B30E-6D002BAFF317}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2BB1F788-66C3-41BA-B30E-6D002BAFF317}.Debug|x64.Build.0 = Debug|Any CPU
+		{3E961924-0359-4329-909B-F8C5681D2B29}.Release|x64.ActiveCfg = Release|Any CPU
+		{3E961924-0359-4329-909B-F8C5681D2B29}.Release|x64.Build.0 = Release|Any CPU
+		{3E961924-0359-4329-909B-F8C5681D2B29}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3E961924-0359-4329-909B-F8C5681D2B29}.Debug|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
