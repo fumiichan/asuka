@@ -48,7 +48,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         {
             try
             {
-                var response = await _api.FetchSingleAsync(codes[i]);
+                var response = await _api.FetchSingle(codes[i]);
                 _series.AddChapter(response, output, i + 1);
             }
             catch

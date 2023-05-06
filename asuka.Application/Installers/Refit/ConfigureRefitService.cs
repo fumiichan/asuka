@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using asuka.Application.Api;
+using asuka.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -73,7 +73,7 @@ public class ConfigureRefitService : IInstaller
                 httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
             });
     }
-    
+
     private static IAsyncPolicy<HttpResponseMessage> ConfigureErrorPolicyBuilder(
         PolicyBuilder<HttpResponseMessage> builder)
     {

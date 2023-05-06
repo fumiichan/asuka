@@ -48,7 +48,7 @@ public class RecommendCommandService : ICommandLineParser
             return;
         }
 
-        var responses = await _api.FetchRecommendedAsync(opts.Input.ToString());
+        var responses = await _api.FetchRecommended(opts.Input.ToString());
         var selection = await Selection.MultiSelect(responses);
 
         // Initialise the Progress bar.

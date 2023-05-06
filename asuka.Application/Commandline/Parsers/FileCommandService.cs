@@ -66,7 +66,7 @@ public class FileCommandService : ICommandLineParser
         foreach (var url in validUrls)
         {
             var code = new Regex("\\d+").Match(url).Value;
-            var response = await _api.FetchSingleAsync(code);
+            var response = await _api.FetchSingle(code);
 
             _series.AddChapter(response, opts.Output);
             

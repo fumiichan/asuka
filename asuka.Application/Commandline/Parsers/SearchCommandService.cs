@@ -1,19 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
+using asuka.Api.Queries;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Output.Writer;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
-using asuka.Core.Mappings;
-using asuka.Core.Models;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
-using Sharprompt;
 
 namespace asuka.Application.Commandline.Parsers;
 
@@ -59,7 +55,14 @@ public class SearchCommandService : ICommandLineParser
         searchQueries.AddRange(opts.DateRange.Select(d => $"uploaded:{d}"));
         searchQueries.AddRange(opts.PageRange.Select(p => $"pages:{p}"));
 
-        var responses = await _api.SearchAsync(string.Join(" ", searchQueries), opts.Page, opts.Sort);
+        var queries = new SearchQuery
+        {
+            Queries = string.Join(" ", searchQueries),
+            PageNumber = opts.Page,
+            Sort = opts.Sort
+        };
+
+        var responses = await _api.Search(queries);
         if (responses.Count < 1)
         {
             _console.ErrorLine("No results found.");

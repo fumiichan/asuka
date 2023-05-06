@@ -37,12 +37,12 @@ public class RandomCommandService : ICommandLineParser
     public async Task RunAsync(object options)
     {
         var opts = (RandomOptions)options;
-        var totalNumbers = await _api.GetTotalGalleryCountAsync();
+        var totalNumbers = await _api.GetTotalGalleryCount();
 
         while (true)
         {
             var randomCode = new Random().Next(1, totalNumbers);
-            var response = await _api.FetchSingleAsync(randomCode.ToString());
+            var response = await _api.FetchSingle(randomCode.ToString());
 
             _console.WriteLine(response.ToReadable());
 

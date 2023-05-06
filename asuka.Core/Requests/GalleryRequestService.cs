@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using asuka.Core.Api;
+using asuka.Api;
+using asuka.Api.Queries;
 using asuka.Core.Mappings;
 using asuka.Core.Models;
 
@@ -16,28 +14,28 @@ public class GalleryRequestService : IGalleryRequestService
         _api = api;
     }
 
-    public async Task<GalleryResult> FetchSingleAsync(string code)
+    public async Task<GalleryResult> FetchSingle(string code)
     {
         var result = await _api.FetchSingle(code)
             .ConfigureAwait(false);
         return result.ToGalleryResult();
     }
 
-    public async Task<IReadOnlyList<GalleryResult>> FetchRecommendedAsync(string code)
+    public async Task<IReadOnlyList<GalleryResult>> FetchRecommended(string code)
     {
         var result = await _api.FetchRecommended(code)
             .ConfigureAwait(false);
         return result.Result.Select(x => x.ToGalleryResult()).ToList();
     }
 
-    public async Task<IReadOnlyList<GalleryResult>> SearchAsync(string query, int page, string sort)
+    public async Task<IReadOnlyList<GalleryResult>> Search(SearchQuery query)
     {
-        var result = await _api.SearchGallery(query, page, sort)
+        var result = await _api.SearchGallery(query)
             .ConfigureAwait(false);
         return result.Result.Select(x => x.ToGalleryResult()).ToList();
     }
 
-    public async Task<int> GetTotalGalleryCountAsync()
+    public async Task<int> GetTotalGalleryCount()
     {
         var result = await _api.FetchAll()
             .ConfigureAwait(false);

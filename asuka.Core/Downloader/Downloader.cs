@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using asuka.Core.Api;
+using asuka.Api;
 using asuka.Core.Chaptering;
 using asuka.Core.Events;
 using asuka.Core.Models;

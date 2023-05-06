@@ -40,7 +40,7 @@ public class GetCommandService : ICommandLineParser
 
     private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
     {
-        var response = await _api.FetchSingleAsync(input.ToString());
+        var response = await _api.FetchSingle(input.ToString());
         _console.WriteLine(response.ToReadable());
 
         // Don't download.
