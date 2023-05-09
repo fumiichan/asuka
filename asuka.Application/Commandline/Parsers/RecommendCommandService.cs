@@ -1,15 +1,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Output.Writer;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Mappings;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
-using Sharprompt;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
@@ -18,24 +16,24 @@ public class RecommendCommandService : ICommandLineParser
     private readonly IValidator<RecommendOptions> _validator;
     private readonly IGalleryRequestService _api;
     private readonly IDownloader _download;
-    private readonly IConsoleWriter _console;
     private readonly IProgressService _progressService;
     private readonly ISeriesFactory _series;
+    private readonly ILogger _logger;
 
     public RecommendCommandService(
         IValidator<RecommendOptions> validator,
         IGalleryRequestService api,
         IDownloader download,
-        IConsoleWriter console,
         IProgressService progressService,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        ILogger logger)
     {
         _validator = validator;
         _api = api;
         _download = download;
-        _console = console;
         _progressService = progressService;
         _series = series;
+        _logger = logger;
     }
 
     public async Task Run(object options)
@@ -44,7 +42,7 @@ public class RecommendCommandService : ICommandLineParser
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {
-            _console.ValidationErrors(validator.Errors);
+            validator.Errors.PrintErrors(_logger);
             return;
         }
 

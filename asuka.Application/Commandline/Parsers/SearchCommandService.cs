@@ -3,13 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using asuka.Api.Queries;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Output.Writer;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
@@ -17,25 +17,25 @@ public class SearchCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
     private readonly IValidator<SearchOptions> _validator;
-    private readonly IConsoleWriter _console;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly ISeriesFactory _series;
+    private readonly ILogger _logger;
 
     public SearchCommandService(
         IGalleryRequestService api,
         IValidator<SearchOptions> validator,
-        IConsoleWriter console,
         IDownloader download,
         IProgressService progressService,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        ILogger logger)
     {
         _api = api;
         _validator = validator;
-        _console = console;
         _download = download;
         _progressService = progressService;
         _series = series;
+        _logger = logger;
     }
 
     public async Task Run(object options)
@@ -44,7 +44,7 @@ public class SearchCommandService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintErrors(_logger);
             return;
         }
 
@@ -65,7 +65,7 @@ public class SearchCommandService : ICommandLineParser
         var responses = await _api.Search(queries);
         if (responses.Count < 1)
         {
-            _console.ErrorLine("No results found.");
+            _logger.LogError("No results found.");
             return;
         }
 

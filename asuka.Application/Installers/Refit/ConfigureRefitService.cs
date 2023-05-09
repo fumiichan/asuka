@@ -81,7 +81,7 @@ public class ConfigureRefitService : IInstaller
             TimeSpan.FromSeconds(1), 5);
         return builder.WaitAndRetryAsync(delay, (_, span) =>
         {
-            Colorful.Console.WriteLine($"Retrying in {span.Seconds}");
+            Console.WriteLine($"Retrying in {span.Seconds}");
         });
     }
     

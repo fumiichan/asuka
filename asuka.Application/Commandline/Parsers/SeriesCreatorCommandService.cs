@@ -2,43 +2,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Configuration;
-using asuka.Application.Output.Writer;
+using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Configuration;
 using asuka.Core.Downloader;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
 public class SeriesCreatorCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
-    private readonly IConsoleWriter _console;
     private readonly IDownloader _downloader;
     private readonly IProgressService _progress;
     private readonly IConfigurationManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
     private readonly ISeriesFactory _series;
+    private readonly ILogger _logger;
 
     public SeriesCreatorCommandService(
         IGalleryRequestService api,
-        IConsoleWriter console,
         IDownloader downloader,
         IProgressService progress,
         IConfigurationManager config,
         IValidator<SeriesCreatorCommandOptions> validator,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        ILogger logger)
     {
         _api = api;
-        _console = console;
         _downloader = downloader;
         _progress = progress;
         _config = config;
         _validator = validator;
         _series = series;
+        _logger = logger;
     }
 
     private async Task HandleArrayTask(IList<string> codes, string output, bool pack)
@@ -53,7 +53,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
             }
             catch
             {
-                _console.WarningLine($"Skipping: {codes[i]} because of an error.");
+                _logger.LogWarning($"Skipping: {codes[i]} because of an error.");
             }
         }
 
@@ -61,7 +61,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         // Quit immediately.
         if (_series.GetSeries() == null)
         {
-            _console.SuccessLine("Nothing to do. Quitting...");
+            _logger.LogInformation("Nothing to do. Quitting...");
             return;
         }
 
@@ -98,7 +98,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintErrors(_logger);
             return;
         }
 

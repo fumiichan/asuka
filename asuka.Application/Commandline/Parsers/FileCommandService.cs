@@ -5,48 +5,49 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Output.Writer;
+using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
 public class FileCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
-    private readonly IConsoleWriter _console;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly ISeriesFactory _series;
+    private readonly IValidator<FileCommandOptions> _validator;
+    private readonly ILogger _logger;
 
     public FileCommandService(
         IGalleryRequestService api,
-        IConsoleWriter console,
         IDownloader download,
         IProgressService progressService,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        IValidator<FileCommandOptions> validator,
+        ILogger logger)
     {
         _api = api;
-        _console = console;
         _download = download;
         _progressService = progressService;
         _series = series;
+        _validator = validator;
+        _logger = logger;
     }
 
     public async Task Run(object options)
     {
         var opts = (FileCommandOptions)options;
-        if (!File.Exists(opts.FilePath))
-        {
-            _console.ErrorLine("File doesn't exist.");
-            return;
-        }
+        var validationResult = await _validator.ValidateAsync(opts);
 
-        if (IsFileExceedingToFileSizeLimit(opts.FilePath))
+        if (!validationResult.IsValid)
         {
-            _console.ErrorLine("The file size is exceeding 5MB file size limit.");
+            validationResult.Errors.PrintErrors(_logger);
             return;
         }
 
@@ -56,7 +57,7 @@ public class FileCommandService : ICommandLineParser
 
         if (validUrls.Count == 0)
         {
-            _console.ErrorLine("No valid URLs found.");
+            _logger.LogError("No valid URLs found.");
             return;
         }
 
@@ -88,11 +89,5 @@ public class FileCommandService : ICommandLineParser
     private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
     {
         return urls.Where(url => new Regex("^http(s)?:\\/\\/(nhentai\\.net)\\b([//g]*)\\b([\\d]{1,6})\\/?$").IsMatch(url)).ToList();
-    }
-
-    private static bool IsFileExceedingToFileSizeLimit(string inputFile)
-    {
-        var fileSize = new FileInfo(inputFile).Length;
-        return fileSize > 5242880;
     }
 }

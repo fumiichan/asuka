@@ -1,22 +1,22 @@
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Configuration;
-using asuka.Application.Output.Writer;
+using asuka.Application.Utilities;
 using asuka.Core.Configuration;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
 public class ConfigureCommand : ICommandLineParser
 {
     private readonly IConfigurationManager _configurationManager;
-    private readonly IConsoleWriter _consoleWriter;
     private readonly IValidator<ConfigureOptions> _validator;
+    private readonly ILogger _logger;
 
-    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigurationManager configurationManager, IConsoleWriter consoleWriter)
+    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigurationManager configurationManager, ILogger logger)
     {
         _configurationManager = configurationManager;
-        _consoleWriter = consoleWriter;
+        _logger = logger;
         _validator = validator;
     }
 
@@ -26,7 +26,7 @@ public class ConfigureCommand : ICommandLineParser
         var validation = await _validator.ValidateAsync(opts);
         if (!validation.IsValid)
         {
-            _consoleWriter.ValidationErrors(validation.Errors);
+            validation.Errors.PrintErrors(_logger);
             return;
         }
 
@@ -41,7 +41,7 @@ public class ConfigureCommand : ICommandLineParser
         if (opts.ReadConfigMode)
         {
             var configValue = _configurationManager.GetValue(opts.Key);
-            _consoleWriter.WriteLine($"{opts.Key} = {configValue}");
+            _logger.LogInformation($"{opts.Key} = {configValue}");
 
             return;
         }
@@ -52,7 +52,7 @@ public class ConfigureCommand : ICommandLineParser
 
             foreach (var (key, value) in keyValuePairs)
             {
-                _consoleWriter.WriteLine($"{key} = {value}");
+                _logger.LogInformation($"{key} = {value}");
             }
 
             return;

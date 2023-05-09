@@ -23,6 +23,7 @@ public static class ContractToGalleryResultModelMapping
             Characters = response.Tags.GetTagByGroup("character"),
             Tags = response.Tags.GetTagByGroup("tag"),
             Categories = response.Tags.GetTagByGroup("category"),
+            Groups = response.Tags.GetTagByGroup("group"),
             Languages = response.Tags.GetTagByGroup("language"),
             TotalPages = response.TotalPages
         };

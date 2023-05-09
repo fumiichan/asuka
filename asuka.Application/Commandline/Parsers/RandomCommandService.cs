@@ -2,13 +2,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Output;
-using asuka.Application.Output.Writer;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
+using Microsoft.Extensions.Logging;
 using Sharprompt;
 
 namespace asuka.Application.Commandline.Parsers;
@@ -17,22 +16,22 @@ public class RandomCommandService : ICommandLineParser
 {
     private readonly IDownloader _download;
     private readonly IGalleryRequestService _api;
-    private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
     private readonly ISeriesFactory _series;
+    private readonly ILogger _logger;
 
     public RandomCommandService(
         IDownloader download,
         IGalleryRequestService api,
-        IConsoleWriter console,
         IProgressService progress,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        ILogger logger)
     {
         _download = download;
         _api = api;
-        _console = console;
         _progress = progress;
         _series = series;
+        _logger = logger;
     }
 
     public async Task Run(object options)
@@ -45,7 +44,7 @@ public class RandomCommandService : ICommandLineParser
             var randomCode = new Random().Next(1, totalNumbers);
             var response = await _api.FetchSingle(randomCode.ToString());
 
-            _console.WriteLine(response.BuildReadableInformation());
+            _logger.LogInformation(response.BuildReadableInformation());
 
             var prompt = Prompt.Confirm("Are you sure to download this one?", true);
             if (!prompt)

@@ -29,9 +29,6 @@ public class ConfigurationManager : IConfigurationManager
         return new Dictionary<string, string>
         {
             {
-                "colors.theme", "dark"
-            },
-            {
                 "layout.tachiyomi", "yes"
             },
             {

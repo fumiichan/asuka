@@ -8,6 +8,12 @@ public static class ContractToGalleryTagResultModelMapping
         this IEnumerable<GalleryTagResponse> response,
         string filter)
     {
+        // In cases where tags are not present.
+        if (response == null)
+        {
+            return new List<string>();
+        }
+
         return response
             .Where(x => x.Type == filter)
             .Select(x => x.Name)

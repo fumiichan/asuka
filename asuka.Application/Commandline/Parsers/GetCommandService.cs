@@ -1,15 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
-using asuka.Application.Output;
-using asuka.Application.Output.Writer;
+using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
-using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
 using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
@@ -18,31 +17,30 @@ public class GetCommandService : ICommandLineParser
     private readonly IGalleryRequestService _api;
     private readonly IValidator<GetOptions> _validator;
     private readonly IDownloader _download;
-    private readonly IConsoleWriter _console;
     private readonly IProgressService _progress;
     private readonly ISeriesFactory _series;
+    private readonly ILogger _logger;
 
     public GetCommandService(
         IGalleryRequestService api,
         IValidator<GetOptions> validator,
         IDownloader download,
-        IConsoleWriter console,
         IProgressService progress,
-        IPackArchiveToCbz pack,
-        ISeriesFactory series)
+        ISeriesFactory series,
+        ILogger logger)
     {
         _api = api;
         _validator = validator;
         _download = download;
-        _console = console;
         _progress = progress;
         _series = series;
+        _logger = logger;
     }
 
     private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
     {
         var response = await _api.FetchSingle(input.ToString());
-        _console.WriteLine(response.BuildReadableInformation());
+        _logger.LogInformation(response.BuildReadableInformation());
 
         // Don't download.
         if (readOnly)
@@ -70,7 +68,7 @@ public class GetCommandService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintErrors(_logger);
             return;
         }
 

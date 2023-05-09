@@ -4,25 +4,26 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Configuration;
-using asuka.Application.Output.Writer;
+using asuka.Application.Utilities;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
 public class CookieConfigureService : ICommandLineParser
 {
     private readonly IRequestConfigurator _requestConfigurator;
-    private readonly IConsoleWriter _console;
     private readonly IValidator<CookieConfigureOptions> _validator;
+    private readonly ILogger _logger;
 
     public CookieConfigureService(
         IRequestConfigurator requestConfigurator,
-        IConsoleWriter console,
-        IValidator<CookieConfigureOptions> validator)
+        IValidator<CookieConfigureOptions> validator,
+        ILogger logger)
     {
         _requestConfigurator = requestConfigurator;
-        _console = console;
         _validator = validator;
+        _logger = logger;
     }
 
     public async Task Run(object options)
@@ -32,7 +33,7 @@ public class CookieConfigureService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintErrors(_logger);
             return;
         }
         

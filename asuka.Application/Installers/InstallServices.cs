@@ -1,7 +1,6 @@
 using asuka.Application.Commandline;
 using asuka.Application.Commandline.Parsers;
 using asuka.Application.Configuration;
-using asuka.Application.Output.Writer;
 using asuka.Core.Chaptering;
 using asuka.Core.Compression;
 using asuka.Core.Configuration;
@@ -23,7 +22,6 @@ public class InstallServices : IInstaller
         services.AddSingleton<AsukaApplication>();
         services.AddSingleton<IProgressService, ProgressService>();
         services.AddSingleton<IGalleryRequestService, GalleryRequestService>();
-        services.AddSingleton<IConsoleWriter, ConsoleWriter>();
         services.AddScoped<IDownloader, Downloader>();
         services.AddScoped<IPackArchiveToCbz, PackArchiveToCbz>();
         services.AddSingleton<IConfigurationManager, ConfigurationManager>();
