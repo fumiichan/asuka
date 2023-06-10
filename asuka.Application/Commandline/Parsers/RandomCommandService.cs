@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
@@ -15,34 +16,48 @@ namespace asuka.Application.Commandline.Parsers;
 public class RandomCommandService : ICommandLineParser
 {
     private readonly IDownloader _download;
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IProgressService _progress;
     private readonly ISeriesFactory _series;
     private readonly ILogger _logger;
 
     public RandomCommandService(
         IDownloader download,
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IProgressService progress,
         ISeriesFactory series,
         ILogger logger)
     {
         _download = download;
-        _api = api;
+        _apis = apis;
         _progress = progress;
         _series = series;
         _logger = logger;
     }
-
+    
     public async Task Run(object options)
     {
         var opts = (RandomOptions)options;
-        var totalNumbers = await _api.GetTotalGalleryCount();
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
+
+        await ExecuteCommand(opts, provider);
+    }
+
+    public async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider)
+    {
+        var totalNumbers = await provider.GetTotalGalleryCount();
 
         while (true)
         {
             var randomCode = new Random().Next(1, totalNumbers);
-            var response = await _api.FetchSingle(randomCode.ToString());
+            var response = await provider.FetchSingle(randomCode.ToString());
 
             _logger.LogInformation(response.BuildReadableInformation());
 
@@ -63,7 +78,7 @@ public class RandomCommandService : ICommandLineParser
                 progress.Tick($"{e.Message} random id: {response.Id}");
             });
 
-            await _download.Start(_series.GetSeries().Chapters.First());
+            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? progress : null);
             
             break;

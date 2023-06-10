@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
@@ -14,7 +15,7 @@ namespace asuka.Application.Commandline.Parsers;
 public class RecommendCommandService : ICommandLineParser
 {
     private readonly IValidator<RecommendOptions> _validator;
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly ISeriesFactory _series;
@@ -22,23 +23,37 @@ public class RecommendCommandService : ICommandLineParser
 
     public RecommendCommandService(
         IValidator<RecommendOptions> validator,
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IDownloader download,
         IProgressService progressService,
         ISeriesFactory series,
         ILogger logger)
     {
         _validator = validator;
-        _api = api;
+        _apis = apis;
         _download = download;
         _progressService = progressService;
         _series = series;
         _logger = logger;
     }
-
+    
     public async Task Run(object options)
     {
         var opts = (RecommendOptions)options;
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
+
+        await ExecuteCommand(opts, provider);
+    }
+
+    public async Task ExecuteCommand(RecommendOptions opts, IGalleryRequestService provider)
+    {
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {
@@ -46,7 +61,7 @@ public class RecommendCommandService : ICommandLineParser
             return;
         }
 
-        var responses = await _api.FetchRecommended(opts.Input.ToString());
+        var responses = await provider.FetchRecommended(opts.Input.ToString());
         var selection = await Selection.MultiSelect(responses);
 
         // Initialise the Progress bar.
@@ -63,7 +78,7 @@ public class RecommendCommandService : ICommandLineParser
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
-            await _download.Start(_series.GetSeries().Chapters.FirstOrDefault());
+            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.FirstOrDefault());
             await _series.Close(opts.Pack ? innerProgress : null);
             
             progress.Tick();

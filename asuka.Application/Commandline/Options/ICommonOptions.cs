@@ -4,6 +4,11 @@ namespace asuka.Application.Commandline.Options;
 
 public interface ICommonOptions
 {
+    [Option("provider",
+        Required = true,
+        HelpText = "Select provider to use")]
+    string Provider { get; init; }
+
     [Option('p', "pack",
         Default = false,
         Required = false,

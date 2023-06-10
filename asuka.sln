@@ -4,7 +4,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Application", "asuka.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Core", "asuka.Core\asuka.Core.csproj", "{3E961924-0359-4329-909B-F8C5681D2B29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Api", "asuka.Api\asuka.Api.csproj", "{4AC4657E-58B1-4B52-A604-4B8F47396F2E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Providers", "Providers", "{4CCBAD40-6120-43F5-BDEF-D0F3F15C24C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Providers.Nhentai", "asuka.Providers.Nhentai\asuka.Providers.Nhentai.csproj", "{15D26E8B-51B0-4371-B1F6-84CCD02DE041}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,9 +22,12 @@ Global
 		{3E961924-0359-4329-909B-F8C5681D2B29}.Release|x64.Build.0 = Release|Any CPU
 		{3E961924-0359-4329-909B-F8C5681D2B29}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{3E961924-0359-4329-909B-F8C5681D2B29}.Debug|x64.Build.0 = Debug|Any CPU
-		{4AC4657E-58B1-4B52-A604-4B8F47396F2E}.Release|x64.ActiveCfg = Release|Any CPU
-		{4AC4657E-58B1-4B52-A604-4B8F47396F2E}.Release|x64.Build.0 = Release|Any CPU
-		{4AC4657E-58B1-4B52-A604-4B8F47396F2E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4AC4657E-58B1-4B52-A604-4B8F47396F2E}.Debug|x64.Build.0 = Debug|Any CPU
+		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Release|x64.ActiveCfg = Release|Any CPU
+		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Release|x64.Build.0 = Release|Any CPU
+		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Debug|x64.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{15D26E8B-51B0-4371-B1F6-84CCD02DE041} = {4CCBAD40-6120-43F5-BDEF-D0F3F15C24C8}
 	EndGlobalSection
 EndGlobal

@@ -25,7 +25,6 @@ public class CommandLineParserFactory : ICommandLineParserFactory
             CommandLineParserTokens.Recommend => GetService(typeof(RecommendCommandService)),
             CommandLineParserTokens.Search => GetService(typeof(SearchCommandService)),
             CommandLineParserTokens.Series => GetService(typeof(SeriesCreatorCommandService)),
-            CommandLineParserTokens.Cookie => GetService(typeof(CookieConfigureService)),
             _ => throw new ArgumentOutOfRangeException(nameof(token), token, null)
         };
     }

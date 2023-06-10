@@ -1,6 +1,6 @@
 using Refit;
 
-namespace asuka.Api;
+namespace asuka.Providers.Nhentai.Api;
 
 public interface IGalleryImage
 {

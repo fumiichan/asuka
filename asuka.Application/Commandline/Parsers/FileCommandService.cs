@@ -17,7 +17,7 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class FileCommandService : ICommandLineParser
 {
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
     private readonly ISeriesFactory _series;
@@ -25,14 +25,14 @@ public class FileCommandService : ICommandLineParser
     private readonly ILogger _logger;
 
     public FileCommandService(
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IDownloader download,
         IProgressService progressService,
         ISeriesFactory series,
         IValidator<FileCommandOptions> validator,
         ILogger logger)
     {
-        _api = api;
+        _apis = apis;
         _download = download;
         _progressService = progressService;
         _series = series;
@@ -43,6 +43,20 @@ public class FileCommandService : ICommandLineParser
     public async Task Run(object options)
     {
         var opts = (FileCommandOptions)options;
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
+
+        await ExecuteCommand(opts, provider);
+    }
+
+    private async Task ExecuteCommand(FileCommandOptions opts, IGalleryRequestService requestService)
+    {
         var validationResult = await _validator.ValidateAsync(opts);
 
         if (!validationResult.IsValid)
@@ -67,7 +81,7 @@ public class FileCommandService : ICommandLineParser
         foreach (var url in validUrls)
         {
             var code = new Regex("\\d+").Match(url).Value;
-            var response = await _api.FetchSingle(code);
+            var response = await requestService.FetchSingle(code);
 
             _series.AddChapter(response, opts.Output);
             
@@ -79,7 +93,7 @@ public class FileCommandService : ICommandLineParser
             });
 
             // Start downloading
-            await _download.Start(_series.GetSeries().Chapters.First());
+            await _download.Start(requestService.ProviderFor(), _series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? internalProgress : null);
             
             progress.Tick();

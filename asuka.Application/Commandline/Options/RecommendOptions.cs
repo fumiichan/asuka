@@ -11,4 +11,5 @@ public record RecommendOptions : ICommonOptions
     public int Input { get; init; }
     public bool Pack { get; init; }
     public string Output { get; init; }
+    public string Provider { get; init; }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
@@ -12,9 +14,17 @@ using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
+internal class DownloadTaskArguments
+{
+    public string Input { get; init; }
+    public bool Pack { get; init; }
+    public bool ReadOnly { get; init; }
+    public string OutputPath { get; init; }
+}
+
 public class GetCommandService : ICommandLineParser
 {
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IValidator<GetOptions> _validator;
     private readonly IDownloader _download;
     private readonly IProgressService _progress;
@@ -22,14 +32,14 @@ public class GetCommandService : ICommandLineParser
     private readonly ILogger _logger;
 
     public GetCommandService(
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IValidator<GetOptions> validator,
         IDownloader download,
         IProgressService progress,
         ISeriesFactory series,
         ILogger logger)
     {
-        _api = api;
+        _apis = apis;
         _validator = validator;
         _download = download;
         _progress = progress;
@@ -37,34 +47,23 @@ public class GetCommandService : ICommandLineParser
         _logger = logger;
     }
 
-    private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
-    {
-        var response = await _api.FetchSingle(input.ToString());
-        _logger.LogInformation(response.BuildReadableInformation());
-
-        // Don't download.
-        if (readOnly)
-        {
-            return;
-        }
-        
-        _series.AddChapter(response, outputPath);
-
-        _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
-        var progress = _progress.GetMasterProgress();
-
-        _download.HandleOnProgress((_, e) =>
-        {
-            progress.Tick($"{e.Message}: {response.Id}");
-        });
-
-        await _download.Start(_series.GetSeries().Chapters.First());
-        await _series.Close(pack ? progress : null);
-    }
-
     public async Task Run(object options)
     {
         var opts = (GetOptions)options;
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
+
+        await ExecuteCommand(opts, provider);
+    }
+
+    private async Task ExecuteCommand(GetOptions opts, IGalleryRequestService provider)
+    {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
@@ -74,7 +73,38 @@ public class GetCommandService : ICommandLineParser
 
         foreach (var code in opts.Input)
         {
-            await DownloadTask(code, opts.Pack, opts.ReadOnly, opts.Output);
+            await DownloadTask(provider, new DownloadTaskArguments
+            {
+                Input = code.ToString(),
+                Pack = opts.Pack,
+                ReadOnly = opts.ReadOnly,
+                OutputPath = opts.Output
+            });
         }
+    }
+    
+    private async Task DownloadTask(IGalleryRequestService api, DownloadTaskArguments args)
+    {
+        var response = await api.FetchSingle(args.Input);
+        _logger.LogInformation(response.BuildReadableInformation());
+
+        // Don't download.
+        if (args.ReadOnly)
+        {
+            return;
+        }
+        
+        _series.AddChapter(response, args.OutputPath);
+
+        _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
+        var progress = _progress.GetMasterProgress();
+
+        _download.HandleOnProgress((_, e) =>
+        {
+            progress.Tick($"{e.Message}: {response.Id}");
+        });
+
+        await _download.Start(api.ProviderFor(), _series.GetSeries().Chapters.First());
+        await _series.Close(args.Pack ? progress : null);
     }
 }

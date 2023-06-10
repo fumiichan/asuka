@@ -7,4 +7,5 @@ public record RandomOptions : ICommonOptions
 {
     public bool Pack { get; init; }
     public string Output { get; init; }
+    public string Provider { get; init; }
 }

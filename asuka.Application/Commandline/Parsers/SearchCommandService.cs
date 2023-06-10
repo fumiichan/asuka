@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using asuka.Api.Queries;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
@@ -15,7 +14,7 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class SearchCommandService : ICommandLineParser
 {
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IValidator<SearchOptions> _validator;
     private readonly IDownloader _download;
     private readonly IProgressService _progressService;
@@ -23,24 +22,38 @@ public class SearchCommandService : ICommandLineParser
     private readonly ILogger _logger;
 
     public SearchCommandService(
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IValidator<SearchOptions> validator,
         IDownloader download,
         IProgressService progressService,
         ISeriesFactory series,
         ILogger logger)
     {
-        _api = api;
+        _apis = apis;
         _validator = validator;
         _download = download;
         _progressService = progressService;
         _series = series;
         _logger = logger;
     }
-
+    
     public async Task Run(object options)
     {
         var opts = (SearchOptions)options;
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
+
+        await ExecuteCommand(opts, provider);
+    }
+
+    public async Task ExecuteCommand(SearchOptions opts, IGalleryRequestService provider)
+    {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
@@ -55,14 +68,8 @@ public class SearchCommandService : ICommandLineParser
         searchQueries.AddRange(opts.DateRange.Select(d => $"uploaded:{d}"));
         searchQueries.AddRange(opts.PageRange.Select(p => $"pages:{p}"));
 
-        var queries = new SearchQuery
-        {
-            Queries = string.Join(" ", searchQueries),
-            PageNumber = opts.Page,
-            Sort = opts.Sort
-        };
-
-        var responses = await _api.Search(queries);
+        var responses = await provider.Search(
+            string.Join(" ", searchQueries), opts.Sort, opts.Page);
         if (responses.Count < 1)
         {
             _logger.LogError("No results found.");
@@ -86,7 +93,7 @@ public class SearchCommandService : ICommandLineParser
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
-            await _download.Start(_series.GetSeries().Chapters.First());
+            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? innerProgress : null);
             
             progress.Tick();

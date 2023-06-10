@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace asuka.Api.Responses;
+namespace asuka.Providers.Nhentai.Api.Responses;
 
 public record GalleryTagResponse
 {

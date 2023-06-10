@@ -17,13 +17,13 @@ public static class GalleryResultExtensions
         builder.AppendLine($"Pretty: {result.Title.Pretty}");
 
         builder.AppendLine("Tags ==========================================");
-        builder.AppendLine($"Artists: {string.Join(", ", result.Artists)}");
-        builder.AppendLine($"Parodies: {string.Join(", ", result.Parodies)}");
-        builder.AppendLine($"Characters: {string.Join(", ", result.Characters)}");
-        builder.AppendLine($"Categories: {string.Join(", ", result.Categories)}");
-        builder.AppendLine($"Groups: {string.Join(", ", result.Groups)}");
-        builder.AppendLine($"Tags: {string.Join(", ", result.Tags)}");
-        builder.AppendLine($"Language: {string.Join(", ", result.Languages)}");
+        builder.AppendLine($"Artists: {SafeJoin(result.Artists)}");
+        builder.AppendLine($"Parodies: {SafeJoin(result.Parodies)}");
+        builder.AppendLine($"Characters: {SafeJoin(result.Characters)}");
+        builder.AppendLine($"Categories: {SafeJoin(result.Categories)}");
+        builder.AppendLine($"Groups: {SafeJoin(result.Groups)}");
+        builder.AppendLine($"Tags: {SafeJoin(result.Tags)}");
+        builder.AppendLine($"Language: {SafeJoin(result.Languages)}");
 
         builder.AppendLine("===============================================");
         builder.AppendLine($"Total Pages: {result.TotalPages}");
@@ -31,6 +31,17 @@ public static class GalleryResultExtensions
 
         return builder.ToString();
     }
+
+    private static string SafeJoin(IReadOnlyList<string> strings)
+    {
+        if (strings is null)
+        {
+            return "";
+        }
+
+        return string.Join(", ", strings);
+    }
+    
     
     private record TachiyomiDetails
     {

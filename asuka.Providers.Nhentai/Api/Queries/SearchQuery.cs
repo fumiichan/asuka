@@ -1,6 +1,6 @@
 using Refit;
 
-namespace asuka.Api.Queries;
+namespace asuka.Providers.Nhentai.Api.Queries;
 
 public record SearchQuery
 {

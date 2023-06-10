@@ -1,8 +1,8 @@
-using asuka.Api.Queries;
-using asuka.Api.Responses;
+using asuka.Providers.Nhentai.Api.Queries;
+using asuka.Providers.Nhentai.Api.Responses;
 using Refit;
 
-namespace asuka.Api;
+namespace asuka.Providers.Nhentai.Api;
 
 public interface IGalleryApi
 {
@@ -16,5 +16,5 @@ public interface IGalleryApi
     Task<GalleryListResponse> FetchAll();
 
     [Get("/api/galleries/search")]
-    Task<GallerySearchResponse> SearchGallery(SearchQuery query);
+    Task<GallerySearchResponse> SearchGallery(SearchQuery queries);
 }

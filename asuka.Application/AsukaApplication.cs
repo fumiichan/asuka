@@ -30,7 +30,6 @@ public class AsukaApplication
             async (FileCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.File); },
             async (ConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Configure); },
             async (SeriesCreatorCommandOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Series); },
-            async (CookieConfigureOptions opts) => { await RunCommand(opts, CommandLineParserTokens.Cookie); },
             _ => Task.FromResult(1));
     }
 

@@ -13,9 +13,16 @@ using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
+internal class HandleArrayTaskArgs
+{
+    public IList<string> Codes { get; init; }
+    public string Output { get; init; }
+    public bool Pack { get; init; }
+}
+
 public class SeriesCreatorCommandService : ICommandLineParser
 {
-    private readonly IGalleryRequestService _api;
+    private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IDownloader _downloader;
     private readonly IProgressService _progress;
     private readonly IConfigurationManager _config;
@@ -24,7 +31,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly ILogger _logger;
 
     public SeriesCreatorCommandService(
-        IGalleryRequestService api,
+        IEnumerable<IGalleryRequestService> apis,
         IDownloader downloader,
         IProgressService progress,
         IConfigurationManager config,
@@ -32,7 +39,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         ISeriesFactory series,
         ILogger logger)
     {
-        _api = api;
+        _apis = apis;
         _downloader = downloader;
         _progress = progress;
         _config = config;
@@ -40,20 +47,56 @@ public class SeriesCreatorCommandService : ICommandLineParser
         _series = series;
         _logger = logger;
     }
+    
+    public async Task Run(object options)
+    {
+        var opts = (SeriesCreatorCommandOptions)options;
+        
+        // Find appropriate provider.
+        var provider = _apis.GetFirst(opts.Provider);
+        if (provider is null)
+        {
+            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            return;
+        }
 
-    private async Task HandleArrayTask(IList<string> codes, string output, bool pack)
+        await ExecuteCommand(opts, provider);
+    }
+    
+    public async Task ExecuteCommand(SeriesCreatorCommandOptions opts, IGalleryRequestService api)
+    {
+        var validationResult = await _validator.ValidateAsync(opts);
+        if (!validationResult.IsValid)
+        {
+            validationResult.Errors.PrintErrors(_logger);
+            return;
+        }
+
+        // Temporarily enable tachiyomi folder layout
+        _config.SetValue("layout.tachiyomi", "yes");
+
+        var list = opts.FromList.ToList();
+        await HandleArrayTask(api, new HandleArrayTaskArgs
+        {
+            Codes = list,
+            Output = opts.Output,
+            Pack = opts.Pack
+        });
+    }
+
+    private async Task HandleArrayTask(IGalleryRequestService provider, HandleArrayTaskArgs args)
     {
         // Queue list of chapters.
-        for (var i = 0; i < codes.Count; i++)
+        for (var i = 0; i < args.Codes.Count; i++)
         {
             try
             {
-                var response = await _api.FetchSingle(codes[i]);
-                _series.AddChapter(response, output, i + 1);
+                var response = await provider.FetchSingle(args.Codes[i]);
+                _series.AddChapter(response, args.Output, i + 1);
             }
             catch
             {
-                _logger.LogWarning($"Skipping: {codes[i]} because of an error.");
+                _logger.LogWarning($"Skipping: {args.Codes[i]} because of an error.");
             }
         }
 
@@ -80,7 +123,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
                     innerProgress.Tick();
                 });
 
-                await _downloader.Start(chapter);
+                await _downloader.Start(provider.ProviderFor(), chapter);
             }
             finally
             {
@@ -88,24 +131,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
             }
         }
         
-        await _series.Close(pack ? _progress.GetMasterProgress() : null);
-    }
-
-    public async Task Run(object options)
-    {
-        var opts = (SeriesCreatorCommandOptions)options;
-
-        var validationResult = await _validator.ValidateAsync(opts);
-        if (!validationResult.IsValid)
-        {
-            validationResult.Errors.PrintErrors(_logger);
-            return;
-        }
-
-        // Temporarily enable tachiyomi folder layout
-        _config.SetValue("layout.tachiyomi", "yes");
-
-        var list = opts.FromList.ToList();
-        await HandleArrayTask(list, opts.Output, opts.Pack);
+        await _series.Close(args.Pack ? _progress.GetMasterProgress() : null);
     }
 }

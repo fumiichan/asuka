@@ -1,18 +1,24 @@
-using asuka.Api;
 using asuka.Core.Chaptering;
 using asuka.Core.Events;
-using asuka.Core.Models;
+using asuka.Core.Requests;
 
 namespace asuka.Core.Downloader;
 
+internal class DownloadImageArgs
+{
+    public string Output { get; init; }
+    public string FileName { get; set; }
+    public string ImageDownloadPath { get; init; }
+}
+
 public sealed class Downloader : IDownloader
 {
-    private readonly IGalleryImage _api;
+    private readonly IEnumerable<IGalleryImageRequestService> _apis;
     private EventHandler<ProgressEvent> _progressEvent;
 
-    public Downloader(IGalleryImage api)
+    public Downloader(IEnumerable<IGalleryImageRequestService> apis)
     {
-        _api = api;
+        _apis = apis;
     }
 
     private void OnProgressEvent(ProgressEvent e)
@@ -28,7 +34,20 @@ public sealed class Downloader : IDownloader
         };
     }
 
-    public async Task Start(Chapter chapter)
+    public async Task Start(string providerName, Chapter chapter)
+    {
+        var api = _apis
+            .FirstOrDefault(x => x.ProviderFor() == providerName);
+
+        if (api is null)
+        {
+            return;
+        }
+
+        await ExecuteTask(chapter, api);
+    }
+
+    private async Task ExecuteTask(Chapter chapter, IGalleryImageRequestService api)
     {
         var throttler = new SemaphoreSlim(2);
         var taskList = chapter.Data.Images
@@ -38,7 +57,12 @@ public sealed class Downloader : IDownloader
 
                 try
                 {
-                    await DownloadImage(chapter.Output, chapter.Data.MediaId, x)
+                    await DownloadImage(api, new DownloadImageArgs
+                        {
+                            Output = chapter.Output,
+                            FileName = x.Filename,
+                            ImageDownloadPath = x.ServerFilename
+                        })
                         .ConfigureAwait(false);
                 }
                 finally
@@ -50,16 +74,22 @@ public sealed class Downloader : IDownloader
         await Task.WhenAll(taskList).ConfigureAwait(false);
     }
 
-    private async Task DownloadImage(string output, int mediaId, GalleryImageResult page)
+    private async Task DownloadImage(IGalleryImageRequestService provider, DownloadImageArgs args)
     {
-        var filePath = Path.Combine(output, page.Filename);
+        var filePath = Path.Combine(args.Output, args.FileName);
         if (File.Exists(filePath))
         {
             OnProgressEvent(new ProgressEvent("skip existing"));
             return;
         }
 
-        var image = await _api.GetImage(mediaId.ToString(), page.ServerFilename);
+        var image = await provider.FetchImage(args.ImageDownloadPath);
+        if (image is null)
+        {
+            OnProgressEvent(new ProgressEvent("download failed"));
+            return;
+        }
+        
         var imageData = await image.ReadAsByteArrayAsync();
 
         await File.WriteAllBytesAsync(filePath, imageData)

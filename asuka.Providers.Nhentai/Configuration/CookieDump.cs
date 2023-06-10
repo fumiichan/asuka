@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace asuka.Application.Configuration;
+namespace asuka.Providers.Nhentai.Configuration;
 
 public record CookieDump
 {

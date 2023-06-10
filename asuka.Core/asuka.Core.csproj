@@ -6,8 +6,4 @@
         <Nullable>disable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\asuka.Api\asuka.Api.csproj" />
-    </ItemGroup>
-
 </Project>

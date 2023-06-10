@@ -8,6 +8,5 @@ public enum CommandLineParserTokens
     Random,
     Recommend,
     Search,
-    Series,
-    Cookie
+    Series
 }
