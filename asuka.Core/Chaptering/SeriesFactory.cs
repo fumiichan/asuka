@@ -23,7 +23,7 @@ public class SeriesFactory : ISeriesFactory
 
     public void AddChapter(GalleryResult result, string source, string outputPath)
     {
-        AddChapter(result, outputPath, source, 1);
+        AddChapter(result, source, outputPath, 1);
     }
 
     public void AddChapter(GalleryResult result, string source, string outputPath, int chapterId)

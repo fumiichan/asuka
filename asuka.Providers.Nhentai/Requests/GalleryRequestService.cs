@@ -14,7 +14,7 @@ namespace asuka.Providers.Nhentai.Requests;
 public class GalleryRequestService : IGalleryRequestService
 {
     private readonly IGalleryApi _api;
-    private readonly Regex _urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}$");
+    private readonly Regex _urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}\/?$");
     private int _totalGalleryCountCache;
 
     public GalleryRequestService()
@@ -53,7 +53,7 @@ public class GalleryRequestService : IGalleryRequestService
             throw new ArgumentException($"Invalid input: {code}");
         }
 
-        var result = await _api.FetchSingle(code)
+        var result = await _api.FetchSingle(id)
             .ConfigureAwait(false);
         return result.ToGalleryResult();
     }
@@ -68,7 +68,7 @@ public class GalleryRequestService : IGalleryRequestService
             throw new ArgumentException($"Invalid input: {code}");
         }
 
-        var result = await _api.FetchRecommended(code)
+        var result = await _api.FetchRecommended(id)
             .ConfigureAwait(false);
         return result.Result.Select(x => x.ToGalleryResult()).ToList();
     }
