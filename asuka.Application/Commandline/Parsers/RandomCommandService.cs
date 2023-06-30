@@ -75,7 +75,7 @@ public class RandomCommandService : ICommandLineParser
             });
 
             await _download.Start(_series.GetSeries().Chapters.First());
-            await _series.Close(opts.Pack ? progress : null);
+            await _series.Close(opts.Pack ? progress : null, false);
 
             break;
         }

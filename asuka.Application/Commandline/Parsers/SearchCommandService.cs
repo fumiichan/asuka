@@ -94,7 +94,7 @@ public class SearchCommandService : ICommandLineParser
             });
 
             await _download.Start(_series.GetSeries().Chapters.First());
-            await _series.Close(opts.Pack ? innerProgress : null);
+            await _series.Close(opts.Pack ? innerProgress : null, false);
             
             progress.Tick();
         }

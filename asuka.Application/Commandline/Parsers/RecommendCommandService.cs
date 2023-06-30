@@ -79,7 +79,7 @@ public class RecommendCommandService : ICommandLineParser
             });
 
             await _download.Start(_series.GetSeries().Chapters.FirstOrDefault());
-            await _series.Close(opts.Pack ? innerProgress : null);
+            await _series.Close(opts.Pack ? innerProgress : null, false);
             
             progress.Tick();
         }

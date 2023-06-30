@@ -67,32 +67,26 @@ public class SeriesCreatorCommandService : ICommandLineParser
     {
         // Temporarily enable tachiyomi folder layout
         _config.SetValue("layout.tachiyomi", "yes");
-
-        var list = opts.FromList.ToList();
-        await HandleArrayTask(new HandleArrayTaskArgs
-        {
-            Codes = list,
-            Output = opts.Output,
-            Pack = opts.Pack,
-            ProviderName = opts.Provider
-        });
+        await HandleArrayTask(opts);
     }
 
-    private async Task HandleArrayTask(HandleArrayTaskArgs args)
+    private async Task HandleArrayTask(SeriesCreatorCommandOptions args)
     {
         // Queue list of chapters.
-        for (var i = 0; i < args.Codes.Count; i++)
+        var codes = args.FromList.ToList();
+        for (var i = args.StartOffset; i <= args.StartOffset + codes.Count; i++)
         {
-            var provider = _apis.GetWhatMatches(args.Codes[i], args.ProviderName);
+            var provider = _apis.GetWhatMatches(codes[i], args.Provider);
+            var realIndex = (codes.Count + 1) - (args.StartOffset + codes.Count);
             
             try
             {
-                var response = await provider.FetchSingle(args.Codes[i]);
-                _series.AddChapter(response, provider.ProviderFor().For, args.Output, i + 1);
+                var response = await provider.FetchSingle(codes[realIndex]);
+                _series.AddChapter(response, provider.ProviderFor().For, args.Output, i);
             }
             catch
             {
-                _logger.LogWarning($"Skipping: {args.Codes[i]} because of an error.");
+                _logger.LogWarning($"Skipping: {codes[realIndex]} because of an error.");
             }
         }
 
@@ -106,7 +100,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
 
         // Download chapters.
         var chapters = _series.GetSeries().Chapters;
-        _progress.CreateMasterProgress(args.Codes.Count, "downloading series");
+        _progress.CreateMasterProgress(chapters.Count, "downloading series");
 
         foreach (var chapter in chapters)
         {
@@ -127,6 +121,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
             }
         }
 
-        await _series.Close(args.Pack ? _progress.GetMasterProgress() : null);
+        await _series.Close(args.Pack ? _progress.GetMasterProgress() : null, args.DisableMetaWriting);
     }
 }

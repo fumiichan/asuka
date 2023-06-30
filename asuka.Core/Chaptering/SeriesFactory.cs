@@ -57,9 +57,12 @@ public class SeriesFactory : ISeriesFactory
         await initialChapter.Data.WriteTextMetadata(_series.Output);
     }
 
-    public async Task Close(IProgressProvider provider)
+    public async Task Close(IProgressProvider provider, bool disableMetaWriting)
     {
-        await WriteMetadata();
+        if (!disableMetaWriting)
+        {
+            await WriteMetadata();
+        }
 
         if (provider != null)
         {

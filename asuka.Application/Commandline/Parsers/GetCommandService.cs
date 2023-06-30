@@ -105,6 +105,6 @@ public class GetCommandService : ICommandLineParser
         });
 
         await _download.Start(_series.GetSeries().Chapters.First());
-        await _series.Close(args.Pack ? progress : null);
+        await _series.Close(args.Pack ? progress : null, false);
     }
 }
