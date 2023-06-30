@@ -14,4 +14,5 @@ public record GalleryResult
     public IReadOnlyList<string> Languages { get; init; }
     public IReadOnlyList<string> Groups { get; init; }
     public int TotalPages { get; init; }
+    public string Url { get; init; }
 }

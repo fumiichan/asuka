@@ -62,7 +62,8 @@ public static class ApiContracts
             Tags = response.Tags.GetTagByGroup("tag"),
             Categories = response.Tags.GetTagByGroup("category"),
             Languages = response.Tags.GetTagByGroup("language"),
-            TotalPages = response.TotalPages
+            TotalPages = response.TotalPages,
+            Url = $"https://nhentai.net/g/{response.Id}"
         };
     }
 

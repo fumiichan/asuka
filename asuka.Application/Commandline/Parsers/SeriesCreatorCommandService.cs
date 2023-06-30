@@ -13,14 +13,6 @@ using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Commandline.Parsers;
 
-internal class HandleArrayTaskArgs
-{
-    public IList<string> Codes { get; init; }
-    public string Output { get; init; }
-    public bool Pack { get; init; }
-    public string ProviderName { get; init; }
-}
-
 public class SeriesCreatorCommandService : ICommandLineParser
 {
     private readonly IEnumerable<IGalleryRequestService> _apis;

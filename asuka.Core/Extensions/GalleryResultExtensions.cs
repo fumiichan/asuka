@@ -69,11 +69,15 @@ public static class GalleryResultExtensions
         var metaPath = Path.Combine(output, "details.json");
         var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
+        var description = new StringBuilder();
+        description.AppendLine($"Source: {result.Url}");
+
         var json = new TachiyomiDetails
         {
             Title = result.Title.GetTitle(),
             Artist = string.Join(", ", result.Artists),
             Author = string.Join(", ", result.Artists),
+            Description = description.ToString(),
             Genres = result.Tags
         };
         var metadata = JsonSerializer.Serialize(json, serializerOptions);
