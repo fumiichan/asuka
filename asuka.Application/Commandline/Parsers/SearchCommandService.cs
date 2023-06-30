@@ -85,7 +85,7 @@ public class SearchCommandService : ICommandLineParser
         
         foreach (var response in selection)
         {
-            _series.AddChapter(response, opts.Output, 1);
+            _series.AddChapter(response, provider.ProviderFor().For, opts.Output, 1);
 
             var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
             _download.HandleOnProgress((_, e) =>
@@ -93,7 +93,7 @@ public class SearchCommandService : ICommandLineParser
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
-            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.First());
+            await _download.Start(_series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? innerProgress : null);
             
             progress.Tick();

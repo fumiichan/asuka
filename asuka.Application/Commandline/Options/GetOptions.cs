@@ -18,6 +18,9 @@ public record GetOptions : ICommonOptions
     public bool ReadOnly { get; init; }
 
     public bool Pack { get; init; }
+    
     public string Output { get; init; }
+    
+    [Option("provider", HelpText = "Select default provider to use if not specified on URL")]
     public string Provider { get; init; }
 }

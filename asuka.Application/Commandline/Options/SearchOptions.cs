@@ -39,6 +39,11 @@ public record SearchOptions : ICommonOptions
     public string Sort { get; init; }
 
     public bool Pack { get; init; }
+    
     public string Output { get; init; }
+    
+    [Option("provider",
+        Required = true,
+        HelpText = "Select default search provider")]
     public string Provider { get; init; }
 }

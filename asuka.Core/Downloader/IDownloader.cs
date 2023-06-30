@@ -6,5 +6,5 @@ namespace asuka.Core.Downloader;
 public interface IDownloader
 {
     void HandleOnProgress(Action<object, ProgressEvent> handler);
-    Task Start(string providerName, Chapter chapter);
+    Task Start(Chapter chapter);
 }

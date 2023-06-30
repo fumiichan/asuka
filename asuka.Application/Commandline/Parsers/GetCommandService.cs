@@ -50,19 +50,6 @@ public class GetCommandService : ICommandLineParser
     {
         var opts = (GetOptions)options;
         
-        // Find appropriate provider.
-        var provider = _apis.GetFirst(opts.Provider);
-        if (provider is null)
-        {
-            _logger.LogError("No such {ProviderName} found.", opts.Provider);
-            return;
-        }
-
-        await ExecuteCommand(opts, provider);
-    }
-
-    private async Task ExecuteCommand(GetOptions opts, IGalleryRequestService provider)
-    {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
@@ -70,8 +57,22 @@ public class GetCommandService : ICommandLineParser
             return;
         }
 
+        await ExecuteCommand(opts);
+    }
+
+    private async Task ExecuteCommand(GetOptions opts)
+    {
         foreach (var code in opts.Input)
         {
+            // Allow dynamic provider switching when different providers, otherwise default it to specified
+            // provider if not full URL is supplied.
+            var provider = _apis.GetWhatMatches(code, opts.Provider);
+            if (provider is null)
+            {
+                _logger.LogError("Unable to determine provider for {code}", code);
+                continue;
+            }
+            
             await DownloadTask(provider, new DownloadTaskArguments
             {
                 Input = code,
@@ -81,7 +82,7 @@ public class GetCommandService : ICommandLineParser
             });
         }
     }
-    
+
     private async Task DownloadTask(IGalleryRequestService api, DownloadTaskArguments args)
     {
         var response = await api.FetchSingle(args.Input);
@@ -93,7 +94,7 @@ public class GetCommandService : ICommandLineParser
             return;
         }
         
-        _series.AddChapter(response, args.OutputPath);
+        _series.AddChapter(response, api.ProviderFor().For, args.OutputPath);
 
         _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
         var progress = _progress.GetMasterProgress();
@@ -103,7 +104,7 @@ public class GetCommandService : ICommandLineParser
             progress.Tick($"{e.Message}: {response.Id}");
         });
 
-        await _download.Start(api.ProviderFor(), _series.GetSeries().Chapters.First());
+        await _download.Start(_series.GetSeries().Chapters.First());
         await _series.Close(args.Pack ? progress : null);
     }
 }

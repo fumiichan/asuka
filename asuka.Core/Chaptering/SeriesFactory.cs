@@ -21,12 +21,12 @@ public class SeriesFactory : ISeriesFactory
         _progress = progress;
     }
 
-    public void AddChapter(GalleryResult result, string outputPath)
+    public void AddChapter(GalleryResult result, string source, string outputPath)
     {
-        AddChapter(result, outputPath, 1);
+        AddChapter(result, outputPath, source, 1);
     }
 
-    public void AddChapter(GalleryResult result, string outputPath, int chapterId)
+    public void AddChapter(GalleryResult result, string source, string outputPath, int chapterId)
     {
         if (_series == null)
         {
@@ -35,7 +35,7 @@ public class SeriesFactory : ISeriesFactory
             _series = new Series(output, _configurationManager.GetValue("layout.tachiyomi") == "yes");
         }
         
-        _series.AddChapter(result, chapterId);
+        _series.AddChapter(result, source, chapterId);
     }
 
     public Series GetSeries() => _series;

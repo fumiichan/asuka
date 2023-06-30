@@ -18,6 +18,7 @@ internal class HandleArrayTaskArgs
     public IList<string> Codes { get; init; }
     public string Output { get; init; }
     public bool Pack { get; init; }
+    public string ProviderName { get; init; }
 }
 
 public class SeriesCreatorCommandService : ICommandLineParser
@@ -52,19 +53,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
     {
         var opts = (SeriesCreatorCommandOptions)options;
         
-        // Find appropriate provider.
-        var provider = _apis.GetFirst(opts.Provider);
-        if (provider is null)
-        {
-            _logger.LogError("No such {ProviderName} found.", opts.Provider);
-            return;
-        }
-
-        await ExecuteCommand(opts, provider);
-    }
-    
-    public async Task ExecuteCommand(SeriesCreatorCommandOptions opts, IGalleryRequestService api)
-    {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
@@ -72,27 +60,35 @@ public class SeriesCreatorCommandService : ICommandLineParser
             return;
         }
 
+        await ExecuteCommand(opts);
+    }
+
+    private async Task ExecuteCommand(SeriesCreatorCommandOptions opts)
+    {
         // Temporarily enable tachiyomi folder layout
         _config.SetValue("layout.tachiyomi", "yes");
 
         var list = opts.FromList.ToList();
-        await HandleArrayTask(api, new HandleArrayTaskArgs
+        await HandleArrayTask(new HandleArrayTaskArgs
         {
             Codes = list,
             Output = opts.Output,
-            Pack = opts.Pack
+            Pack = opts.Pack,
+            ProviderName = opts.Provider
         });
     }
 
-    private async Task HandleArrayTask(IGalleryRequestService provider, HandleArrayTaskArgs args)
+    private async Task HandleArrayTask(HandleArrayTaskArgs args)
     {
         // Queue list of chapters.
         for (var i = 0; i < args.Codes.Count; i++)
         {
+            var provider = _apis.GetWhatMatches(args.Codes[i], args.ProviderName);
+            
             try
             {
                 var response = await provider.FetchSingle(args.Codes[i]);
-                _series.AddChapter(response, args.Output, i + 1);
+                _series.AddChapter(response, provider.ProviderFor().For, args.Output, i + 1);
             }
             catch
             {
@@ -110,7 +106,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
 
         // Download chapters.
         var chapters = _series.GetSeries().Chapters;
-        _progress.CreateMasterProgress(chapters.Count, "downloading series");
+        _progress.CreateMasterProgress(args.Codes.Count, "downloading series");
 
         foreach (var chapter in chapters)
         {
@@ -123,14 +119,14 @@ public class SeriesCreatorCommandService : ICommandLineParser
                     innerProgress.Tick();
                 });
 
-                await _downloader.Start(provider.ProviderFor(), chapter);
+                await _downloader.Start(chapter);
             }
             finally
             {
                 _progress.GetMasterProgress().Tick();
             }
         }
-        
+
         await _series.Close(args.Pack ? _progress.GetMasterProgress() : null);
     }
 }

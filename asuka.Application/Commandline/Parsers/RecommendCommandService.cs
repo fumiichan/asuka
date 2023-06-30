@@ -42,7 +42,7 @@ public class RecommendCommandService : ICommandLineParser
         var opts = (RecommendOptions)options;
         
         // Find appropriate provider.
-        var provider = _apis.GetFirst(opts.Provider);
+        var provider = _apis.GetWhatMatches(opts.Input, opts.Provider);
         if (provider is null)
         {
             _logger.LogError("No such {ProviderName} found.", opts.Provider);
@@ -52,7 +52,7 @@ public class RecommendCommandService : ICommandLineParser
         await ExecuteCommand(opts, provider);
     }
 
-    public async Task ExecuteCommand(RecommendOptions opts, IGalleryRequestService provider)
+    private async Task ExecuteCommand(RecommendOptions opts, IGalleryRequestService provider)
     {
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
@@ -61,7 +61,7 @@ public class RecommendCommandService : ICommandLineParser
             return;
         }
 
-        var responses = await provider.FetchRecommended(opts.Input.ToString());
+        var responses = await provider.FetchRecommended(opts.Input);
         var selection = await Selection.MultiSelect(responses);
 
         // Initialise the Progress bar.
@@ -70,7 +70,7 @@ public class RecommendCommandService : ICommandLineParser
 
         foreach (var response in selection)
         {
-            _series.AddChapter(response, opts.Output, 1);
+            _series.AddChapter(response, provider.ProviderFor().For, opts.Output, 1);
 
             var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
             _download.HandleOnProgress((_, e) =>
@@ -78,7 +78,7 @@ public class RecommendCommandService : ICommandLineParser
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
-            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.FirstOrDefault());
+            await _download.Start(_series.GetSeries().Chapters.FirstOrDefault());
             await _series.Close(opts.Pack ? innerProgress : null);
             
             progress.Tick();

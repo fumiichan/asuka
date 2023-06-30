@@ -14,6 +14,7 @@ namespace asuka.Providers.Nhentai.Requests;
 public class GalleryRequestService : IGalleryRequestService
 {
     private readonly IGalleryApi _api;
+    private readonly Regex _urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}$");
     private int _totalGalleryCountCache;
 
     public GalleryRequestService()
@@ -98,15 +99,23 @@ public class GalleryRequestService : IGalleryRequestService
         return await FetchSingle($"https://nhentai.net/g/{id}");
     }
 
-    public string ProviderFor()
+    public ProviderData ProviderFor()
     {
-        return "nhentai";
+        return new ProviderData
+        {
+            For = "nhentai",
+            Base = "https://nhentai.net"
+        };
     }
 
-    private static string GetCode(string input)
+    public bool IsFullUrlValid(string url)
     {
-        var urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}$");
-        if (urlRegex.IsMatch(input))
+        return _urlRegex.IsMatch(url);
+    }
+
+    private string GetCode(string input)
+    {
+        if (_urlRegex.IsMatch(input))
         {
             var codeRegex = new Regex(@"\d{1,6}");
             return codeRegex.Match(input).Value;

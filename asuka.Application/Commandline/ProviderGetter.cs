@@ -10,6 +10,30 @@ public static class ProviderGetter
         string proivderName)
     {
         return providers
-            .FirstOrDefault(x => x.ProviderFor() == proivderName);
+            .FirstOrDefault(x => x.ProviderFor().For == proivderName);
+    }
+
+    public static IGalleryRequestService GetFirstByHostname(this IEnumerable<IGalleryRequestService> providers,
+        string url)
+    {
+        return providers
+            .FirstOrDefault(x => url.StartsWith(x.ProviderFor().Base));
+    }
+
+    public static IGalleryRequestService GetWhatMatches(this IEnumerable<IGalleryRequestService> providers,
+        string url,
+        string defaultedProvider)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            return providers.GetFirstByHostname(url);
+        }
+
+        if (!string.IsNullOrEmpty(defaultedProvider))
+        {
+            return providers.GetFirst(defaultedProvider);
+        }
+
+        return null;
     }
 }

@@ -15,7 +15,7 @@ public class Series
         _isTachiyomiLayout = isTachiyomiLayout;
     }
 
-    public void AddChapter(GalleryResult result, int chapterId = 1)
+    public void AddChapter(GalleryResult result, string source, int chapterId = 1)
     {
         var output = _isTachiyomiLayout
             ? Path.Combine(Output, $"ch{chapterId}")
@@ -26,6 +26,6 @@ public class Series
             Directory.CreateDirectory(output);
         }
 
-        Chapters.Add(new Chapter(result, output, chapterId));
+        Chapters.Add(new Chapter(result, output, chapterId, source));
     }
 }

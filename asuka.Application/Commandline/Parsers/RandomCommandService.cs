@@ -55,7 +55,7 @@ public class RandomCommandService : ICommandLineParser
         {
             var response = await provider.GetRandom();
 
-            _logger.LogInformation(response.BuildReadableInformation());
+            _logger.LogInformation("{readable}", response.BuildReadableInformation());
 
             var prompt = Prompt.Confirm("Are you sure to download this one?", true);
             if (!prompt)
@@ -64,7 +64,7 @@ public class RandomCommandService : ICommandLineParser
                 continue;
             }
 
-            _series.AddChapter(response, opts.Output, 1);
+            _series.AddChapter(response, provider.ProviderFor().For, opts.Output, 1);
             
             _progress.CreateMasterProgress(response.TotalPages, $"starting random id: {response.Id}");
             var progress = _progress.GetMasterProgress();
@@ -74,9 +74,9 @@ public class RandomCommandService : ICommandLineParser
                 progress.Tick($"{e.Message} random id: {response.Id}");
             });
 
-            await _download.Start(provider.ProviderFor(), _series.GetSeries().Chapters.First());
+            await _download.Start(_series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? progress : null);
-            
+
             break;
         }
     }

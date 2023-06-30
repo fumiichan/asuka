@@ -13,5 +13,5 @@ public interface IGalleryImageRequestService
     /// Determines which provider is this belongs to.
     /// </summary>
     /// <returns></returns>
-    string ProviderFor();
+    ProviderData ProviderFor();
 }

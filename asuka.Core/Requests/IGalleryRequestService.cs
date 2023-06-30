@@ -37,5 +37,11 @@ public interface IGalleryRequestService
     /// Determines which provider is this belongs to.
     /// </summary>
     /// <returns></returns>
-    string ProviderFor();
+    ProviderData ProviderFor();
+
+    /// <summary>
+    /// Validation which checks whether if the URL is valid for this provider.
+    /// </summary>
+    /// <returns></returns>
+    bool IsFullUrlValid(string url);
 }

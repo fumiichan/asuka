@@ -34,10 +34,10 @@ public sealed class Downloader : IDownloader
         };
     }
 
-    public async Task Start(string providerName, Chapter chapter)
+    public async Task Start(Chapter chapter)
     {
         var api = _apis
-            .FirstOrDefault(x => x.ProviderFor() == providerName);
+            .FirstOrDefault(x => x.ProviderFor().For == chapter.Source);
 
         if (api is null)
         {

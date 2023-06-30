@@ -11,7 +11,7 @@ public class SeriesCreatorValidator : AbstractValidator<SeriesCreatorCommandOpti
         When(opts => opts.FromList.Any(), () =>
         {
             RuleForEach(opts => opts.FromList)
-                .Matches(@"^\d{1,6}$")
+                .NotEmpty()
                 .WithMessage("One or more elements on this list contains invalid Ids.");
         });
     }

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Utilities;
@@ -44,19 +43,6 @@ public class FileCommandService : ICommandLineParser
     {
         var opts = (FileCommandOptions)options;
         
-        // Find appropriate provider.
-        var provider = _apis.GetFirst(opts.Provider);
-        if (provider is null)
-        {
-            _logger.LogError("No such {ProviderName} found.", opts.Provider);
-            return;
-        }
-
-        await ExecuteCommand(opts, provider);
-    }
-
-    private async Task ExecuteCommand(FileCommandOptions opts, IGalleryRequestService requestService)
-    {
         var validationResult = await _validator.ValidateAsync(opts);
 
         if (!validationResult.IsValid)
@@ -65,26 +51,33 @@ public class FileCommandService : ICommandLineParser
             return;
         }
 
+        await ExecuteCommand(opts);
+    }
+
+    private async Task ExecuteCommand(FileCommandOptions opts)
+    {
         var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8)
             .ConfigureAwait(false);
-        var validUrls = FilterValidUrls(textFile);
 
-        if (validUrls.Count == 0)
-        {
-            _logger.LogError("No valid URLs found.");
-            return;
-        }
-
-        _progressService.CreateMasterProgress(validUrls.Count, "downloading from text file...");
+        _progressService.CreateMasterProgress(textFile.Length, "downloading from text file...");
         var progress = _progressService.GetMasterProgress();
 
-        foreach (var url in validUrls)
+        foreach (var url in textFile)
         {
-            var code = new Regex("\\d+").Match(url).Value;
-            var response = await requestService.FetchSingle(code);
+            // Allows dynamic provider switching to allow multiple providers to be in single file
+            var provider = _apis.GetFirstByHostname(url);
+            if (provider is null)
+            {
+                var failProgress = _progressService.NestToMaster(1, $"skipped: {url}");
+                failProgress.Tick();
+                progress.Tick();
+                continue;
+            }
 
-            _series.AddChapter(response, opts.Output);
-            
+            var response = await provider.FetchSingle(url);
+
+            _series.AddChapter(response, provider.ProviderFor().For, opts.Output);
+
             // Create progress bar
             var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
             _download.HandleOnProgress((_, e) =>
@@ -93,15 +86,10 @@ public class FileCommandService : ICommandLineParser
             });
 
             // Start downloading
-            await _download.Start(requestService.ProviderFor(), _series.GetSeries().Chapters.First());
+            await _download.Start(_series.GetSeries().Chapters.First());
             await _series.Close(opts.Pack ? internalProgress : null);
-            
+
             progress.Tick();
         }
-    }
-
-    private static IReadOnlyList<string> FilterValidUrls(IEnumerable<string> urls)
-    {
-        return urls.Where(url => new Regex("^http(s)?:\\/\\/(nhentai\\.net)\\b([//g]*)\\b([\\d]{1,6})\\/?$").IsMatch(url)).ToList();
     }
 }

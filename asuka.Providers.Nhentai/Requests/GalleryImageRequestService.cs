@@ -48,8 +48,13 @@ public class GalleryImageRequestService : IGalleryImageRequestService
         return await _api.GetImage(mediaId, fileName);
     }
     
-    public string ProviderFor()
+    public ProviderData ProviderFor()
     {
-        return "nhentai";
+        return new ProviderData
+        {
+            For = "nhentai",
+            Base = "https://nhentai.net"
+        };
     }
 }
+
