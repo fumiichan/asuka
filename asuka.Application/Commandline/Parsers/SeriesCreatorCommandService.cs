@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -66,11 +67,11 @@ public class SeriesCreatorCommandService : ICommandLineParser
     {
         // Queue list of chapters.
         var codes = args.FromList.ToList();
-        for (var i = args.StartOffset; i <= args.StartOffset + codes.Count; i++)
+        for (var i = args.StartOffset; i < args.StartOffset + codes.Count; i++)
         {
-            var provider = _apis.GetWhatMatches(codes[i], args.Provider);
-            var realIndex = (codes.Count + 1) - (args.StartOffset + codes.Count);
-            
+            var realIndex = (codes.Count + i) - (args.StartOffset + codes.Count);
+            var provider = _apis.GetWhatMatches(codes[realIndex], args.Provider);
+
             try
             {
                 var response = await provider.FetchSingle(codes[realIndex]);
