@@ -26,13 +26,13 @@ public interface IGalleryRequestService
     /// <param name="pageNumber"></param>
     /// <returns></returns>
     Task<IReadOnlyList<GalleryResult>> Search(string query, string sort, int pageNumber);
-    
+
     /// <summary>
-    /// Gets total gallery count.
+    /// Fetch a Random Gallery
     /// </summary>
     /// <returns></returns>
-    Task<int> GetTotalGalleryCount();
-    
+    Task<GalleryResult> GetRandom();
+
     /// <summary>
     /// Determines which provider is this belongs to.
     /// </summary>

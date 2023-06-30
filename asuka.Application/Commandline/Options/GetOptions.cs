@@ -9,7 +9,7 @@ public record GetOptions : ICommonOptions
     [Option('i', "input",
         Required = true,
         HelpText = "Input Numeric Code(s)")]
-    public IEnumerable<int> Input { get; init; }
+    public IEnumerable<string> Input { get; init; }
 
     [Option('r', "readonly",
         Default = false,

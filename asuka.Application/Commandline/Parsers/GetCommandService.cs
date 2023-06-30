@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,7 +74,7 @@ public class GetCommandService : ICommandLineParser
         {
             await DownloadTask(provider, new DownloadTaskArguments
             {
-                Input = code.ToString(),
+                Input = code,
                 Pack = opts.Pack,
                 ReadOnly = opts.ReadOnly,
                 OutputPath = opts.Output

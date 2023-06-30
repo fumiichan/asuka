@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,14 +49,11 @@ public class RandomCommandService : ICommandLineParser
         await ExecuteCommand(opts, provider);
     }
 
-    public async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider)
+    private async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider)
     {
-        var totalNumbers = await provider.GetTotalGalleryCount();
-
         while (true)
         {
-            var randomCode = new Random().Next(1, totalNumbers);
-            var response = await provider.FetchSingle(randomCode.ToString());
+            var response = await provider.GetRandom();
 
             _logger.LogInformation(response.BuildReadableInformation());
 

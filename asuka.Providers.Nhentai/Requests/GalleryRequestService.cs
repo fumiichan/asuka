@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using asuka.Core.Models;
 using asuka.Core.Requests;
 using asuka.Providers.Nhentai.Api;
@@ -12,7 +14,8 @@ namespace asuka.Providers.Nhentai.Requests;
 public class GalleryRequestService : IGalleryRequestService
 {
     private readonly IGalleryApi _api;
-    
+    private int _totalGalleryCountCache;
+
     public GalleryRequestService()
     {
         var handler = new HttpClientHandler();
@@ -41,6 +44,14 @@ public class GalleryRequestService : IGalleryRequestService
 
     public async Task<GalleryResult> FetchSingle(string code)
     {
+        // Get code from URL
+        var id = GetCode(code);
+
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new ArgumentException($"Invalid input: {code}");
+        }
+
         var result = await _api.FetchSingle(code)
             .ConfigureAwait(false);
         return result.ToGalleryResult();
@@ -48,6 +59,14 @@ public class GalleryRequestService : IGalleryRequestService
 
     public async Task<IReadOnlyList<GalleryResult>> FetchRecommended(string code)
     {
+        // Get code from URL
+        var id = GetCode(code);
+
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new ArgumentException($"Invalid input: {code}");
+        }
+
         var result = await _api.FetchRecommended(code)
             .ConfigureAwait(false);
         return result.Result.Select(x => x.ToGalleryResult()).ToList();
@@ -66,17 +85,34 @@ public class GalleryRequestService : IGalleryRequestService
         return result.Result.Select(x => x.ToGalleryResult()).ToList();
     }
 
-    public async Task<int> GetTotalGalleryCount()
+    public async Task<GalleryResult> GetRandom()
     {
-        var result = await _api.FetchAll()
-            .ConfigureAwait(false);
-        var id = result.Result[0].Id;
+        if (_totalGalleryCountCache == 0)
+        {
+            var result = await _api.FetchAll()
+                .ConfigureAwait(false);
+            _totalGalleryCountCache = result.Result[0].Id;
+        }
 
-        return id;
+        var id = RandomNumberGenerator.GetInt32(1, _totalGalleryCountCache);
+        return await FetchSingle($"https://nhentai.net/g/{id}");
     }
 
     public string ProviderFor()
     {
         return "nhentai";
+    }
+
+    private static string GetCode(string input)
+    {
+        var urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}$");
+        if (urlRegex.IsMatch(input))
+        {
+            var codeRegex = new Regex(@"\d{1,6}");
+            return codeRegex.Match(input).Value;
+        }
+
+        var codeOnlyRegex = new Regex(@"^\d{1,6}$");
+        return codeOnlyRegex.IsMatch(input) ? codeOnlyRegex.Match(input).Value : string.Empty;
     }
 }
