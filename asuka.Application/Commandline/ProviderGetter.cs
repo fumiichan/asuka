@@ -24,14 +24,16 @@ public static class ProviderGetter
         string url,
         string defaultedProvider)
     {
+        var listOfProvider = providers.ToList();
         if (!string.IsNullOrEmpty(url))
         {
-            return providers.GetFirstByHostname(url);
-        }
+            var urlMatchingProvider = listOfProvider.GetFirstByHostname(url);
+            if (urlMatchingProvider is not null)
+            {
+                return urlMatchingProvider;
+            }
 
-        if (!string.IsNullOrEmpty(defaultedProvider))
-        {
-            return providers.GetFirst(defaultedProvider);
+            return listOfProvider.GetFirst(defaultedProvider);
         }
 
         return null;
