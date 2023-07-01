@@ -1,3 +1,4 @@
+using asuka.Application.Output.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ public static class LoggerExtensions
         var asukaLogger = LoggerFactory.Create(logger =>
         {
             logger.ClearProviders();
-            logger.AddConsole();
+            logger.AddCustomLogger();
         }).CreateLogger("asuka.Application");
         services.AddSingleton(asukaLogger);
     }
