@@ -14,6 +14,6 @@ public class ProgressService : Core.Output.Progress.ProgressService
     public override void CreateMasterProgress(int totalTicks, string title)
     {
         _progressBar = ProgressProviderFactory
-            .GetProvider(_configuration.GetValue("tui.progress"), totalTicks, title, ProgressBarConfiguration.BarOption);
+            .GetProvider(_configuration.GetValue("tui.progress"), totalTicks, title);
     }
 }

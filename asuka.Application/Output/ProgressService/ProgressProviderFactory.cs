@@ -5,7 +5,7 @@ namespace asuka.Application.Output.ProgressService;
 
 public static class ProgressProviderFactory
 {
-    public static IProgressProvider GetProvider(string tuiOption, int maxTicks, string title, object options)
+    public static IProgressProvider GetProvider(string tuiOption, int maxTicks, string title)
     {
         return tuiOption switch
         {
