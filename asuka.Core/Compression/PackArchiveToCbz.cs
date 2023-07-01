@@ -20,7 +20,7 @@ public sealed class PackArchiveToCbz : IPackArchiveToCbz
         };
     }
 
-    public async Task RunAsync(IEnumerable<(string, string)> files, string targetFolder)
+    public async Task Run(IEnumerable<CompressionItem> files, string targetFolder)
     {
         var destination = targetFolder.EndsWith("/") ? $"{targetFolder[..^1]}.cbz" : $"{targetFolder}.cbz";
         if (File.Exists(destination))
@@ -34,10 +34,10 @@ public sealed class PackArchiveToCbz : IPackArchiveToCbz
         // Recursively look for the files in the target directory.
         foreach (var file in files)
         {
-            var entry = archive.CreateEntry(file.Item2);
+            var entry = archive.CreateEntry(file.RelativePath);
 
             await using var writer = new BinaryWriter(entry.Open());
-            var fileData = await File.ReadAllBytesAsync(file.Item1);
+            var fileData = await File.ReadAllBytesAsync(file.FullPath);
 
             writer.Write(fileData);
             OnProgressEvent(new ProgressEvent("compressing"));

@@ -69,7 +69,11 @@ public class SeriesFactory : ISeriesFactory
         {
             var outputRoot = Path.Combine(_series.GetOutput(), "../");
             var files = Directory.GetFiles(_series.GetOutput(), "*.*", SearchOption.AllDirectories)
-                .Select(x => (x, Path.GetRelativePath(outputRoot, x)))
+                .Select(x => new CompressionItem
+                {
+                    FullPath = x,
+                    RelativePath = Path.GetRelativePath(outputRoot, x)
+                })
                 .ToArray();
 
             var progress = _progress.HookToInstance(provider, files.Length, "compressing...");
@@ -78,7 +82,7 @@ public class SeriesFactory : ISeriesFactory
             {
                 progress.Tick();
             });
-            await _pack.RunAsync(files, _series.GetOutput());
+            await _pack.Run(files, _series.GetOutput());
         }
         
         // Finally close.

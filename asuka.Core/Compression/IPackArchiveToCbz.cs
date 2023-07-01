@@ -5,5 +5,5 @@ namespace asuka.Core.Compression;
 public interface IPackArchiveToCbz
 {
     void HandleProgress(Action<object, ProgressEvent> e);
-    Task RunAsync(IEnumerable<(string, string)> files, string targetFolder);
+    Task Run(IEnumerable<CompressionItem> files, string targetFolder);
 }
