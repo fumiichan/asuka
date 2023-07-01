@@ -5,9 +5,8 @@ namespace asuka.Application.Output.ProgressService.Providers;
 
 public class TextProgressProvider : IProgressProvider
 {
-    private readonly Guid _id;
-    private int _maxTick = 0;
-    private int _progress = 0;
+    private int _maxTick;
+    private int _progress;
     private readonly string _title;
     private readonly bool _isChild;
     private readonly int _parentId;
@@ -17,7 +16,6 @@ public class TextProgressProvider : IProgressProvider
         _maxTick = maxTick;
         _title = title;
         _isChild = false;
-        _id = Guid.NewGuid();
     }
 
     private TextProgressProvider(int maxTick, string title, int parentId)
@@ -26,7 +24,6 @@ public class TextProgressProvider : IProgressProvider
         _title = title;
         _parentId = parentId;
         _isChild = true;
-        _id = Guid.NewGuid();
     }
 
     public IProgressProvider Spawn(int maxTicks, string title)

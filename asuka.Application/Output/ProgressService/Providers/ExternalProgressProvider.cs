@@ -1,5 +1,4 @@
 using System;
-using asuka.Application.Output.ProgressService.Providers.Wrappers;
 using asuka.Core.Output.Progress;
 using ShellProgressBar;
 
@@ -7,7 +6,7 @@ namespace asuka.Application.Output.ProgressService.Providers;
 
 public class ExternalProgressProvider : IProgressProvider
 {
-    private readonly IProgressWrapper _progress;
+    private readonly IProgressBar _progress;
 
     public ExternalProgressProvider(int maxTicks, string title)
     {
@@ -17,11 +16,11 @@ public class ExternalProgressProvider : IProgressProvider
             ForegroundColorDone = ConsoleColor.Green,
             ProgressCharacter = '-'
         };
-        
-        _progress = new ProgressWrapper(maxTicks, title, config);
+
+        _progress = new ProgressBar(maxTicks, title, config);
     }
 
-    private ExternalProgressProvider(IProgressWrapper wrapper)
+    private ExternalProgressProvider(IProgressBar wrapper)
     {
         _progress = wrapper;
     }
