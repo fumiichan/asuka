@@ -30,15 +30,14 @@ public static class CookieConfiguration
             {
                 return cookieLists;
             }
-            
-            foreach (var cookie in cookieData)
-            {
-                cookieLists.Add(ApplyCookies(cookie));
-            }
+
+            cookieLists.AddRange(cookieData.Select(ApplyCookies));
         }
-        catch // do nothing when cookies cannot be loaded.
-        { }
-        
+        catch
+        {
+            // ignored
+        }
+
         return cookieLists;
     }
 

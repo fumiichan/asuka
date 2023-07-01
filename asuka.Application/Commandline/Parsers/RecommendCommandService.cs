@@ -78,7 +78,7 @@ public class RecommendCommandService : ICommandLineParser
                 innerProgress.Tick($"{e.Message} id: {response.Id}");
             });
 
-            await _download.Start(_series.GetSeries().Chapters.FirstOrDefault());
+            await _download.Start(_series.GetSeries().GetChapters().FirstOrDefault());
             await _series.Close(opts.Pack ? innerProgress : null, false);
             
             progress.Tick();

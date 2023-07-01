@@ -1,5 +1,6 @@
 using asuka.Core.Chaptering;
 using asuka.Core.Events;
+using asuka.Core.Models;
 using asuka.Core.Requests;
 
 namespace asuka.Core.Downloader;
@@ -7,7 +8,7 @@ namespace asuka.Core.Downloader;
 internal class DownloadImageArgs
 {
     public string Output { get; init; }
-    public string FileName { get; set; }
+    public string FileName { get; init; }
     public string ImageDownloadPath { get; init; }
 }
 
@@ -37,7 +38,7 @@ public sealed class Downloader : IDownloader
     public async Task Start(Chapter chapter)
     {
         var api = _apis
-            .FirstOrDefault(x => x.ProviderFor().For == chapter.Source);
+            .FirstOrDefault(x => x.ProviderFor().For == chapter.GetSource());
 
         if (api is null)
         {
@@ -50,28 +51,36 @@ public sealed class Downloader : IDownloader
     private async Task ExecuteTask(Chapter chapter, IGalleryImageRequestService api)
     {
         var throttler = new SemaphoreSlim(2);
-        var taskList = chapter.Data.Images
+        var taskList = chapter.GetGalleryResult().Images
             .Select(x => Task.Run(async () =>
             {
-                await throttler.WaitAsync().ConfigureAwait(false);
-
-                try
-                {
-                    await DownloadImage(api, new DownloadImageArgs
-                        {
-                            Output = chapter.Output,
-                            FileName = x.Filename,
-                            ImageDownloadPath = x.ServerFilename
-                        })
-                        .ConfigureAwait(false);
-                }
-                finally
-                {
-                    throttler.Release();
-                }
+                await DownloadTask(chapter, api, throttler, x);
             }));
 
         await Task.WhenAll(taskList).ConfigureAwait(false);
+    }
+
+    private async Task DownloadTask(Chapter chapter,
+        IGalleryImageRequestService api,
+        SemaphoreSlim throttler,
+        GalleryImageResult result)
+    {
+        await throttler.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            await DownloadImage(api, new DownloadImageArgs
+                {
+                    Output = chapter.GetOutput(),
+                    FileName = result.Filename,
+                    ImageDownloadPath = result.ServerFilename
+                })
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            throttler.Release();
+        }
     }
 
     private async Task DownloadImage(IGalleryImageRequestService provider, DownloadImageArgs args)

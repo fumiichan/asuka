@@ -4,16 +4,36 @@ namespace asuka.Core.Chaptering;
 
 public class Chapter
 {
-    public readonly GalleryResult Data;
-    public readonly string Output;
-    public readonly int ChapterId;
-    public readonly string Source;
+    private readonly GalleryResult _data;
+    private readonly string _output;
+    private readonly int _chapterId;
+    private readonly string _source;
 
     public Chapter(GalleryResult result, string output, int chapterId, string source)
     {
-        Data = result;
-        Output = output;
-        ChapterId = chapterId;
-        Source = source;
+        _data = result;
+        _output = output;
+        _chapterId = chapterId;
+        _source = source;
+    }
+
+    public GalleryResult GetGalleryResult()
+    {
+        return _data;
+    }
+
+    public string GetOutput()
+    {
+        return _output;
+    }
+
+    public int GetChapterId()
+    {
+        return _chapterId;
+    }
+
+    public string GetSource()
+    {
+        return _source;
     }
 }

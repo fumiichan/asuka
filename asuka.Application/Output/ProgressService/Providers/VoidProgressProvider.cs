@@ -11,17 +11,21 @@ public class VoidProgressProvider : IProgressProvider
 
     public void Tick()
     {
+        // Progress is left empty to print nothing.
     }
 
     public void Tick(string message)
     {
+        // Progress is left empty to print nothing.
     }
 
     public void Tick(int newTickCount)
     {
+        // Progress is left empty to print nothing.
     }
 
     public void Tick(int newTickCount, string message)
     {
+        // Progress is left empty to print nothing.
     }
 }

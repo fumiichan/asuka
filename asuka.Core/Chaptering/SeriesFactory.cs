@@ -42,19 +42,20 @@ public class SeriesFactory : ISeriesFactory
 
     private async Task WriteMetadata()
     {
-        var initialChapter = _series.Chapters.FirstOrDefault();
+        var initialChapter = _series.GetChapters().FirstOrDefault();
         if (initialChapter == null)
         {
             return;
         }
 
+        var galleryData = initialChapter.GetGalleryResult();
         if (_configurationManager.GetValue("layout.tachiyomi") == "yes")
         {
-            await initialChapter.Data.WriteJsonMetadata(_series.Output);
+            await galleryData.WriteJsonMetadata(_series.GetOutput());
             return;
         }
 
-        await initialChapter.Data.WriteTextMetadata(_series.Output);
+        await galleryData.WriteTextMetadata(_series.GetOutput());
     }
 
     public async Task Close(IProgressProvider provider, bool disableMetaWriting)
@@ -66,8 +67,8 @@ public class SeriesFactory : ISeriesFactory
 
         if (provider != null)
         {
-            var outputRoot = Path.Combine(_series.Output, "../");
-            var files = Directory.GetFiles(_series.Output, "*.*", SearchOption.AllDirectories)
+            var outputRoot = Path.Combine(_series.GetOutput(), "../");
+            var files = Directory.GetFiles(_series.GetOutput(), "*.*", SearchOption.AllDirectories)
                 .Select(x => (x, Path.GetRelativePath(outputRoot, x)))
                 .ToArray();
 
@@ -77,7 +78,7 @@ public class SeriesFactory : ISeriesFactory
             {
                 progress.Tick();
             });
-            await _pack.RunAsync(files, _series.Output);
+            await _pack.RunAsync(files, _series.GetOutput());
         }
         
         // Finally close.

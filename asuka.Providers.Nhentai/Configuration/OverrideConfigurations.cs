@@ -25,7 +25,9 @@ public static class OverrideConfigurations
                 : cookieData;
         }
         catch
-        { }
+        {
+            // ignored
+        }
 
         return new OverrideConfigurationData();
     }

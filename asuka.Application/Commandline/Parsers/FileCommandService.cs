@@ -86,7 +86,7 @@ public class FileCommandService : ICommandLineParser
             });
 
             // Start downloading
-            await _download.Start(_series.GetSeries().Chapters.First());
+            await _download.Start(_series.GetSeries().GetChapters().First());
             await _series.Close(opts.Pack ? internalProgress : null, false);
 
             progress.Tick();

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -92,7 +91,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         }
 
         // Download chapters.
-        var chapters = _series.GetSeries().Chapters;
+        var chapters = _series.GetSeries().GetChapters();
         _progress.CreateMasterProgress(chapters.Count, "downloading series");
 
         foreach (var chapter in chapters)
@@ -100,7 +99,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
             try
             {
                 var innerProgress =
-                    _progress.NestToMaster(chapter.Data.TotalPages, $"downloading chapter {chapter.ChapterId}");
+                    _progress.NestToMaster(chapter.GetGalleryResult().TotalPages, $"downloading chapter {chapter.GetChapterId()}");
                 _downloader.HandleOnProgress((_, _) =>
                 {
                     innerProgress.Tick();

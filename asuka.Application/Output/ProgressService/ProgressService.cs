@@ -6,7 +6,7 @@ public class ProgressService : Core.Output.Progress.ProgressService
 {
     private readonly IConfigurationManager _configuration;
 
-    public ProgressService(IConfigurationManager configuration) : base()
+    public ProgressService(IConfigurationManager configuration)
     {
         _configuration = configuration;
     }

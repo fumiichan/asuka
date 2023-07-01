@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace asuka.Providers.Nhentai.Configuration;
 
-public record CookieDump
+public struct CookieDump
 {
     [JsonPropertyName("domain")]
     public string Domain { get; set; }

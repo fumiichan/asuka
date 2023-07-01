@@ -104,7 +104,7 @@ public class GetCommandService : ICommandLineParser
             progress.Tick($"{e.Message}: {response.Id}");
         });
 
-        await _download.Start(_series.GetSeries().Chapters.First());
+        await _download.Start(_series.GetSeries().GetChapters().First());
         await _series.Close(args.Pack ? progress : null, false);
     }
 }
