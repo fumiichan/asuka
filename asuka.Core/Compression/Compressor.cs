@@ -3,31 +3,10 @@ using asuka.Core.Events;
 
 namespace asuka.Core.Compression;
 
-public sealed class PackArchiveToCbz : IPackArchiveToCbz
+internal sealed class Compressor : ProgressEmittable
 {
-    private EventHandler<ProgressEvent> _progressEvent;
-
-    private void OnProgressEvent(ProgressEvent e)
+    public async Task Run(IEnumerable<CompressionItem> files, string destination)
     {
-        _progressEvent?.Invoke(this, e);
-    }
-
-    public void HandleProgress(Action<object, ProgressEvent> e)
-    {
-        _progressEvent += (sender, @event) =>
-        {
-            e(sender, @event);
-        };
-    }
-
-    public async Task Run(IEnumerable<CompressionItem> files, string targetFolder)
-    {
-        var destination = targetFolder.EndsWith("/") ? $"{targetFolder[..^1]}.cbz" : $"{targetFolder}.cbz";
-        if (File.Exists(destination))
-        {
-            File.Delete(destination);
-        }
-
         await using var archiveToOpen = new FileStream(destination, FileMode.Create);
         using var archive = new ZipArchive(archiveToOpen, ZipArchiveMode.Create);
         

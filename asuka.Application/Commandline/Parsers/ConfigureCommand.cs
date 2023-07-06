@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Configuration;
 using asuka.Application.Utilities;
-using asuka.Core.Configuration;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -9,13 +9,13 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class ConfigureCommand : ICommandLineParser
 {
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IConfigManager _configManager;
     private readonly IValidator<ConfigureOptions> _validator;
     private readonly ILogger _logger;
 
-    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigurationManager configurationManager, ILogger logger)
+    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigManager configManager, ILogger logger)
     {
-        _configurationManager = configurationManager;
+        _configManager = configManager;
         _logger = logger;
         _validator = validator;
     }
@@ -32,15 +32,15 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.SetConfigMode)
         {
-            _configurationManager.SetValue(opts.Key, opts.Value);
-            await _configurationManager.Flush();
+            _configManager.SetValue(opts.Key, opts.Value);
+            await _configManager.Flush();
             
             return;
         }
 
         if (opts.ReadConfigMode)
         {
-            var configValue = _configurationManager.GetValue(opts.Key);
+            var configValue = _configManager.GetValue(opts.Key);
             _logger.LogInformation($"{opts.Key} = {configValue}");
 
             return;
@@ -48,7 +48,7 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.ListConfigMode)
         {
-            var keyValuePairs = _configurationManager.GetAllValues();
+            var keyValuePairs = _configManager.GetAllValues();
 
             foreach (var (key, value) in keyValuePairs)
             {
@@ -60,7 +60,7 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.ResetConfig)
         {
-            await _configurationManager.Reset();
+            await _configManager.Reset();
         }
     }
 }

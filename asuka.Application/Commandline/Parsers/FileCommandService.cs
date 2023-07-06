@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.Progress;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Output.Progress;
+using asuka.Core.Extensions;
 using asuka.Core.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -17,24 +19,21 @@ namespace asuka.Application.Commandline.Parsers;
 public class FileCommandService : ICommandLineParser
 {
     private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IDownloader _download;
-    private readonly IProgressService _progressService;
-    private readonly ISeriesFactory _series;
+    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
+    private readonly IProgressProviderFactory _progressFactory;
     private readonly IValidator<FileCommandOptions> _validator;
     private readonly ILogger _logger;
 
     public FileCommandService(
         IEnumerable<IGalleryRequestService> apis,
-        IDownloader download,
-        IProgressService progressService,
-        ISeriesFactory series,
+        IEnumerable<IGalleryImageRequestService> imageApis,
+        IProgressProviderFactory progressFactory,
         IValidator<FileCommandOptions> validator,
         ILogger logger)
     {
         _apis = apis;
-        _download = download;
-        _progressService = progressService;
-        _series = series;
+        _imageApis = imageApis;
+        _progressFactory = progressFactory;
         _validator = validator;
         _logger = logger;
     }
@@ -59,37 +58,63 @@ public class FileCommandService : ICommandLineParser
         var textFile = await File.ReadAllLinesAsync(opts.FilePath, Encoding.UTF8)
             .ConfigureAwait(false);
 
-        _progressService.CreateMasterProgress(textFile.Length, "downloading from text file...");
-        var progress = _progressService.GetMasterProgress();
+        var progress = _progressFactory.Create(textFile.Length, "downloading from text file...");
 
         foreach (var url in textFile)
         {
-            // Allows dynamic provider switching to allow multiple providers to be in single file
-            var provider = _apis.GetFirstByHostname(url);
-            if (provider is null)
-            {
-                var failProgress = _progressService.NestToMaster(1, $"skipped: {url}");
-                failProgress.Tick();
-                progress.Tick();
-                continue;
-            }
+            await DownloadEach(opts, url, progress);
+        }
+        
+        progress.Close();
+    }
 
-            var response = await provider.FetchSingle(url);
+    private async Task DownloadEach(FileCommandOptions opts, string url, IProgressProvider progress)
+    {
+        // Allows dynamic provider switching to allow multiple providers to be in single file
+        var provider = _apis.GetFirstByHostname(url);
+        if (provider is null)
+        {
+            var failProgress = progress.Spawn(1, $"skipped: {url}");
+            failProgress.Tick();
+            failProgress.Close();
+            progress.Tick();
+            return;
+        }
 
-            _series.AddChapter(response, provider.ProviderFor().For, opts.Output);
+        var response = await provider.FetchSingle(url);
 
-            // Create progress bar
-            var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
-            _download.HandleOnProgress((_, e) =>
+        var series = new SeriesBuilder()
+            .AddChapter(response, provider.ProviderFor().For)
+            .SetOutput(opts.Output)
+            .Build();
+
+        // Create progress bar
+        var internalProgress = progress.Spawn(response.TotalPages, $"downloading: {response.Id}");
+
+        var imageApi = _imageApis
+            .FirstOrDefault(x => x.ProviderFor().For == provider.ProviderFor().For);
+        var downloader = new DownloaderBuilder()
+            .SetImageRequestService(imageApi)
+            .SetChapter(series.Chapters[0])
+            .SetOutput(series.Output)
+            .SetEachCompleteHandler(e =>
             {
                 internalProgress.Tick($"{e.Message}: {response.Id}");
-            });
+            })
+            .Build();
 
-            // Start downloading
-            await _download.Start(_series.GetSeries().GetChapters().First());
-            await _series.Close(opts.Pack ? internalProgress : null, false);
+        // Start downloading
+        await downloader.Start();
+        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
 
-            progress.Tick();
+        // Compression
+        if (opts.Pack)
+        {
+            await CompressAction.Compress(series, internalProgress, opts.Output);
         }
+
+        // Cleanup
+        progress.Tick();
+        internalProgress.Close();
     }
 }

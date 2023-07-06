@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.Progress;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
-using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -24,25 +25,22 @@ internal class DownloadTaskArguments
 public class GetCommandService : ICommandLineParser
 {
     private readonly IEnumerable<IGalleryRequestService> _apis;
+    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
     private readonly IValidator<GetOptions> _validator;
-    private readonly IDownloader _download;
-    private readonly IProgressService _progress;
-    private readonly ISeriesFactory _series;
+    private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger _logger;
 
     public GetCommandService(
         IEnumerable<IGalleryRequestService> apis,
+        IEnumerable<IGalleryImageRequestService> imageApis,
         IValidator<GetOptions> validator,
-        IDownloader download,
-        IProgressService progress,
-        ISeriesFactory series,
+        IProgressProviderFactory progressFactory,
         ILogger logger)
     {
         _apis = apis;
+        _imageApis = imageApis;
         _validator = validator;
-        _download = download;
-        _progress = progress;
-        _series = series;
+        _progressFactory = progressFactory;
         _logger = logger;
     }
 
@@ -93,18 +91,35 @@ public class GetCommandService : ICommandLineParser
         {
             return;
         }
+
+        var series = new SeriesBuilder()
+            .AddChapter(response, api.ProviderFor().For)
+            .SetOutput(args.OutputPath)
+            .Build();
+
+        var imageApi = _imageApis
+            .FirstOrDefault(x => x.ProviderFor().For == series.Chapters[0].Source);
+
+        var progress = _progressFactory.Create(response.TotalPages, $"downloading: {response.Id}");
+
+        var downloader = new DownloaderBuilder()
+            .SetImageRequestService(imageApi)
+            .SetChapter(series.Chapters[0])
+            .SetOutput(series.Output)
+            .SetEachCompleteHandler(e =>
+            {
+                progress.Tick($"{e.Message}: {response.Id}");
+            })
+            .Build();
+
+        await downloader.Start();
+        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
         
-        _series.AddChapter(response, api.ProviderFor().For, args.OutputPath);
-
-        _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
-        var progress = _progress.GetMasterProgress();
-
-        _download.HandleOnProgress((_, e) =>
+        if (args.Pack)
         {
-            progress.Tick($"{e.Message}: {response.Id}");
-        });
-
-        await _download.Start(_series.GetSeries().GetChapters().First());
-        await _series.Close(args.Pack ? progress : null, false);
+            await CompressAction.Compress(series, progress, args.OutputPath);
+        }
+        
+        progress.Close();
     }
 }

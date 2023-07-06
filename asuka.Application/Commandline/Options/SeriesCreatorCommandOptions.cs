@@ -11,9 +11,6 @@ public record SeriesCreatorCommandOptions: ICommonOptions
     
     [Option("startOffset", HelpText = "Change number where chapter numbering starts", Default = 1)]
     public int StartOffset { get; init; }
-    
-    [Option("noMeta", HelpText = "Disable metadata writing")]
-    public bool DisableMetaWriting { get; init; }
 
     public bool Pack { get; init; }
     

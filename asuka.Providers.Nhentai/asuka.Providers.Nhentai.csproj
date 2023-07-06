@@ -4,6 +4,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <Description>External manga provider for asuka library</Description>
+        <Copyright>Copyright (C) 2023 Aiko Fujimoto</Copyright>
+        <PackageProjectUrl>https://github.com/fumiichan/asuka</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/fumiichan/asuka</RepositoryUrl>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,13 +1,18 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
-namespace asuka.Core.Configuration;
+namespace asuka.Application.Configuration;
 
-public class ConfigurationManager : IConfigurationManager
+public class ConfigManager : IConfigManager
 {
     private Dictionary<string, string> _config;
 
-    public ConfigurationManager()
+    public ConfigManager()
     {
         var configRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".asuka");
         var configPath = Path.Join(configRoot, "config.conf");
@@ -73,7 +78,7 @@ public class ConfigurationManager : IConfigurationManager
         return _config.TryGetValue(key, out var data) ? data : null;
     }
 
-    public IReadOnlyList<(string, string)> GetAllValues()
+    public IEnumerable<(string, string)> GetAllValues()
     {
         return _config.Select(x => (x.Key, x.Value)).ToList();
     }

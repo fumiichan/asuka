@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.Progress;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
-using asuka.Core.Output.Progress;
 using asuka.Core.Requests;
 using Microsoft.Extensions.Logging;
 using Sharprompt;
@@ -14,23 +15,20 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class RandomCommandService : ICommandLineParser
 {
-    private readonly IDownloader _download;
     private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IProgressService _progress;
-    private readonly ISeriesFactory _series;
+    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
+    private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger _logger;
 
     public RandomCommandService(
-        IDownloader download,
         IEnumerable<IGalleryRequestService> apis,
-        IProgressService progress,
-        ISeriesFactory series,
+        IEnumerable<IGalleryImageRequestService> imageApis,
+        IProgressProviderFactory progressFactory,
         ILogger logger)
     {
-        _download = download;
         _apis = apis;
-        _progress = progress;
-        _series = series;
+        _imageApis = imageApis;
+        _progressFactory = progressFactory;
         _logger = logger;
     }
     
@@ -64,19 +62,34 @@ public class RandomCommandService : ICommandLineParser
                 continue;
             }
 
-            _series.AddChapter(response, provider.ProviderFor().For, opts.Output, 1);
-            
-            _progress.CreateMasterProgress(response.TotalPages, $"starting random id: {response.Id}");
-            var progress = _progress.GetMasterProgress();
+            var series = new SeriesBuilder()
+                .AddChapter(response, provider.ProviderFor().For)
+                .SetOutput(opts.Output)
+                .Build();
 
-            _download.HandleOnProgress((_, e) =>
+            var progress = _progressFactory.Create(response.TotalPages, $"downloading random id: {response.Id}");
+
+            var imageApi = _imageApis
+                .FirstOrDefault(x => x.ProviderFor().For == provider.ProviderFor().For);
+            var downloader = new DownloaderBuilder()
+                .SetImageRequestService(imageApi)
+                .SetChapter(series.Chapters[0])
+                .SetOutput(series.Output)
+                .SetEachCompleteHandler(e =>
+                {
+                    progress.Tick($"{e.Message}: {response.Id}");
+                })
+                .Build();
+
+            await downloader.Start();
+            await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
+
+            if (opts.Pack)
             {
-                progress.Tick($"{e.Message} random id: {response.Id}");
-            });
-
-            await _download.Start(_series.GetSeries().GetChapters().First());
-            await _series.Close(opts.Pack ? progress : null, false);
-
+                await CompressAction.Compress(series, progress, opts.Output);
+            }
+            
+            progress.Close();
             break;
         }
     }

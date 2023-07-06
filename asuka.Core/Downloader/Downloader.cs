@@ -1,4 +1,4 @@
-using asuka.Core.Chaptering;
+using asuka.Core.Chaptering.Models;
 using asuka.Core.Events;
 using asuka.Core.Models;
 using asuka.Core.Requests;
@@ -7,71 +7,43 @@ namespace asuka.Core.Downloader;
 
 internal class DownloadImageArgs
 {
-    public string Output { get; init; }
     public string FileName { get; init; }
     public string ImageDownloadPath { get; init; }
 }
 
-public sealed class Downloader : IDownloader
+public sealed class Downloader : ProgressEmittable
 {
-    private readonly IEnumerable<IGalleryImageRequestService> _apis;
-    private EventHandler<ProgressEvent> _progressEvent;
+    private readonly IGalleryImageRequestService _api;
+    private readonly Chapter _chapter;
+    private readonly string _output;
 
-    public Downloader(IEnumerable<IGalleryImageRequestService> apis)
+    public Downloader(IGalleryImageRequestService api, Chapter chapter, string outputPath)
     {
-        _apis = apis;
+        _api = api;
+        _chapter = chapter;
+        _output = outputPath;
     }
 
-    private void OnProgressEvent(ProgressEvent e)
-    {
-        _progressEvent?.Invoke(this, e);
-    }
-
-    public void HandleOnProgress(Action<object, ProgressEvent> handler)
-    {
-        _progressEvent += (o, e) =>
-        {
-            handler(o, e);
-        };
-    }
-
-    public async Task Start(Chapter chapter)
-    {
-        var api = _apis
-            .FirstOrDefault(x => x.ProviderFor().For == chapter.GetSource());
-
-        if (api is null)
-        {
-            return;
-        }
-
-        await ExecuteTask(chapter, api);
-    }
-
-    private async Task ExecuteTask(Chapter chapter, IGalleryImageRequestService api)
+    public async Task Start()
     {
         var throttler = new SemaphoreSlim(2);
-        var taskList = chapter.GetGalleryResult().Images
+        var taskList = _chapter.Data.Images
             .Select(x => Task.Run(async () =>
             {
-                await DownloadTask(chapter, api, throttler, x);
+                await DownloadTask(throttler, x);
             }));
 
         await Task.WhenAll(taskList).ConfigureAwait(false);
     }
 
-    private async Task DownloadTask(Chapter chapter,
-        IGalleryImageRequestService api,
-        SemaphoreSlim throttler,
-        GalleryImageResult result)
+    private async Task DownloadTask(SemaphoreSlim throttler, GalleryImageResult result)
     {
         await throttler.WaitAsync().ConfigureAwait(false);
 
         try
         {
-            await DownloadImage(api, new DownloadImageArgs
+            await DownloadImage(_api, new DownloadImageArgs
                 {
-                    Output = chapter.GetOutput(),
                     FileName = result.Filename,
                     ImageDownloadPath = result.ServerFilename
                 })
@@ -85,7 +57,7 @@ public sealed class Downloader : IDownloader
 
     private async Task DownloadImage(IGalleryImageRequestService provider, DownloadImageArgs args)
     {
-        var filePath = Path.Combine(args.Output, args.FileName);
+        var filePath = Path.Combine(_output, args.FileName);
         if (File.Exists(filePath))
         {
             OnProgressEvent(new ProgressEvent("skip existing"));

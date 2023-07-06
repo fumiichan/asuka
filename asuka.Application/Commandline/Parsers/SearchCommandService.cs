@@ -2,10 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.Progress;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Output.Progress;
+using asuka.Core.Extensions;
+using asuka.Core.Models;
 using asuka.Core.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -15,25 +18,22 @@ namespace asuka.Application.Commandline.Parsers;
 public class SearchCommandService : ICommandLineParser
 {
     private readonly IEnumerable<IGalleryRequestService> _apis;
+    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
     private readonly IValidator<SearchOptions> _validator;
-    private readonly IDownloader _download;
-    private readonly IProgressService _progressService;
-    private readonly ISeriesFactory _series;
+    private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger _logger;
 
     public SearchCommandService(
         IEnumerable<IGalleryRequestService> apis,
+        IEnumerable<IGalleryImageRequestService> imageApis,
         IValidator<SearchOptions> validator,
-        IDownloader download,
-        IProgressService progressService,
-        ISeriesFactory series,
+        IProgressProviderFactory progressFactory,
         ILogger logger)
     {
         _apis = apis;
+        _imageApis = imageApis;
         _validator = validator;
-        _download = download;
-        _progressService = progressService;
-        _series = series;
+        _progressFactory = progressFactory;
         _logger = logger;
     }
     
@@ -43,16 +43,17 @@ public class SearchCommandService : ICommandLineParser
         
         // Find appropriate provider.
         var provider = _apis.GetFirst(opts.Provider);
-        if (provider is null)
+        var imageProvider = _imageApis.FirstOrDefault(x => x.ProviderFor().For == opts.Provider);
+        if (provider is null || imageProvider is null)
         {
             _logger.LogError("No such {ProviderName} found.", opts.Provider);
             return;
         }
 
-        await ExecuteCommand(opts, provider);
+        await ExecuteCommand(opts, provider, imageProvider);
     }
 
-    public async Task ExecuteCommand(SearchOptions opts, IGalleryRequestService provider)
+    public async Task ExecuteCommand(SearchOptions opts, IGalleryRequestService provider, IGalleryImageRequestService imageProvider)
     {
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
@@ -80,23 +81,45 @@ public class SearchCommandService : ICommandLineParser
         var selection = await Selection.MultiSelect(responses);
 
         // Initialise the Progress bar.
-        _progressService.CreateMasterProgress(selection.Count, "[task] search download");
-        var progress = _progressService.GetMasterProgress();
+        var progress = _progressFactory.Create(selection.Count, "downloading selected items...");
         
         foreach (var response in selection)
         {
-            _series.AddChapter(response, provider.ProviderFor().For, opts.Output, 1);
-
-            var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
-            _download.HandleOnProgress((_, e) =>
-            {
-                innerProgress.Tick($"{e.Message} id: {response.Id}");
-            });
-
-            await _download.Start(_series.GetSeries().GetChapters().First());
-            await _series.Close(opts.Pack ? innerProgress : null, false);
-            
+            await DownloadList(opts, provider, imageProvider, response, progress);
             progress.Tick();
         }
+    }
+
+    private static async Task DownloadList(SearchOptions opts,
+        IGalleryRequestService provider,
+        IGalleryImageRequestService imageProvider,
+        GalleryResult response,
+        IProgressProvider progress)
+    {
+        var series = new SeriesBuilder()
+            .AddChapter(response, provider.ProviderFor().For, 1)
+            .SetOutput(opts.Output)
+            .Build();
+
+        var innerProgress = progress.Spawn(response.TotalPages, $"downloading id: {response.Id}");
+        var downloader = new DownloaderBuilder()
+            .SetImageRequestService(imageProvider)
+            .SetChapter(series.Chapters[0])
+            .SetOutput(series.Output)
+            .SetEachCompleteHandler(e =>
+            {
+                innerProgress.Tick($"{e.Message}: {response.Id}");
+            })
+            .Build();
+
+        await downloader.Start();
+        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
+
+        if (opts.Pack)
+        {
+            await CompressAction.Compress(series, innerProgress, opts.Output);
+        }
+
+        innerProgress.Close();
     }
 }
