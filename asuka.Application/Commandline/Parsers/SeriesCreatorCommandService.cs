@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Commandline.Parsers.Common;
-using asuka.Application.Configuration;
 using asuka.Application.Output.Progress;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
@@ -20,7 +19,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IEnumerable<IGalleryRequestService> _apis;
     private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
     private readonly IProgressProviderFactory _progressFactory;
-    private readonly IConfigManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
     private readonly ILogger _logger;
 
@@ -28,14 +26,12 @@ public class SeriesCreatorCommandService : ICommandLineParser
         IEnumerable<IGalleryRequestService> apis,
         IEnumerable<IGalleryImageRequestService> imageApis,
         IProgressProviderFactory progressFactory,
-        IConfigManager config,
         IValidator<SeriesCreatorCommandOptions> validator,
         ILogger logger)
     {
         _apis = apis;
         _imageApis = imageApis;
         _progressFactory = progressFactory;
-        _config = config;
         _validator = validator;
         _logger = logger;
     }
@@ -54,14 +50,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         await ExecuteCommand(opts);
     }
 
-    private async Task ExecuteCommand(SeriesCreatorCommandOptions opts)
-    {
-        // Temporarily enable tachiyomi folder layout
-        _config.SetValue("layout.tachiyomi", "yes");
-        await HandleArrayTask(opts);
-    }
-
-    private async Task HandleArrayTask(SeriesCreatorCommandOptions args)
+    private async Task ExecuteCommand(SeriesCreatorCommandOptions args)
     {
         // Queue list of chapters.
         var codes = args.FromList.ToList();
@@ -78,7 +67,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
             }
             catch
             {
-                _logger.LogWarning($"Skipping: {codes[realIndex]} because of an error.");
+                _logger.LogWarning("Skipping: {codeIndex} because of an error.", codes[realIndex]);
             }
         }
 

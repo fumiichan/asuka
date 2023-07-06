@@ -34,9 +34,6 @@ public class ConfigManager : IConfigManager
         return new Dictionary<string, string>
         {
             {
-                "layout.tachiyomi", "yes"
-            },
-            {
                 "tui.progress", "progress"
             }
         };
