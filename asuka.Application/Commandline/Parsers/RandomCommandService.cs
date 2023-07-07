@@ -38,16 +38,17 @@ public class RandomCommandService : ICommandLineParser
         
         // Find appropriate provider.
         var provider = _apis.GetFirst(opts.Provider);
+        var imageProvider = _imageApis.FirstOrDefault(x => x.ProviderFor().For == opts.Provider);
         if (provider is null)
         {
             _logger.LogError("No such {ProviderName} found.", opts.Provider);
             return;
         }
 
-        await ExecuteCommand(opts, provider);
+        await ExecuteCommand(opts, provider, imageProvider);
     }
 
-    private async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider)
+    private async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider, IGalleryImageRequestService imageProvider)
     {
         while (true)
         {
@@ -63,16 +64,13 @@ public class RandomCommandService : ICommandLineParser
             }
 
             var series = new SeriesBuilder()
-                .AddChapter(response, provider.ProviderFor().For)
+                .AddChapter(response, opts.Provider)
                 .SetOutput(opts.Output)
                 .Build();
 
-            var progress = _progressFactory.Create(response.TotalPages, $"downloading random id: {response.Id}");
-
-            var imageApi = _imageApis
-                .FirstOrDefault(x => x.ProviderFor().For == provider.ProviderFor().For);
+            var progress = _progressFactory.Create(response.TotalPages, $"downloading: {response.Id}");
             var downloader = new DownloaderBuilder()
-                .SetImageRequestService(imageApi)
+                .SetImageRequestService(imageProvider)
                 .SetChapter(series.Chapters[0])
                 .SetOutput(series.Output)
                 .SetEachCompleteHandler(e =>
@@ -83,12 +81,12 @@ public class RandomCommandService : ICommandLineParser
 
             await downloader.Start();
             await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
-
+        
             if (opts.Pack)
             {
                 await CompressAction.Compress(series, progress, opts.Output);
             }
-            
+        
             progress.Close();
             break;
         }

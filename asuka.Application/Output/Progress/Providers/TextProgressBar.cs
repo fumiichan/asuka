@@ -23,21 +23,11 @@ public class TextProgressBar : IProgressProvider
         _title = title;
     }
 
-    private string PadStart()
-    {
-        var str = "";
-        for (var i = 1; i <= _spacing; i++)
-        {
-            str += " ";
-        }
-
-        return str;
-    }
-
     public void Tick()
     {
         _progress++;
-        Console.WriteLine($"{PadStart()} {_title} : {_progress} out of {_maxTicks}");
+        var print = $"{_title} : {_progress} out of {_maxTicks}";
+        Console.WriteLine(print.PadLeft(print.Length + _spacing), ' ');
     }
 
     public void Tick(int newMaxTicks)

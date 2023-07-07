@@ -1,6 +1,6 @@
 namespace asuka.Core.Compression;
 
-public struct CompressionItem
+public record CompressionItem
 {
     public string FullPath { get; init; }
     public string RelativePath { get; init; }

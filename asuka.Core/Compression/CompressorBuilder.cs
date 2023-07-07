@@ -6,14 +6,11 @@ namespace asuka.Core.Compression;
 public class CompressorBuilder
 {
     private Action<ProgressEvent> _onEachComplete;
-    private Series _series;
     private string _output;
 
     public CompressorBuilder SetSeries(Series series)
     {
-        _series = series;
-        _output = _series.Output + ".cbz";
-
+        _output = series.Output + ".cbz";
         return this;
     }
 

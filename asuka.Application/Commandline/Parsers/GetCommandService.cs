@@ -20,6 +20,7 @@ internal class DownloadTaskArguments
     public bool Pack { get; init; }
     public bool ReadOnly { get; init; }
     public string OutputPath { get; init; }
+    public IGalleryImageRequestService Api { get; init; }
 }
 
 public class GetCommandService : ICommandLineParser
@@ -76,7 +77,9 @@ public class GetCommandService : ICommandLineParser
                 Input = code,
                 Pack = opts.Pack,
                 ReadOnly = opts.ReadOnly,
-                OutputPath = opts.Output
+                OutputPath = opts.Output,
+                Api = _imageApis
+                    .FirstOrDefault(x => x.ProviderFor().For == provider.ProviderFor().For)
             });
         }
     }
@@ -97,13 +100,9 @@ public class GetCommandService : ICommandLineParser
             .SetOutput(args.OutputPath)
             .Build();
 
-        var imageApi = _imageApis
-            .FirstOrDefault(x => x.ProviderFor().For == series.Chapters[0].Source);
-
         var progress = _progressFactory.Create(response.TotalPages, $"downloading: {response.Id}");
-
         var downloader = new DownloaderBuilder()
-            .SetImageRequestService(imageApi)
+            .SetImageRequestService(args.Api)
             .SetChapter(series.Chapters[0])
             .SetOutput(series.Output)
             .SetEachCompleteHandler(e =>
