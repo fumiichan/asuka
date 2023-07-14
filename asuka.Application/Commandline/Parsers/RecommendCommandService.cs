@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
+using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
@@ -17,79 +17,81 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class RecommendCommandService : ICommandLineParser
 {
+    private readonly ProviderResolverService _provider;
     private readonly IValidator<RecommendOptions> _validator;
-    private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
     private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger _logger;
+    private readonly IConsoleWriter _console;
 
     public RecommendCommandService(
+        ProviderResolverService provider,
         IValidator<RecommendOptions> validator,
-        IEnumerable<IGalleryRequestService> apis,
-        IEnumerable<IGalleryImageRequestService> imageApis,
         IProgressProviderFactory progressFactory,
-        ILogger logger)
+        ILogger logger,
+        IConsoleWriter console)
     {
+        _provider = provider;
         _validator = validator;
-        _apis = apis;
-        _imageApis = imageApis;
         _progressFactory = progressFactory;
         _logger = logger;
+        _console = console;
     }
     
     public async Task Run(object options)
     {
         var opts = (RecommendOptions)options;
+        _logger.LogInformation("RecommenedCommandService called with opts: {@Opts}", opts);
         
-        // Find appropriate provider.
-        var provider = _apis.GetWhatMatches(opts.Input, opts.Provider);
-        var imageProvider = _imageApis
-            .FirstOrDefault(x => x.ProviderFor().For == opts.Provider);
-        if (provider is null || imageProvider is null)
-        {
-            _logger.LogError("No such {ProviderName} found.", opts.Provider);
-            return;
-        }
-
-        await ExecuteCommand(opts, provider, imageProvider);
-    }
-
-    private async Task ExecuteCommand(RecommendOptions opts, IGalleryRequestService provider, IGalleryImageRequestService imageProvider)
-    {
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {
-            validator.Errors.PrintErrors(_logger);
+            _logger.LogError("RecommendedCommandService fails with errors: {@Errors}", validator.Errors);
+            validator.Errors.PrintErrors(_console);
+            return;
+        }
+        
+        // Find appropriate provider.
+        var provider = _provider.GetProviderByUrl(opts.Input) ?? _provider.GetProviderByName(opts.Provider);
+        if (provider is null)
+        {
+            _console.WriteError($"No such {opts.Provider} found.");
             return;
         }
 
-        var responses = await provider.FetchRecommended(opts.Input);
+        await ExecuteCommand(opts, provider);
+    }
+
+    private async Task ExecuteCommand(RecommendOptions opts, Provider provider)
+    {
+        var responses = await provider.Api.FetchRecommended(opts.Input);
+        
         var selection = await Selection.MultiSelect(responses);
+        _logger.LogInformation("Selected items: {@Selection}", selection);
 
         // Initialise the Progress bar.
         var progress = _progressFactory.Create(selection.Count, $"recommend from: {opts.Input}");
         
         foreach (var response in selection)
         {
-            await DownloadList(opts, provider, imageProvider, response, progress);
+            await DownloadList(opts, provider.ImageApi, response, progress);
             progress.Tick();
         }
     }
 
-    private static async Task DownloadList(RecommendOptions opts,
-        IGalleryRequestService provider,
+    private async Task DownloadList(RecommendOptions opts,
         IGalleryImageRequestService imageProvider,
         GalleryResult response,
         IProgressProvider progress)
     {
         var series = new SeriesBuilder()
-            .AddChapter(response, provider.ProviderFor().For, 1)
+            .AddChapter(response, imageProvider, 1)
             .SetOutput(opts.Output)
             .Build();
+        _logger.LogInformation("Series built: {@Series}", series);
 
         var childProgress = progress.Spawn(response.TotalPages, $"downloading id: {response.Id}");
         var downloader = new DownloaderBuilder()
-            .SetImageRequestService(imageProvider)
+            .AttachLogger(_logger)
             .SetChapter(series.Chapters[0])
             .SetOutput(series.Output)
             .SetEachCompleteHandler(e =>
@@ -103,7 +105,7 @@ public class RecommendCommandService : ICommandLineParser
 
         if (opts.Pack)
         {
-            await CompressAction.Compress(series, childProgress, opts.Output);
+            await CompressAction.Compress(series, opts.Output, childProgress, _logger);
         }
         
         childProgress.Close();

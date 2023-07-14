@@ -2,7 +2,7 @@ using asuka.Core.Models;
 
 namespace asuka.Core.Requests;
 
-public interface IGalleryRequestService
+public interface IGalleryRequestService : IGalleryImageProvidable
 {
     /// <summary>
     /// Fetches gallery from ID.
@@ -32,16 +32,4 @@ public interface IGalleryRequestService
     /// </summary>
     /// <returns></returns>
     Task<GalleryResult> GetRandom();
-
-    /// <summary>
-    /// Determines which provider is this belongs to.
-    /// </summary>
-    /// <returns></returns>
-    ProviderData ProviderFor();
-
-    /// <summary>
-    /// Validation which checks whether if the URL is valid for this provider.
-    /// </summary>
-    /// <returns></returns>
-    bool IsFullUrlValid(string url);
 }

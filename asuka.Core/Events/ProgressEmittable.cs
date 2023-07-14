@@ -2,14 +2,14 @@ namespace asuka.Core.Events;
 
 public abstract class ProgressEmittable
 {
-    private EventHandler<ProgressEvent> _progressEvent;
+    private EventHandler<ProgressEventArgs> _progressEvent;
     
-    protected void OnProgressEvent(ProgressEvent e)
+    protected void OnProgressEvent(ProgressEventArgs e)
     {
         _progressEvent?.Invoke(this, e);
     }
 
-    public void HandleProgress(Action<ProgressEvent> e)
+    public void HandleProgress(Action<ProgressEventArgs> e)
     {
         _progressEvent += (_, @event) =>
         {

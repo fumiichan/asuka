@@ -1,10 +1,10 @@
 namespace asuka.Core.Events;
 
-public class ProgressEvent : EventArgs
+public class ProgressEventArgs : EventArgs
 {
     public readonly string Message;
 
-    public ProgressEvent(string message)
+    public ProgressEventArgs(string message)
     {
         Message = message;
     }

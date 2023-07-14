@@ -10,5 +10,6 @@ public static class CoreExtensions
     {
         services.AddSingleton<IConfigManager, ConfigManager>();
         services.AddSingleton<IProgressProviderFactory, ProgressProviderFactory>();
+        services.AddSingleton<ProviderResolverService>();
     }
 }

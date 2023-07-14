@@ -43,7 +43,7 @@ public static class GalleryResultExtensions
     }
     
     
-    private record TachiyomiDetails
+    private sealed record TachiyomiDetails
     {
         [JsonPropertyName("title")]
         public string Title { get; init; }

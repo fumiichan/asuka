@@ -5,28 +5,50 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Configuration;
 
 public class ConfigManager : IConfigManager
 {
     private Dictionary<string, string> _config;
+    private readonly ILogger _logger;
 
-    public ConfigManager()
+    public ConfigManager(ILogger logger)
+    {
+        _logger = logger;
+        Initialize();
+    }
+
+    private void Initialize()
     {
         var configRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".asuka");
         var configPath = Path.Join(configRoot, "config.conf");
+        
+        _logger.LogInformation("Configuration is located at {ConfigPath}", configPath);
 
         if (!File.Exists(configPath))
         {
+            _logger.LogWarning("Configuration cannot be found on path, Config not exist on: {ConfigPath}", configPath);
+            
             Directory.CreateDirectory(configRoot);
             _config = GetDefaults();
 
             return;
         }
 
-        var data = File.ReadAllText(configPath, Encoding.UTF8);
-        _config = ReadConfiguration(data);
+        try
+        {
+            var data = File.ReadAllText(configPath, Encoding.UTF8);
+            _config = ReadConfiguration(data);
+            
+            _logger.LogInformation("Configuration loaded with values = {@Config}", _config);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Exception occured at reading configuration: {@Exception}", e);
+            _config = GetDefaults();
+        }
     }
 
     private Dictionary<string, string> GetDefaults()
@@ -55,7 +77,7 @@ public class ConfigManager : IConfigManager
             var configValue = value.Split('=');
             dict.Add(configValue[0], configValue[1]);
         }
-        
+
         // Ensure we populate all configuraiton options
         foreach (var value in GetDefaults())
         {
@@ -90,6 +112,8 @@ public class ConfigManager : IConfigManager
     {
         var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".asuka/config.conf");
+        
+        _logger.LogInformation("Configuration path will be saved at: {ConfigPath}", configPath);
 
         var stringBuilder = new StringBuilder();
         foreach (var (key, value) in _config)
@@ -97,6 +121,13 @@ public class ConfigManager : IConfigManager
             stringBuilder.Append($"{key}={value}\n");
         }
 
-        await File.WriteAllTextAsync(configPath, stringBuilder.ToString());
+        try
+        {
+            await File.WriteAllTextAsync(configPath, stringBuilder.ToString());
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Cannot store configuration due to an exception: {@Exception}", e);
+        }
     }
 }

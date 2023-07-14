@@ -1,12 +1,14 @@
 using asuka.Core.Chaptering.Models;
 using asuka.Core.Events;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Core.Compression;
 
 public class CompressorBuilder
 {
-    private Action<ProgressEvent> _onEachComplete;
+    private Action<ProgressEventArgs> _onEachComplete;
     private string _output;
+    private ILogger _attachedLogger = new DummyLogging();
 
     public CompressorBuilder SetSeries(Series series)
     {
@@ -14,7 +16,13 @@ public class CompressorBuilder
         return this;
     }
 
-    public CompressorBuilder SetEachCompleteListener(Action<ProgressEvent> listener)
+    public CompressorBuilder AttachLogger(ILogger logger)
+    {
+        _attachedLogger = logger;
+        return this;
+    }
+
+    public CompressorBuilder SetEachCompleteListener(Action<ProgressEventArgs> listener)
     {
         _onEachComplete = listener;
         return this;
@@ -22,7 +30,7 @@ public class CompressorBuilder
 
     public async Task Run(IEnumerable<CompressionItem> files)
     {
-        var compressor = new Compressor();
+        var compressor = new Compressor(_attachedLogger);
 
         if (_onEachComplete is not null)
         {

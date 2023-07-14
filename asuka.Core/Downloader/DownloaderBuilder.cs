@@ -1,20 +1,20 @@
 using asuka.Core.Chaptering.Models;
 using asuka.Core.Events;
-using asuka.Core.Requests;
 using asuka.Core.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace asuka.Core.Downloader;
 
 public class DownloaderBuilder
 {
-    private IGalleryImageRequestService _imageRequestService;
     private Chapter _chapter;
-    private Action<ProgressEvent> _onEachComplete;
+    private Action<ProgressEventArgs> _onEachComplete;
     private string _output;
+    private ILogger _attachedLogger = new DummyLogging();
 
-    public DownloaderBuilder SetImageRequestService(IGalleryImageRequestService service)
+    public DownloaderBuilder AttachLogger(ILogger logger)
     {
-        _imageRequestService = service;
+        _attachedLogger = logger;
         return this;
     }
 
@@ -35,7 +35,7 @@ public class DownloaderBuilder
         return this;
     }
 
-    public DownloaderBuilder SetEachCompleteHandler(Action<ProgressEvent> listener)
+    public DownloaderBuilder SetEachCompleteHandler(Action<ProgressEventArgs> listener)
     {
         _onEachComplete = listener;
         return this;
@@ -48,7 +48,7 @@ public class DownloaderBuilder
             Directory.CreateDirectory(_output);
         }
  
-        var downloader = new Downloader(_imageRequestService, _chapter, _output);
+        var downloader = new Downloader(_chapter, _output, _attachedLogger);
         downloader.HandleProgress(_onEachComplete);
 
         return downloader;

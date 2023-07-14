@@ -12,13 +12,13 @@ public class ProgressProviderFactory : IProgressProviderFactory
         _config = config;
     }
     
-    public IProgressProvider Create(int maxTicks, string title)
+    public IProgressProvider Create(int maxTicks, string message)
     {
         return _config.GetValue("tui.progress") switch
         {
-            "text" => new TextProgressBar(maxTicks, title),
+            "text" => new TextProgressBar(maxTicks, message),
             "stealth" => new StealthProgressBar(),
-            _ => new CustomProgressBar(maxTicks, title)
+            _ => new CustomProgressBar(maxTicks, message)
         };
     }
 }

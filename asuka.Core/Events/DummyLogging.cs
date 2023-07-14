@@ -1,16 +1,18 @@
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace asuka.Application.Output.Logging;
+namespace asuka.Core.Events;
 
-public class CustomLogger : ILogger
+public class DummyLogging : ILogger
 {
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
-        Console.WriteLine(formatter(state, exception));
+        // do nothing.
     }
 
-    public bool IsEnabled(LogLevel logLevel) => true;
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return false;
+    }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull => default!;
 }

@@ -1,14 +1,14 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
+using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
-using asuka.Core.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -16,34 +16,37 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class SeriesCreatorCommandService : ICommandLineParser
 {
-    private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
+    private readonly ProviderResolverService _provider;
     private readonly IProgressProviderFactory _progressFactory;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
     private readonly ILogger _logger;
+    private readonly IConsoleWriter _console;
 
     public SeriesCreatorCommandService(
-        IEnumerable<IGalleryRequestService> apis,
-        IEnumerable<IGalleryImageRequestService> imageApis,
+        ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
         IValidator<SeriesCreatorCommandOptions> validator,
-        ILogger logger)
+        ILogger logger,
+        IConsoleWriter console)
     {
-        _apis = apis;
-        _imageApis = imageApis;
+        _provider = provider;
         _progressFactory = progressFactory;
         _validator = validator;
         _logger = logger;
+        _console = console;
     }
     
     public async Task Run(object options)
     {
         var opts = (SeriesCreatorCommandOptions)options;
+        _logger.LogInformation("SeriesCreatorCommandService called with opts {@Opts}", opts);
         
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            validationResult.Errors.PrintErrors(_logger);
+            _logger.LogError("SeriesCreatorCommandService fails with errors: {@Errors}", validationResult.Errors);
+
+            validationResult.Errors.PrintErrors(_console);
             return;
         }
 
@@ -58,27 +61,29 @@ public class SeriesCreatorCommandService : ICommandLineParser
         for (var i = args.StartOffset; i < args.StartOffset + codes.Count; i++)
         {
             var realIndex = (codes.Count + i) - (args.StartOffset + codes.Count);
-            var provider = _apis.GetWhatMatches(codes[realIndex], args.Provider);
+            var provider = _provider.GetProviderByUrl(codes[realIndex]) ?? _provider.GetProviderByName(args.Provider);
 
             try
             {
-                var response = await provider.FetchSingle(codes[realIndex]);
-                seriesBuilder.AddChapter(response, provider.ProviderFor().For, i);
+                var response = await provider.Api.FetchSingle(codes[realIndex]);
+                seriesBuilder.AddChapter(response, provider.ImageApi, i);
             }
             catch
             {
-                _logger.LogWarning("Skipping: {codeIndex} because of an error.", codes[realIndex]);
+                _console.WriteWarning($"Skipping: {codes[realIndex]} because of an error.");
             }
         }
 
         seriesBuilder.SetOutput(args.Output);
         var series = seriesBuilder.Build();
+        _logger.LogInformation("Series Built: {@Series}", series);
 
         // If there's no chapters (due to likely most of them failed to fetch metadata)
         // Quit immediately.
         if (series.Chapters.Count == 0)
         {
-            _logger.LogInformation("Nothing to do. Quitting...");
+            _logger.LogWarning("Nothing to do. chapter count = {Count}", series.Chapters.Count);
+            _console.WriteInformation("Nothing to do. Quitting...");
             return;
         }
 
@@ -90,10 +95,8 @@ public class SeriesCreatorCommandService : ICommandLineParser
             try
             {
                 var childProgress = progress.Spawn(chapter.Data.TotalPages, $"downloading chapter {chapter.Id}");
-                var imageApi = _imageApis
-                    .FirstOrDefault(x => x.ProviderFor().For == chapter.Source);
                 var downloader = new DownloaderBuilder()
-                    .SetImageRequestService(imageApi)
+                    .AttachLogger(_logger)
                     .SetChapter(chapter)
                     .SetOutput(series.Output)
                     .SetEachCompleteHandler(_ =>
@@ -115,7 +118,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
 
         if (args.Pack)
         {
-            await CompressAction.Compress(series, progress, args.Output);
+            await CompressAction.Compress(series, args.Output, progress, _logger);
         }
 
         // Cleanup

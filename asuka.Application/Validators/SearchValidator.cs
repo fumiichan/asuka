@@ -8,7 +8,7 @@ public class SearchValidator : AbstractValidator<SearchOptions>
     public SearchValidator()
     {
         RuleForEach(opts => opts.Queries)
-            .Must(query => !query.StartsWith("-"))
+            .Must(query => !query.StartsWith('-'))
             .WithMessage("Queries should not start with a dash. Use --exclude option instead.");
 
         RuleFor(opts => opts.Page)

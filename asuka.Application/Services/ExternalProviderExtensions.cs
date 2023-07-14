@@ -12,40 +12,42 @@ public static class ExternalProviderExtensions
 {
     public static void InstallExternalProviders(this IServiceCollection services)
     {
-        var assemblyDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var assemblyDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
+        if (assemblyDir is null)
+        {
+            return;
+        }
+ 
         var dlls = Directory.GetFiles(assemblyDir, "asuka.Providers.*.dll");
-
         foreach (var dll in dlls)
         {
             Type[] types;
             try
             {
-                types = Assembly.LoadFrom(dll).GetTypes();
+                types = Assembly.LoadFrom(dll).GetExportedTypes();
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine("Failed to load due to an exception");
+                Console.WriteLine(e);
                 continue;
             }
     
             // Load all classes inheriting IGalleryImageRequestService and
             // IGalleryRequestService
-            foreach (var installableImageRequestService in ActivateInstances<IGalleryImageRequestService>(types))
-            {
-                services.AddSingleton(installableImageRequestService);
-            }
-    
-            foreach (var installableRequestService in ActivateInstances<IGalleryRequestService>(types))
-            {
-                services.AddSingleton(installableRequestService);
-            }
+            ActivateInstances<IGalleryImageRequestService>(types, services);
+            ActivateInstances<IGalleryRequestService>(types, services);
         }
     }
 
-    private static IEnumerable<T> ActivateInstances<T>(IEnumerable<Type> types)
+    private static void ActivateInstances<T>(IEnumerable<Type> types, IServiceCollection serviceCollection)
     {
-        return types
-            .Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(T)))
-            .Select(Activator.CreateInstance)
-            .Cast<T>();
+        var services = types
+            .Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(T)));
+
+        foreach (var service in services)
+        {
+            serviceCollection.AddSingleton(typeof(T), service);
+        }
     }
 }

@@ -2,20 +2,20 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using asuka.Application.Commandline;
 using asuka.Application.Commandline.Options;
+using asuka.Application.Output.ConsoleWriter;
 using CommandLine;
-using Microsoft.Extensions.Logging;
 
 namespace asuka.Application;
 
 public class AsukaApplication
 {
     private readonly ICommandLineParserFactory _command;
-    private readonly ILogger _logger;
+    private readonly IConsoleWriter _console;
 
-    public AsukaApplication(ICommandLineParserFactory command, ILogger logger)
+    public AsukaApplication(ICommandLineParserFactory command, IConsoleWriter console)
     {
         _command = command;
-        _logger = logger;
+        _console = console;
     }
 
     public async Task RunAsync(IEnumerable<string> args)
@@ -38,6 +38,6 @@ public class AsukaApplication
         var service = _command.GetInstance(token);
         await service.Run(opts);
         
-        _logger.Log(LogLevel.Information, "Task Completed");
+        _console.WriteInformation("Task Completed");
     }
 }

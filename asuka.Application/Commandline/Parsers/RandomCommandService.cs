@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Commandline.Parsers.Common;
+using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
+using asuka.Application.Services;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
 using asuka.Core.Extensions;
-using asuka.Core.Requests;
 using Microsoft.Extensions.Logging;
 using Sharprompt;
 
@@ -15,46 +14,51 @@ namespace asuka.Application.Commandline.Parsers;
 
 public class RandomCommandService : ICommandLineParser
 {
-    private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
+    private readonly ProviderResolverService _provider;
     private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger _logger;
+    private readonly IConsoleWriter _console;
 
     public RandomCommandService(
-        IEnumerable<IGalleryRequestService> apis,
-        IEnumerable<IGalleryImageRequestService> imageApis,
+        ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
-        ILogger logger)
+        ILogger logger,
+        IConsoleWriter console)
     {
-        _apis = apis;
-        _imageApis = imageApis;
+        _provider = provider;
         _progressFactory = progressFactory;
         _logger = logger;
+        _console = console;
     }
     
     public async Task Run(object options)
     {
         var opts = (RandomOptions)options;
+        _logger.LogInformation("RandomCommandService called with args: {@Opts}", opts);
         
         // Find appropriate provider.
-        var provider = _apis.GetFirst(opts.Provider);
-        var imageProvider = _imageApis.FirstOrDefault(x => x.ProviderFor().For == opts.Provider);
+        var provider = _provider.GetProviderByName(opts.Provider);
         if (provider is null)
         {
-            _logger.LogError("No such {ProviderName} found.", opts.Provider);
+            _console.WriteError($"No such {opts.Provider} found.");
             return;
         }
 
-        await ExecuteCommand(opts, provider, imageProvider);
+        await ExecuteCommand(opts, provider);
     }
 
-    private async Task ExecuteCommand(RandomOptions opts, IGalleryRequestService provider, IGalleryImageRequestService imageProvider)
+    private async Task ExecuteCommand(RandomOptions opts, Provider provider)
     {
         while (true)
         {
-            var response = await provider.GetRandom();
+            var response = await provider.Api.GetRandom();
+            if (response is null)
+            {
+                _console.WriteError("Unable to fetch random ID.");
+                return;
+            }
 
-            _logger.LogInformation("{readable}", response.BuildReadableInformation());
+            _console.Write(response.BuildReadableInformation());
 
             var prompt = Prompt.Confirm("Are you sure to download this one?", true);
             if (!prompt)
@@ -64,13 +68,14 @@ public class RandomCommandService : ICommandLineParser
             }
 
             var series = new SeriesBuilder()
-                .AddChapter(response, opts.Provider)
+                .AddChapter(response, provider.ImageApi)
                 .SetOutput(opts.Output)
                 .Build();
+            _logger.LogInformation("Series built: {@Series}", series);
 
             var progress = _progressFactory.Create(response.TotalPages, $"downloading: {response.Id}");
             var downloader = new DownloaderBuilder()
-                .SetImageRequestService(imageProvider)
+                .AttachLogger(_logger)
                 .SetChapter(series.Chapters[0])
                 .SetOutput(series.Output)
                 .SetEachCompleteHandler(e =>
@@ -84,7 +89,7 @@ public class RandomCommandService : ICommandLineParser
         
             if (opts.Pack)
             {
-                await CompressAction.Compress(series, progress, opts.Output);
+                await CompressAction.Compress(series, opts.Output, progress, _logger);
             }
         
             progress.Close();

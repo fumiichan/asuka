@@ -12,8 +12,8 @@ public static class ApiContracts
     /// <param name="response"></param>
     /// <param name="mediaId"></param>
     /// <returns></returns>
-    public static IReadOnlyList<GalleryImageResult> ToGalleryImageResult(
-        this IReadOnlyList<GalleryImageResponse> response, string mediaId)
+    private static IReadOnlyList<GalleryImageResult> ToGalleryImageResult(
+        this IReadOnlyCollection<GalleryImageResponse> response, string mediaId)
     {
         return response.Select((value, index) =>
         {
@@ -74,7 +74,7 @@ public static class ApiContracts
     /// <param name="response"></param>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public static IReadOnlyList<string> GetTagByGroup(
+    private static IReadOnlyList<string> GetTagByGroup(
         this IEnumerable<GalleryTagResponse> response,
         string filter)
     {

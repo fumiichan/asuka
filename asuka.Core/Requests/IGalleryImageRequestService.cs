@@ -1,6 +1,6 @@
 namespace asuka.Core.Requests;
 
-public interface IGalleryImageRequestService
+public interface IGalleryImageRequestService : IGalleryImageProvidable
 {
     /// <summary>
     /// Fetch images from URL path.
@@ -8,10 +8,4 @@ public interface IGalleryImageRequestService
     /// <param name="path"></param>
     /// <returns></returns>
     Task<HttpContent> FetchImage(string path);
-    
-    /// <summary>
-    /// Determines which provider is this belongs to.
-    /// </summary>
-    /// <returns></returns>
-    ProviderData ProviderFor();
 }

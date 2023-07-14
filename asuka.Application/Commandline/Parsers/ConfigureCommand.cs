@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using asuka.Application.Commandline.Options;
 using asuka.Application.Configuration;
+using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Utilities;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -12,21 +13,30 @@ public class ConfigureCommand : ICommandLineParser
     private readonly IConfigManager _configManager;
     private readonly IValidator<ConfigureOptions> _validator;
     private readonly ILogger _logger;
+    private readonly IConsoleWriter _console;
 
-    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigManager configManager, ILogger logger)
+    public ConfigureCommand(
+        IValidator<ConfigureOptions> validator,
+        IConfigManager configManager,
+        ILogger logger,
+        IConsoleWriter console)
     {
         _configManager = configManager;
         _logger = logger;
         _validator = validator;
+        _console = console;
     }
 
     public async Task Run(object options)
     {
         var opts = (ConfigureOptions)options;
+        _logger.LogInformation("ConfigureCommand called with args: {@Opts}", opts);
+        
         var validation = await _validator.ValidateAsync(opts);
         if (!validation.IsValid)
         {
-            validation.Errors.PrintErrors(_logger);
+            _logger.LogError("ConfigureCommand failed on validation {@Errors}", validation.Errors);
+            validation.Errors.PrintErrors(_console);
             return;
         }
 
@@ -41,7 +51,7 @@ public class ConfigureCommand : ICommandLineParser
         if (opts.ReadConfigMode)
         {
             var configValue = _configManager.GetValue(opts.Key);
-            _logger.LogInformation($"{opts.Key} = {configValue}");
+            _console.Write($"{opts.Key} = {configValue}");
 
             return;
         }
@@ -52,7 +62,7 @@ public class ConfigureCommand : ICommandLineParser
 
             foreach (var (key, value) in keyValuePairs)
             {
-                _logger.LogInformation($"{key} = {value}");
+                _console.Write($"{key} = {value}");
             }
 
             return;

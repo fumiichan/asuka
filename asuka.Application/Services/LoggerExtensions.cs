@@ -1,6 +1,10 @@
-using asuka.Application.Output.Logging;
+using System;
+using System.IO;
+using System.Reflection;
+using asuka.Application.Output.ConsoleWriter;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace asuka.Application.Services;
 
@@ -8,11 +12,28 @@ public static class LoggerExtensions
 {
     public static void InstallLogger(this IServiceCollection services)
     {
-        var asukaLogger = LoggerFactory.Create(logger =>
+        var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly()!.Location);
+        if (assemblyPath is null)
         {
-            logger.ClearProviders();
-            logger.AddCustomLogger();
-        }).CreateLogger("asuka.Application");
-        services.AddSingleton(asukaLogger);
+            Console.Write("WARN: Logging is disabled because one of the requirements is not satisfied.");
+            return;
+        }
+
+        var logDirectoryRoot = Path.Combine(assemblyPath, "logs");
+        Directory.CreateDirectory(logDirectoryRoot);
+        
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(Path.Combine(logDirectoryRoot, $"log-{DateTime.Now:yyyy-M-d-HH-m-ss}.log"))
+            .CreateLogger();
+
+        var logger = LoggerFactory.Create(l =>
+        {
+            l.ClearProviders();
+            l.AddSerilog(dispose: true);
+        }).CreateLogger("asuka");
+
+        services.AddSingleton(logger);
+        services.AddSingleton<IConsoleWriter, ConsoleWriter>();
     }
 }
