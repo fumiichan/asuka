@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using asuka.Core.Models;
-using asuka.Core.Requests;
 using asuka.Providers.Nhentai.Api;
 using asuka.Providers.Nhentai.Api.Queries;
 using asuka.Providers.Nhentai.Configuration;
 using asuka.Providers.Nhentai.Contracts;
+using asuka.Sdk.Providers.Models;
+using asuka.Sdk.Providers.Requests;
 using Microsoft.Extensions.Logging;
 using Refit;
 
@@ -14,36 +14,14 @@ namespace asuka.Providers.Nhentai.Requests;
 
 public class GalleryRequestService : IGalleryRequestService
 {
-    private readonly ILogger _logger;
-    private IGalleryApi _api;
-    private readonly Regex _urlRegex = new Regex(@"^(https?):\/\/nhentai.net\/g\/\d{1,6}\/?$");
+    private readonly ILogger<GalleryRequestService> _logger;
+    private readonly IGalleryApi _api;
     private int _totalGalleryCountCache;
 
-    public GalleryRequestService(ILogger logger)
+    public GalleryRequestService(HttpClient client, ILogger<GalleryRequestService> logger)
     {
         _logger = logger;
-        Initialize();
-    }
-
-    private void Initialize()
-    {
-        var handler = new HttpClientHandler();
-        var config = OverrideConfigurations.GetConfiguration();
-
-        foreach (var cookie in CookieConfiguration.LoadCookies())
-        {
-            _logger.LogInformation("Cookie loaded on GalleryRequestService: {@Cookie}", cookie);
-            handler.CookieContainer.Add(cookie);
-        }
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri(config.ApiHostname)
-        };
-        httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(config.UserAgent);
-        _logger.LogInformation("UserAgent loaded on GalleryRequestService: {@UserAgentHttpClient}", httpClient.DefaultRequestHeaders.UserAgent);
-
-        _api = RestService.For<IGalleryApi>(httpClient, new RefitSettings
+        _api = RestService.For<IGalleryApi>(client, new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
             {
@@ -67,7 +45,6 @@ public class GalleryRequestService : IGalleryRequestService
 
         try
         {
-            _logger.LogInformation("Attempting to get response on ID: {Id}", id);
             var result = await _api.FetchSingle(id)
                 .ConfigureAwait(false);
             _logger.LogInformation("API fetch success: {@Result}", result);
@@ -156,23 +133,10 @@ public class GalleryRequestService : IGalleryRequestService
         return await FetchSingle($"https://nhentai.net/g/{id}");
     }
 
-    public ProviderData ProviderFor()
-    {
-        return new ProviderData
-        {
-            For = "nhentai",
-            Base = "https://nhentai.net"
-        };
-    }
-
-    public bool IsFullUrlValid(string url)
-    {
-        return _urlRegex.IsMatch(url);
-    }
-
     private string GetCode(string input)
     {
-        if (_urlRegex.IsMatch(input))
+        var urlRegex = new Regex(@"^(https?)://nhentai.net/g/\d{1,6}/?$");
+        if (urlRegex.IsMatch(input))
         {
             var codeRegex = new Regex(@"\d{1,6}");
             return codeRegex.Match(input).Value;

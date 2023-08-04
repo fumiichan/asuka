@@ -1,5 +1,5 @@
-using asuka.Core.Models;
 using asuka.Providers.Nhentai.Api.Responses;
+using asuka.Sdk.Providers.Models;
 
 namespace asuka.Providers.Nhentai.Contracts;
 

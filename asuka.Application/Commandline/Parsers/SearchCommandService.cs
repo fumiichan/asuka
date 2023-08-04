@@ -9,9 +9,9 @@ using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
-using asuka.Core.Models;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Extensions;
+using asuka.Sdk.Providers.Models;
+using asuka.Sdk.Providers.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -22,14 +22,14 @@ public class SearchCommandService : ICommandLineParser
     private readonly ProviderResolverService _provider;
     private readonly IValidator<SearchOptions> _validator;
     private readonly IProgressProviderFactory _progressFactory;
-    private readonly ILogger _logger;
+    private readonly ILogger<SearchCommandService> _logger;
     private readonly IConsoleWriter _console;
 
     public SearchCommandService(
         ProviderResolverService provider,
         IValidator<SearchOptions> validator,
         IProgressProviderFactory progressFactory,
-        ILogger logger,
+        ILogger<SearchCommandService> logger,
         IConsoleWriter console)
     {
         _provider = provider;

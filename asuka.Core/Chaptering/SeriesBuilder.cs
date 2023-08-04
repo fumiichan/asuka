@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 using asuka.Core.Chaptering.Models;
-using asuka.Core.Extensions;
-using asuka.Core.Models;
-using asuka.Core.Requests;
 using asuka.Core.Utilities;
+using asuka.Sdk.Providers.Extensions;
+using asuka.Sdk.Providers.Models;
+using asuka.Sdk.Providers.Requests;
 
 namespace asuka.Core.Chaptering;
 

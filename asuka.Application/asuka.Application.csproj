@@ -47,5 +47,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\asuka.Core\asuka.Core.csproj" />
+      <ProjectReference Include="..\asuka.Sdk.Providers\asuka.Sdk.Providers.csproj" />
     </ItemGroup>
 </Project>

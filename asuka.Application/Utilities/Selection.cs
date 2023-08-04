@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using asuka.Core.Extensions;
-using asuka.Core.Models;
+using asuka.Sdk.Providers.Extensions;
+using asuka.Sdk.Providers.Models;
 using Sharprompt;
 
 namespace asuka.Application.Utilities;

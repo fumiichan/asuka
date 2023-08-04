@@ -7,7 +7,7 @@ public static class OverrideConfigurations
 {
     public static OverrideConfigurationData GetConfiguration()
     {
-        var assemblyDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var configPath = Path.Combine(assemblyDir, "provider.nhentai-config.json");
         
         if (!File.Exists(configPath))

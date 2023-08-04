@@ -12,9 +12,9 @@ namespace asuka.Application.Configuration;
 public class ConfigManager : IConfigManager
 {
     private Dictionary<string, string> _config;
-    private readonly ILogger _logger;
+    private readonly ILogger<ConfigManager> _logger;
 
-    public ConfigManager(ILogger logger)
+    public ConfigManager(ILogger<ConfigManager> logger)
     {
         _logger = logger;
         Initialize();

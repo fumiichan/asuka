@@ -1,7 +1,7 @@
 using asuka.Core.Chaptering.Models;
 using asuka.Core.Events;
-using asuka.Core.Models;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Models;
+using asuka.Sdk.Providers.Requests;
 using Microsoft.Extensions.Logging;
 
 namespace asuka.Core.Downloader;

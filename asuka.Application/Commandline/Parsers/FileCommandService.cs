@@ -10,7 +10,7 @@ using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
+using asuka.Sdk.Providers.Extensions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -21,14 +21,14 @@ public class FileCommandService : ICommandLineParser
     private readonly ProviderResolverService _provider;
     private readonly IProgressProviderFactory _progressFactory;
     private readonly IValidator<FileCommandOptions> _validator;
-    private readonly ILogger _logger;
+    private readonly ILogger<FileCommandService> _logger;
     private readonly IConsoleWriter _console;
 
     public FileCommandService(
         ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
         IValidator<FileCommandOptions> validator,
-        ILogger logger,
+        ILogger<FileCommandService> logger,
         IConsoleWriter console)
     {
         _provider = provider;

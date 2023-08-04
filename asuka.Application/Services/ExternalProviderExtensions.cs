@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace asuka.Application.Services;
@@ -17,8 +17,14 @@ public static class ExternalProviderExtensions
         {
             return;
         }
+
+        var dllRoot = Path.Combine(assemblyDir, "providers");
+        if (!Directory.Exists(dllRoot))
+        {
+            return;
+        }
  
-        var dlls = Directory.GetFiles(assemblyDir, "asuka.Providers.*.dll");
+        var dlls = Directory.GetFiles(dllRoot, "asuka.Providers.*.dll", SearchOption.AllDirectories);
         foreach (var dll in dlls)
         {
             Type[] types;
@@ -35,19 +41,20 @@ public static class ExternalProviderExtensions
     
             // Load all classes inheriting IGalleryImageRequestService and
             // IGalleryRequestService
-            ActivateInstances<IGalleryImageRequestService>(types, services);
-            ActivateInstances<IGalleryRequestService>(types, services);
+            InjectServicesFromMetadata(types, services);
         }
     }
 
-    private static void ActivateInstances<T>(IEnumerable<Type> types, IServiceCollection serviceCollection)
+    private static void InjectServicesFromMetadata(IEnumerable<Type> types, IServiceCollection serviceCollection)
     {
-        var services = types
-            .Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(T)));
+        var metadata = types
+            .FirstOrDefault(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(ProviderMetadata)));
 
-        foreach (var service in services)
+        if (metadata is null)
         {
-            serviceCollection.AddSingleton(typeof(T), service);
+            return;
         }
+
+        serviceCollection.AddSingleton(typeof(ProviderMetadata), metadata);
     }
 }

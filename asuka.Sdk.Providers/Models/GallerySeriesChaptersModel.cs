@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace asuka.Core.Models;
+namespace asuka.Sdk.Providers.Models;
 
 public record GallerySeriesChaptersModel
 {

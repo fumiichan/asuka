@@ -8,7 +8,7 @@ using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
+using asuka.Sdk.Providers.Extensions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -19,14 +19,14 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly ProviderResolverService _provider;
     private readonly IProgressProviderFactory _progressFactory;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
-    private readonly ILogger _logger;
+    private readonly ILogger<SeriesCreatorCommandService> _logger;
     private readonly IConsoleWriter _console;
 
     public SeriesCreatorCommandService(
         ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
         IValidator<SeriesCreatorCommandOptions> validator,
-        ILogger logger,
+        ILogger<SeriesCreatorCommandService> logger,
         IConsoleWriter console)
     {
         _provider = provider;

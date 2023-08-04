@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Identity;
+using asuka.Sdk.Providers.Requests;
 using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Services;
@@ -13,24 +14,20 @@ public class Provider
 
 public class ProviderResolverService
 {
-    private readonly IEnumerable<IGalleryRequestService> _apis;
-    private readonly IEnumerable<IGalleryImageRequestService> _imageApis;
-    private readonly ILogger _logger;
+    private readonly IEnumerable<ProviderMetadata> _apis;
+    private readonly ILogger<ProviderResolverService> _logger;
     
     public ProviderResolverService(
-        IEnumerable<IGalleryRequestService> apis,
-        IEnumerable<IGalleryImageRequestService> imageApis,
-        ILogger logger)
+        IEnumerable<ProviderMetadata> apis,
+        ILogger<ProviderResolverService> logger)
     {
         _apis = apis;
-        _imageApis = imageApis;
         _logger = logger;
     }
 
     public Provider GetProviderByUrl(string url)
     {
-        var result = _apis
-            .FirstOrDefault(x => url.StartsWith(x.ProviderFor().Base));
+        var result = _apis.FirstOrDefault(x => x.IsUrlSupported(url));
 
         // Main API provider for this cannot be found. We can safely assume that the image provider doesn't exist too.
         if (result is null)
@@ -39,26 +36,12 @@ public class ProviderResolverService
             return null;
         }
         
-        _logger.LogInformation("Provider for Api by URL found: {Url} = {Provider}", url, result.ProviderFor().For);
-
-        var imageApi = _imageApis
-            .FirstOrDefault(x => x.ProviderFor().For == result.ProviderFor().For);
-
-        // This might be a problem for certain third-party providers where they don't provide modules for downloading
-        // the actual images. Returning null makes sense because the provider lacks functionality that this application
-        // is made for.
-        if (imageApi is null)
-        {
-            _logger.LogError("Image provider cannot be found by URL: {Url}", url);
-            return null;
-        }
+        _logger.LogInformation("Provider for Api by URL found: {Url} = {Provider}", url, result.GetId());
         
-        _logger.LogInformation("Provider for image by URL found: {Url} = {Provider}", url, result.ProviderFor().For);
-
         return new Provider
         {
-            ImageApi = imageApi,
-            Api = result
+            ImageApi = result.GetGalleryImageRequestService(),
+            Api = result.GetGalleryRequestService()
         };
     }
 
@@ -71,7 +54,7 @@ public class ProviderResolverService
         }
 
         var result = _apis
-            .FirstOrDefault(x => x.ProviderFor().For == name);
+            .FirstOrDefault(x => x.GetId() == name);
 
         if (result is null)
         {
@@ -81,21 +64,10 @@ public class ProviderResolverService
         
         _logger.LogInformation("Provider api found for: {Name}", name);
 
-        var imageApi = _imageApis
-            .FirstOrDefault(x => x.ProviderFor().For == name);
-
-        if (imageApi is null)
-        {
-            _logger.LogError("Unable to get provider. Provider: {Name}", name);
-            return null;
-        }
-        
-        _logger.LogInformation("Provider image api found for: {Name}", name);
-
         return new Provider
         {
-            ImageApi = imageApi,
-            Api = result
+            ImageApi = result.GetGalleryImageRequestService(),
+            Api = result.GetGalleryRequestService()
         };
     }
 }

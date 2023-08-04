@@ -11,7 +11,7 @@ public static class CookieConfiguration
     /// </summary>
     public static IEnumerable<Cookie> LoadCookies()
     {
-        var assemblyDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var configPath = Path.Combine(assemblyDir, "provider.nhentai-cookie.json");
 
         var cookieLists = new List<Cookie>();

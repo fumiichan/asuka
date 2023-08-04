@@ -12,13 +12,13 @@ public class ConfigureCommand : ICommandLineParser
 {
     private readonly IConfigManager _configManager;
     private readonly IValidator<ConfigureOptions> _validator;
-    private readonly ILogger _logger;
+    private readonly ILogger<ConfigureCommand> _logger;
     private readonly IConsoleWriter _console;
 
     public ConfigureCommand(
         IValidator<ConfigureOptions> validator,
         IConfigManager configManager,
-        ILogger logger,
+        ILogger<ConfigureCommand> logger,
         IConsoleWriter console)
     {
         _configManager = configManager;

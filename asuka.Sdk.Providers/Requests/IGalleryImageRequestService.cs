@@ -1,6 +1,6 @@
-namespace asuka.Core.Requests;
+namespace asuka.Sdk.Providers.Requests;
 
-public interface IGalleryImageRequestService : IGalleryImageProvidable
+public interface IGalleryImageRequestService
 {
     /// <summary>
     /// Fetch images from URL path.

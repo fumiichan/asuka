@@ -8,6 +8,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Providers", "Providers", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Providers.Nhentai", "asuka.Providers.Nhentai\asuka.Providers.Nhentai.csproj", "{15D26E8B-51B0-4371-B1F6-84CCD02DE041}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{B0001B6A-DD10-4D69-AFE8-94A8379708CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Sdk.Providers", "asuka.Sdk.Providers\asuka.Sdk.Providers.csproj", "{49CE3D91-2713-47C4-A8D2-310120FB3F31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x64 = Release|x64
@@ -26,8 +30,13 @@ Global
 		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Release|x64.Build.0 = Release|Any CPU
 		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{15D26E8B-51B0-4371-B1F6-84CCD02DE041}.Debug|x64.Build.0 = Debug|Any CPU
+		{49CE3D91-2713-47C4-A8D2-310120FB3F31}.Release|x64.ActiveCfg = Release|Any CPU
+		{49CE3D91-2713-47C4-A8D2-310120FB3F31}.Release|x64.Build.0 = Release|Any CPU
+		{49CE3D91-2713-47C4-A8D2-310120FB3F31}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{49CE3D91-2713-47C4-A8D2-310120FB3F31}.Debug|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{15D26E8B-51B0-4371-B1F6-84CCD02DE041} = {4CCBAD40-6120-43F5-BDEF-D0F3F15C24C8}
+		{49CE3D91-2713-47C4-A8D2-310120FB3F31} = {B0001B6A-DD10-4D69-AFE8-94A8379708CD}
 	EndGlobalSection
 EndGlobal

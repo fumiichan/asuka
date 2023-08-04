@@ -6,7 +6,7 @@ using asuka.Application.Output.Progress;
 using asuka.Application.Services;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
+using asuka.Sdk.Providers.Extensions;
 using Microsoft.Extensions.Logging;
 using Sharprompt;
 
@@ -16,13 +16,13 @@ public class RandomCommandService : ICommandLineParser
 {
     private readonly ProviderResolverService _provider;
     private readonly IProgressProviderFactory _progressFactory;
-    private readonly ILogger _logger;
+    private readonly ILogger<RandomCommandService> _logger;
     private readonly IConsoleWriter _console;
 
     public RandomCommandService(
         ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
-        ILogger logger,
+        ILogger<RandomCommandService> logger,
         IConsoleWriter console)
     {
         _provider = provider;

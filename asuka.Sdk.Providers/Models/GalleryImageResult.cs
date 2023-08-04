@@ -1,4 +1,4 @@
-namespace asuka.Core.Models;
+namespace asuka.Sdk.Providers.Models;
 
 public record GalleryImageResult
 {

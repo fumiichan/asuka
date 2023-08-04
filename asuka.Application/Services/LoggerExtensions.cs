@@ -27,13 +27,11 @@ public static class LoggerExtensions
             .WriteTo.File(Path.Combine(logDirectoryRoot, $"log-{DateTime.Now:yyyy-M-d-HH-m-ss}.log"))
             .CreateLogger();
 
-        var logger = LoggerFactory.Create(l =>
+        services.AddLogging(sc =>
         {
-            l.ClearProviders();
-            l.AddSerilog(dispose: true);
-        }).CreateLogger("asuka");
-
-        services.AddSingleton(logger);
+            sc.ClearProviders();
+            sc.AddSerilog(dispose: true);
+        });
         services.AddSingleton<IConsoleWriter, ConsoleWriter>();
     }
 }

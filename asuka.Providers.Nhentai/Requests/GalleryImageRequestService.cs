@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using asuka.Core.Requests;
 using asuka.Providers.Nhentai.Api;
 using asuka.Providers.Nhentai.Configuration;
+using asuka.Sdk.Providers.Requests;
 using Microsoft.Extensions.Logging;
 using Refit;
 
@@ -9,41 +9,18 @@ namespace asuka.Providers.Nhentai.Requests;
 
 public class GalleryImageRequestService : IGalleryImageRequestService
 {
-    private IGalleryImage _api;
-    private readonly ILogger _logger;
+    private readonly IGalleryImage _api;
+    private readonly ILogger<GalleryImageRequestService> _logger;
 
-    public GalleryImageRequestService(ILogger logger)
+    public GalleryImageRequestService(HttpClient client, ILogger<GalleryImageRequestService> logger)
     {
         _logger = logger;
-        Initialize();
-    }
-
-    private void Initialize()
-    {
-        var handler = new HttpClientHandler();
-        var config = OverrideConfigurations.GetConfiguration();
-
-        foreach (var cookie in CookieConfiguration.LoadCookies())
-        {
-            _logger.LogInformation("Loaded cookie into image request service {@Cookie}", cookie);
-            handler.CookieContainer.Add(cookie);
-        }
-
-        var httpClient = new HttpClient(handler)
-        {
-            // There's other image hosts for this provider.
-            BaseAddress = new Uri(config.ImageHostname)
-        };
-        httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(config.UserAgent);
-        _logger.LogInformation("UserAgent loaded on GalleryImageRequestService: {@UserAgentHttpClient}", httpClient.DefaultRequestHeaders.UserAgent);
-
-
-        _api = RestService.For<IGalleryImage>(httpClient);
+        _api = RestService.For<IGalleryImage>(client);
     }
 
     public async Task<HttpContent> FetchImage(string path)
     {
-        _logger.LogInformation("FetchImage on GalleryImageRequestService got: {Path}", path);
+        _logger.LogInformation("FetchImage on GetGalleryImageRequestService got: {Path}", path);
         
         var regex = new Regex(@".(\d+\/\d+.(jpg|png|gif))$");
         if (!regex.IsMatch(path))
@@ -72,14 +49,5 @@ public class GalleryImageRequestService : IGalleryImageRequestService
             _logger.LogError("Unable to download image due to an exception: {@Exception}", e);
             return null;
         }
-    }
-    
-    public ProviderData ProviderFor()
-    {
-        return new ProviderData
-        {
-            For = "nhentai",
-            Base = "https://nhentai.net"
-        };
     }
 }

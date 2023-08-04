@@ -1,8 +1,8 @@
-using asuka.Core.Models;
+using asuka.Sdk.Providers.Models;
 
-namespace asuka.Core.Requests;
+namespace asuka.Sdk.Providers.Requests;
 
-public interface IGalleryRequestService : IGalleryImageProvidable
+public interface IGalleryRequestService
 {
     /// <summary>
     /// Fetches gallery from ID.

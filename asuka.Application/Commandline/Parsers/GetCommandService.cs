@@ -7,8 +7,8 @@ using asuka.Application.Services;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Core.Extensions;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Extensions;
+using asuka.Sdk.Providers.Requests;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -29,14 +29,14 @@ public class GetCommandService : ICommandLineParser
     private readonly ProviderResolverService _provider;
     private readonly IValidator<GetOptions> _validator;
     private readonly IProgressProviderFactory _progressFactory;
-    private readonly ILogger _logger;
+    private readonly ILogger<GetCommandService> _logger;
     private readonly IConsoleWriter _console;
 
     public GetCommandService(
         ProviderResolverService provider,
         IValidator<GetOptions> validator,
         IProgressProviderFactory progressFactory,
-        ILogger logger,
+        ILogger<GetCommandService> logger,
         IConsoleWriter console)
     {
         _provider = provider;

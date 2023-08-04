@@ -1,5 +1,5 @@
-using asuka.Core.Models;
-using asuka.Core.Requests;
+using asuka.Sdk.Providers.Models;
+using asuka.Sdk.Providers.Requests;
 
 namespace asuka.Core.Chaptering.Models;
 

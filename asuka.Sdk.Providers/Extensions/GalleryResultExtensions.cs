@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using asuka.Core.Models;
+using asuka.Sdk.Providers.Models;
 
-namespace asuka.Core.Extensions;
+namespace asuka.Sdk.Providers.Extensions;
 
 public static class GalleryResultExtensions
 {
