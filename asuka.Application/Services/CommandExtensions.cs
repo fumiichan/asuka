@@ -13,7 +13,6 @@ public static class CommandExtensions
         services.AddScoped<ICommandLineParser, SearchCommandService>();
         services.AddScoped<ICommandLineParser, RandomCommandService>();
         services.AddScoped<ICommandLineParser, FileCommandService>();
-        services.AddScoped<ICommandLineParser, ConfigureCommand>();
         services.AddScoped<ICommandLineParser, SeriesCreatorCommandService>();
         services.AddScoped<ICommandLineParserFactory, CommandLineParserFactory>();
     }

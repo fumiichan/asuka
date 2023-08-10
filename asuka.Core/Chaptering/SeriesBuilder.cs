@@ -36,7 +36,7 @@ public class SeriesBuilder
         return this;
     }
 
-    public Series Build()
+    public Series Build(string language)
     {
         var series = new Series
         {
@@ -55,6 +55,12 @@ public class SeriesBuilder
         if (!Directory.Exists(series.Output))
         {
             Directory.CreateDirectory(series.Output);
+        }
+        
+        // Write metadata on complete
+        if (series.Chapters.Count > 0)
+        {
+            series.Chapters[0].Data.WriteJsonMetadata(series.Output, language);
         }
 
         return series;

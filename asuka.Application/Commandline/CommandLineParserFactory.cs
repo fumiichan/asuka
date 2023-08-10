@@ -18,7 +18,6 @@ public class CommandLineParserFactory : ICommandLineParserFactory
     {
         return token switch
         {
-            CommandLineParserTokens.Configure => GetService(typeof(ConfigureCommand)),
             CommandLineParserTokens.File => GetService(typeof(FileCommandService)),
             CommandLineParserTokens.Get => GetService(typeof(GetCommandService)),
             CommandLineParserTokens.Random => GetService(typeof(RandomCommandService)),

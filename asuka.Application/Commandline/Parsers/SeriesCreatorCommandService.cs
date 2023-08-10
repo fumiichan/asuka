@@ -5,10 +5,10 @@ using asuka.Application.Commandline.Parsers.Common;
 using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
 using asuka.Application.Services;
+using asuka.Application.Services.Configuration;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Sdk.Providers.Extensions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -21,19 +21,22 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
     private readonly ILogger<SeriesCreatorCommandService> _logger;
     private readonly IConsoleWriter _console;
+    private readonly AsukaConfiguration _config;
 
     public SeriesCreatorCommandService(
         ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
         IValidator<SeriesCreatorCommandOptions> validator,
         ILogger<SeriesCreatorCommandService> logger,
-        IConsoleWriter console)
+        IConsoleWriter console,
+        AsukaConfiguration config)
     {
         _provider = provider;
         _progressFactory = progressFactory;
         _validator = validator;
         _logger = logger;
         _console = console;
+        _config = config;
     }
     
     public async Task Run(object options)
@@ -75,7 +78,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         }
 
         seriesBuilder.SetOutput(args.Output);
-        var series = seriesBuilder.Build();
+        var series = seriesBuilder.Build(_config.DefaultLanguageTitle.ToString());
         _logger.LogInformation("Series Built: {@Series}", series);
 
         // If there's no chapters (due to likely most of them failed to fetch metadata)
@@ -113,8 +116,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
                 progress.Tick();
             }
         }
-
-        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
 
         if (args.Pack)
         {

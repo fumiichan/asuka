@@ -4,10 +4,10 @@ using asuka.Application.Commandline.Parsers.Common;
 using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
 using asuka.Application.Services;
+using asuka.Application.Services.Configuration;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Sdk.Providers.Extensions;
 using asuka.Sdk.Providers.Models;
 using asuka.Sdk.Providers.Requests;
 using FluentValidation;
@@ -22,19 +22,22 @@ public class RecommendCommandService : ICommandLineParser
     private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger<RecommendCommandService> _logger;
     private readonly IConsoleWriter _console;
+    private readonly AsukaConfiguration _config;
 
     public RecommendCommandService(
         ProviderResolverService provider,
         IValidator<RecommendOptions> validator,
         IProgressProviderFactory progressFactory,
         ILogger<RecommendCommandService> logger,
-        IConsoleWriter console)
+        IConsoleWriter console,
+        AsukaConfiguration config)
     {
         _provider = provider;
         _validator = validator;
         _progressFactory = progressFactory;
         _logger = logger;
         _console = console;
+        _config = config;
     }
     
     public async Task Run(object options)
@@ -86,7 +89,7 @@ public class RecommendCommandService : ICommandLineParser
         var series = new SeriesBuilder()
             .AddChapter(response, imageProvider, 1)
             .SetOutput(opts.Output)
-            .Build();
+            .Build(_config.DefaultLanguageTitle.ToString());
         _logger.LogInformation("Series built: {@Series}", series);
 
         var childProgress = progress.Spawn(response.TotalPages, $"downloading id: {response.Id}");
@@ -101,7 +104,6 @@ public class RecommendCommandService : ICommandLineParser
             .Build();
 
         await downloader.Start();
-        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
 
         if (opts.Pack)
         {

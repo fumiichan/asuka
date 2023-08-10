@@ -7,10 +7,10 @@ using asuka.Application.Commandline.Parsers.Common;
 using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
 using asuka.Application.Services;
+using asuka.Application.Services.Configuration;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
-using asuka.Sdk.Providers.Extensions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -23,19 +23,22 @@ public class FileCommandService : ICommandLineParser
     private readonly IValidator<FileCommandOptions> _validator;
     private readonly ILogger<FileCommandService> _logger;
     private readonly IConsoleWriter _console;
+    private readonly AsukaConfiguration _config;
 
     public FileCommandService(
         ProviderResolverService provider,
         IProgressProviderFactory progressFactory,
         IValidator<FileCommandOptions> validator,
         ILogger<FileCommandService> logger,
-        IConsoleWriter console)
+        IConsoleWriter console,
+        AsukaConfiguration config)
     {
         _provider = provider;
         _progressFactory = progressFactory;
         _validator = validator;
         _logger = logger;
         _console = console;
+        _config = config;
     }
 
     public async Task Run(object options)
@@ -106,7 +109,8 @@ public class FileCommandService : ICommandLineParser
         var series = new SeriesBuilder()
             .AddChapter(response, provider.ImageApi)
             .SetOutput(opts.Output)
-            .Build();
+            .Build(_config.DefaultLanguageTitle.ToString());
+
         _logger.LogInformation("Series data built: {@Series}", series);
 
         // Create progress bar
@@ -124,7 +128,6 @@ public class FileCommandService : ICommandLineParser
 
         // Start downloading
         await downloader.Start();
-        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
 
         // Compression
         if (opts.Pack)

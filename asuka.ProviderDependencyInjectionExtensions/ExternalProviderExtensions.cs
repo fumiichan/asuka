@@ -1,54 +1,47 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using asuka.Sdk.Providers.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace asuka.Application.Services;
+namespace asuka.ProviderDependencyInjectionExtensions;
 
 public static class ExternalProviderExtensions
 {
-    public static void InstallExternalProviders(this IServiceCollection services)
+    public static void InstallExternalProviders(this IServiceCollection serviceCollection)
     {
-        var assemblyDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
+        var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (assemblyDir is null)
         {
-            return;
+            throw new ArgumentNullException(assemblyDir, "Assembly location is null");
         }
 
         var dllRoot = Path.Combine(assemblyDir, "providers");
+        
+        // When the providers folder doesn't exist, this means that no providers are available
+        // to be loaded. We can safely ignore this.
         if (!Directory.Exists(dllRoot))
         {
             return;
         }
- 
+
         var dlls = Directory.GetFiles(dllRoot, "asuka.Providers.*.dll", SearchOption.AllDirectories);
         foreach (var dll in dlls)
         {
-            Type[] types;
             try
             {
-                types = Assembly.LoadFrom(dll).GetExportedTypes();
+                var types = Assembly.LoadFrom(dll).GetExportedTypes();
+                InjectServicesFromMetadata(types, serviceCollection);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine("Failed to load due to an exception");
-                Console.WriteLine(e);
-                continue;
+                // We don't necessarily need to do anything here.
             }
-    
-            // Load all classes inheriting IGalleryImageRequestService and
-            // IGalleryRequestService
-            InjectServicesFromMetadata(types, services);
         }
     }
-
+    
     private static void InjectServicesFromMetadata(IEnumerable<Type> types, IServiceCollection serviceCollection)
     {
         var metadata = types
-            .FirstOrDefault(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(ProviderMetadata)));
+            .FirstOrDefault(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(ProviderMetadata)));
 
         if (metadata is null)
         {

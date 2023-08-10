@@ -1,23 +1,23 @@
-using asuka.Application.Configuration;
 using asuka.Application.Output.Progress.Providers;
+using asuka.Application.Services.Configuration;
 
 namespace asuka.Application.Output.Progress;
 
 public class ProgressProviderFactory : IProgressProviderFactory
 {
-    private readonly IConfigManager _config;
+    private readonly AsukaConfiguration _config;
 
-    public ProgressProviderFactory(IConfigManager config)
+    public ProgressProviderFactory(AsukaConfiguration config)
     {
         _config = config;
     }
     
     public IProgressProvider Create(int maxTicks, string message)
     {
-        return _config.GetValue("tui.progress") switch
+        return _config.ProgressType switch
         {
-            "text" => new TextProgressBar(maxTicks, message),
-            "stealth" => new StealthProgressBar(),
+            ProgressTypes.Text => new TextProgressBar(maxTicks, message),
+            ProgressTypes.Stealth => new StealthProgressBar(),
             _ => new CustomProgressBar(maxTicks, message)
         };
     }

@@ -64,7 +64,12 @@ public static class GalleryResultExtensions
         public string Status { get; init; } = "2";
     }
     
-    public static async Task WriteJsonMetadata(this GalleryResult result, string output)
+    public static void WriteJsonMetadata(this GalleryResult result, string output)
+    {
+        WriteJsonMetadata(result, output, "any");
+    }
+
+    public static void WriteJsonMetadata(this GalleryResult result, string output, string language)
     {
         var metaPath = Path.Combine(output, "details.json");
         var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -74,7 +79,7 @@ public static class GalleryResultExtensions
 
         var json = new TachiyomiDetails
         {
-            Title = result.Title.GetTitle(),
+            Title = result.Title.GetTitle(language),
             Artist = string.Join(", ", result.Artists),
             Author = string.Join(", ", result.Artists),
             Description = description.ToString(),
@@ -82,7 +87,7 @@ public static class GalleryResultExtensions
         };
         var metadata = JsonSerializer.Serialize(json, serializerOptions);
 
-        await File.WriteAllTextAsync(metaPath, metadata).ConfigureAwait(false);
+        File.WriteAllText(metaPath, metadata);
     }
 
     public static async Task WriteTextMetadata(this GalleryResult result, string output)

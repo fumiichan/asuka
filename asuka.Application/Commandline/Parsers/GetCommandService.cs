@@ -4,6 +4,7 @@ using asuka.Application.Commandline.Parsers.Common;
 using asuka.Application.Output.ConsoleWriter;
 using asuka.Application.Output.Progress;
 using asuka.Application.Services;
+using asuka.Application.Services.Configuration;
 using asuka.Application.Utilities;
 using asuka.Core.Chaptering;
 using asuka.Core.Downloader;
@@ -31,19 +32,22 @@ public class GetCommandService : ICommandLineParser
     private readonly IProgressProviderFactory _progressFactory;
     private readonly ILogger<GetCommandService> _logger;
     private readonly IConsoleWriter _console;
+    private readonly AsukaConfiguration _config;
 
     public GetCommandService(
         ProviderResolverService provider,
         IValidator<GetOptions> validator,
         IProgressProviderFactory progressFactory,
         ILogger<GetCommandService> logger,
-        IConsoleWriter console)
+        IConsoleWriter console,
+        AsukaConfiguration config)
     {
         _provider = provider;
         _validator = validator;
         _progressFactory = progressFactory;
         _logger = logger;
         _console = console;
+        _config = config;
     }
 
     public async Task Run(object options)
@@ -107,7 +111,7 @@ public class GetCommandService : ICommandLineParser
         var series = new SeriesBuilder()
             .AddChapter(response, args.ImageApi)
             .SetOutput(args.OutputPath)
-            .Build();
+            .Build(_config.DefaultLanguageTitle.ToString());
         _logger.LogInformation("Series built: {@Series}", series);
 
         var progress = _progressFactory.Create(response.TotalPages, $"downloading: {response.Id}");
@@ -122,7 +126,6 @@ public class GetCommandService : ICommandLineParser
             .Build();
 
         await downloader.Start();
-        await series.Chapters[0].Data.WriteJsonMetadata(series.Output);
         
         if (args.Pack)
         {
