@@ -1,7 +1,8 @@
+using System;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
-using asuka.Output.Writer;
+using asuka.Output;
 using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
@@ -9,13 +10,11 @@ namespace asuka.Commandline.Parsers;
 public class ConfigureCommand : ICommandLineParser
 {
     private readonly IAppConfigManager _appConfigManager;
-    private readonly IConsoleWriter _consoleWriter;
     private readonly IValidator<ConfigureOptions> _validator;
 
-    public ConfigureCommand(IValidator<ConfigureOptions> validator, IAppConfigManager appConfigManager, IConsoleWriter consoleWriter)
+    public ConfigureCommand(IValidator<ConfigureOptions> validator, IAppConfigManager appConfigManager)
     {
         _appConfigManager = appConfigManager;
-        _consoleWriter = consoleWriter;
         _validator = validator;
     }
 
@@ -25,7 +24,7 @@ public class ConfigureCommand : ICommandLineParser
         var validation = await _validator.ValidateAsync(opts);
         if (!validation.IsValid)
         {
-            _consoleWriter.ValidationErrors(validation.Errors);
+            validation.Errors.PrintValidationExceptions();
             return;
         }
 
@@ -40,7 +39,7 @@ public class ConfigureCommand : ICommandLineParser
         if (opts.ReadConfigMode)
         {
             var configValue = _appConfigManager.GetValue(opts.Key);
-            _consoleWriter.WriteLine($"{opts.Key} = {configValue}");
+            Console.WriteLine($"{opts.Key} = {configValue}");
 
             return;
         }
@@ -51,7 +50,7 @@ public class ConfigureCommand : ICommandLineParser
 
             foreach (var (key, value) in keyValuePairs)
             {
-                _consoleWriter.WriteLine($"{key} = {value}");
+                Console.WriteLine($"{key} = {value}");
             }
 
             return;

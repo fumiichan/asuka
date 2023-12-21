@@ -1,10 +1,11 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
 using asuka.Configuration;
-using asuka.Output.Writer;
+using asuka.Output;
 using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
@@ -12,16 +13,13 @@ namespace asuka.Commandline.Parsers;
 public class CookieConfigureService : ICommandLineParser
 {
     private readonly IRequestConfigurator _requestConfigurator;
-    private readonly IConsoleWriter _console;
     private readonly IValidator<CookieConfigureOptions> _validator;
 
     public CookieConfigureService(
         IRequestConfigurator requestConfigurator,
-        IConsoleWriter console,
         IValidator<CookieConfigureOptions> validator)
     {
         _requestConfigurator = requestConfigurator;
-        _console = console;
         _validator = validator;
     }
 
@@ -32,7 +30,7 @@ public class CookieConfigureService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintValidationExceptions();
             return;
         }
         
@@ -40,10 +38,24 @@ public class CookieConfigureService : ICommandLineParser
         var file = await File.ReadAllTextAsync(opts.CookieFile);
         var cookieData = JsonSerializer.Deserialize<CookieDump[]>(file);
 
-        var cloudflare = cookieData.FirstOrDefault(x => x.Name == "cf_clearance");
-        var csrf = cookieData.FirstOrDefault(x => x.Name == "csrftoken");
+        if (cookieData != null)
+        {
+            var cloudflare = cookieData.FirstOrDefault(x => x.Name == "cf_clearance");
+            var csrf = cookieData.FirstOrDefault(x => x.Name == "csrftoken");
 
-        await _requestConfigurator.ApplyCookies(cloudflare, csrf);
-        await _requestConfigurator.ApplyUserAgent(opts.UserAgent);
+            if (cloudflare != null && csrf != null)
+            {
+                await _requestConfigurator.ApplyCookies(cloudflare, csrf);
+            }
+
+            if (!string.IsNullOrEmpty(opts.UserAgent))
+            {
+                await _requestConfigurator.ApplyUserAgent(opts.UserAgent);
+            }
+
+            return;
+        }
+        
+        Console.WriteLine("An error occured at reading the cookie you provided.");
     }
 }

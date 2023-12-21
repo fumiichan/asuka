@@ -1,69 +1,72 @@
+using System;
+using System.IO;
 using System.Threading.Tasks;
+using asuka.Api;
 using asuka.Commandline.Options;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Requests;
+using asuka.Core.Utilities;
 using asuka.Output;
-using asuka.Output.ProgressService;
-using asuka.Output.Writer;
+using asuka.Output.Progress;
 using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
 
 public class GetCommandService : ICommandLineParser
 {
+    private readonly IGalleryImage _apiImage;
     private readonly IGalleryRequestService _api;
     private readonly IValidator<GetOptions> _validator;
-    private readonly IDownloader _download;
-    private readonly IConsoleWriter _console;
-    private readonly IProgressService _progress;
-    private readonly IPackArchiveToCbz _pack;
+    private readonly IProgressFactory _progress;
 
     public GetCommandService(
+        IGalleryImage apiImage,
         IGalleryRequestService api,
         IValidator<GetOptions> validator,
-        IDownloader download,
-        IConsoleWriter console,
-        IProgressService progress,
-        IPackArchiveToCbz pack)
+        IProgressFactory progress)
     {
+        _apiImage = apiImage;
         _api = api;
         _validator = validator;
-        _download = download;
-        _console = console;
         _progress = progress;
-        _pack = pack;
     }
 
     private async Task DownloadTask(int input, bool pack, bool readOnly, string outputPath)
     {
         var response = await _api.FetchSingleAsync(input.ToString());
-        _console.WriteLine(response.ToReadable());
+        Console.WriteLine(response.ToFormattedText());
 
         // Don't download.
         if (readOnly)
         {
             return;
         }
-        
-        _download.CreateSeries(response.Title, outputPath);
-        _download.CreateChapter(response, 1);
 
-        _progress.CreateMasterProgress(response.TotalPages, $"downloading: {response.Id}");
+        var mainProgress = _progress.Create(response.TotalPages,
+            $"Downloading Manga: {response.Title.GetTitle()}");
 
-        var progress = _progress.GetMasterProgress();
-        _download.SetOnImageDownload = () =>
+        var output = Path.Combine(outputPath, PathUtils.NormalizeName(response.Title.GetTitle()));
+        var downloader = new DownloadBuilder(response, 1)
         {
-            progress.Tick();
+            Request = _apiImage,
+            Output = output,
+            OnEachComplete = _ =>
+            {
+                mainProgress.Tick();
+            },
+            OnComplete = async gallery =>
+            {
+                await gallery.WriteMetadata(Path.Combine(outputPath, "details.json"));
+                if (pack)
+                {
+                    await Compress.ToCbz(output, mainProgress);
+                }
+            }
         };
 
-        await _download.Start();
-        await _download.Final();
-
-        if (pack)
-        {
-            await _pack.RunAsync(_download.DownloadRoot, outputPath, progress);
-        }
+        await downloader.Start();
     }
 
     public async Task RunAsync(object options)
@@ -72,7 +75,7 @@ public class GetCommandService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintValidationExceptions();
             return;
         }
 

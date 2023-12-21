@@ -1,36 +1,32 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using asuka.Api;
 using asuka.Commandline.Options;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Requests;
-using asuka.Output;
-using asuka.Output.ProgressService;
-using asuka.Output.Writer;
+using asuka.Core.Utilities;
+using asuka.Output.Progress;
 using Sharprompt;
 
 namespace asuka.Commandline.Parsers;
 
 public class RandomCommandService : ICommandLineParser
 {
-    private readonly IDownloader _download;
     private readonly IGalleryRequestService _api;
-    private readonly IConsoleWriter _console;
-    private readonly IProgressService _progress;
-    private readonly IPackArchiveToCbz _pack;
+    private readonly IGalleryImage _apiImage;
+    private readonly IProgressFactory _progress;
 
     public RandomCommandService(
-        IDownloader download,
         IGalleryRequestService api,
-        IConsoleWriter console,
-        IProgressService progress,
-        IPackArchiveToCbz pack)
+        IGalleryImage apiImage,
+        IProgressFactory progress)
     {
-        _download = download;
         _api = api;
-        _console = console;
+        _apiImage = apiImage;
         _progress = progress;
-        _pack = pack;
     }
 
     public async Task RunAsync(object options)
@@ -43,7 +39,7 @@ public class RandomCommandService : ICommandLineParser
             var randomCode = new Random().Next(1, totalNumbers);
             var response = await _api.FetchSingleAsync(randomCode.ToString());
 
-            _console.WriteLine(response.ToReadable());
+            Console.WriteLine(response.ToFormattedText());
 
             var prompt = Prompt.Confirm("Are you sure to download this one?", true);
             if (!prompt)
@@ -51,24 +47,30 @@ public class RandomCommandService : ICommandLineParser
                 await Task.Delay(1000).ConfigureAwait(false);
                 continue;
             }
-
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
             
-            _progress.CreateMasterProgress(response.TotalPages, $"downloading random id: {response.Id}");
-            var progress = _progress.GetMasterProgress();
-            _download.SetOnImageDownload = () =>
+            var mainProgress = _progress.Create(response.TotalPages,
+                $"Downloading Manga: {response.Title.GetTitle()}");
+
+            var output = Path.Combine(opts.Output, PathUtils.NormalizeName(response.Title.GetTitle()));
+            var downloader = new DownloadBuilder(response, 1)
             {
-                progress.Tick();
+                Output = output,
+                Request = _apiImage,
+                OnEachComplete = _ =>
+                {
+                    mainProgress.Tick();
+                },
+                OnComplete = async data =>
+                {
+                    await data.WriteMetadata(Path.Combine(output, "details.json"));
+                    if (opts.Pack)
+                    {
+                        await Compress.ToCbz(output, mainProgress);
+                    }
+                }
             };
 
-            await _download.Start();
-            await _download.Final();
-            
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, progress);
-            }
+            await downloader.Start();
             break;
         }
     }

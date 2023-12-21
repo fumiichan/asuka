@@ -1,38 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using asuka.Api;
 using asuka.Commandline.Options;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
-using asuka.Output.Writer;
+using asuka.Core.Utilities;
+using asuka.Output.Progress;
 
 namespace asuka.Commandline.Parsers;
 
 public class FileCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
-    private readonly IConsoleWriter _console;
-    private readonly IDownloader _download;
-    private readonly IProgressService _progressService;
-    private readonly IPackArchiveToCbz _pack;
+    private readonly IGalleryImage _apiImage;
+    private readonly IProgressFactory _progress;
 
     public FileCommandService(
         IGalleryRequestService api,
-        IConsoleWriter console,
-        IDownloader download,
-        IProgressService progressService,
-        IPackArchiveToCbz pack)
+        IGalleryImage apiImage,
+        IProgressFactory progress)
     {
         _api = api;
-        _console = console;
-        _download = download;
-        _progressService = progressService;
-        _pack = pack;
+        _apiImage = apiImage;
+        _progress = progress;
     }
 
     public async Task RunAsync(object options)
@@ -40,13 +37,13 @@ public class FileCommandService : ICommandLineParser
         var opts = (FileCommandOptions)options;
         if (!File.Exists(opts.FilePath))
         {
-            _console.ErrorLine("File doesn't exist.");
+            Console.WriteLine("File doesn't exist.");
             return;
         }
 
         if (IsFileExceedingToFileSizeLimit(opts.FilePath))
         {
-            _console.ErrorLine("The file size is exceeding 5MB file size limit.");
+            Console.WriteLine("The file size is exceeding 5MB file size limit.");
             return;
         }
 
@@ -56,38 +53,42 @@ public class FileCommandService : ICommandLineParser
 
         if (validUrls.Count == 0)
         {
-            _console.ErrorLine("No valid URLs found.");
+            Console.WriteLine("No valid URLs found.");
             return;
         }
 
-        _progressService.CreateMasterProgress(validUrls.Count, "downloading from text file...");
-        var progress = _progressService.GetMasterProgress();
+        var mainProgress = _progress.Create(validUrls.Count,
+            $"Downloading from text file...");
 
         foreach (var url in validUrls)
         {
             var code = new Regex("\\d+").Match(url).Value;
             var response = await _api.FetchSingleAsync(code);
 
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
-            
-            // Create progress bar
-            var internalProgress = _progressService.NestToMaster(response.TotalPages, $"downloading: {response.Id}");
-            _download.SetOnImageDownload = () =>
+            var childProgress = mainProgress.Spawn(response.TotalPages,
+                $"Downloading: {response.Title.GetTitle()}")!;
+
+            var output = Path.Combine(opts.Output, PathUtils.NormalizeName(response.Title.GetTitle()));
+            var downloader = new DownloadBuilder(response, 1)
             {
-                internalProgress.Tick($"downloading: {response.Id}");
+                Request = _apiImage,
+                Output = output,
+                OnEachComplete = _ =>
+                {
+                    childProgress.Tick();
+                },
+                OnComplete = async gallery =>
+                {
+                    await gallery.WriteMetadata(Path.Combine(output, "details.json"));
+                    if (opts.Pack)
+                    {
+                        await Compress.ToCbz(output, childProgress);
+                    }
+                }
             };
 
-            // Start downloading
-            await _download.Start();
-            await _download.Final();
-            
-            // If --pack option is specified, compresss the file into cbz
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, internalProgress);
-            }
-            progress.Tick();
+            await downloader.Start();
+            mainProgress.Tick();
         }
     }
 
