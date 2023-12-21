@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using asuka.Commandline.Options;
-using asuka.Configuration;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
 using asuka.Core.Models;
@@ -20,7 +19,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IDownloader _downloader;
     private readonly IProgressService _progress;
     private readonly IPackArchiveToCbz _pack;
-    private readonly IAppConfigManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
 
     public SeriesCreatorCommandService(
@@ -29,7 +27,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
         IDownloader downloader,
         IProgressService progress,
         IPackArchiveToCbz pack,
-        IAppConfigManager config,
         IValidator<SeriesCreatorCommandOptions> validator)
     {
         _api = api;
@@ -37,7 +34,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
         _downloader = downloader;
         _progress = progress;
         _pack = pack;
-        _config = config;
         _validator = validator;
     }
 
@@ -123,9 +119,6 @@ public class SeriesCreatorCommandService : ICommandLineParser
             _console.ValidationErrors(validationResult.Errors);
             return;
         }
-
-        // Temporarily enable tachiyomi folder layout
-        _config.SetValue("layout.tachiyomi", "yes");
 
         var list = opts.FromList.ToList();
         await HandleArrayTask(list, opts.Output, opts.Pack);

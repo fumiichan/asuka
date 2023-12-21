@@ -53,20 +53,12 @@ public class Downloader : IDownloader
 
     private async Task WriteMetadata(string output, GalleryResult result)
     {
-        if (_appConfigManager.GetValue("layout.tachiyomi") == "yes")
-        {
-            var metaPath = Path.Combine(output, "details.json");
-            var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
-            var metadata = JsonSerializer
-                .Serialize(result.ToTachiyomiMetadata(), serializerOptions);
+        var metaPath = Path.Combine(output, "details.json");
+        var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
+        var metadata = JsonSerializer
+            .Serialize(result.ToTachiyomiMetadata(), serializerOptions);
 
-            await File.WriteAllTextAsync(metaPath, metadata).ConfigureAwait(false);
-            return;
-        }
-
-        var metadataPath = Path.Combine(output, "info.txt");
-        await File.WriteAllTextAsync(metadataPath, result.ToReadable())
-            .ConfigureAwait(false);
+        await File.WriteAllTextAsync(metaPath, metadata).ConfigureAwait(false);
     }
 
     public void CreateSeries(GalleryTitleResult title, string outputPath)
@@ -80,9 +72,7 @@ public class Downloader : IDownloader
 
     public void CreateChapter(GalleryResult result, int chapter)
     {
-        _details.ChapterPath = _appConfigManager.GetValue("layout.tachiyomi") == "yes" && chapter > 0
-            ? Path.Combine(_details.ChapterRoot, $"ch{chapter}")
-            : _details.ChapterRoot;
+        _details.ChapterPath = Path.Combine(_details.ChapterRoot, $"ch{chapter}");
         _details.Result = result;
         
         if (!Directory.Exists(_details.ChapterPath))

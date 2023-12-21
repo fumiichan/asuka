@@ -37,9 +37,6 @@ public class AppConfigManager : IAppConfigManager
                 "colors.theme", "dark"
             },
             {
-                "layout.tachiyomi", "yes"
-            },
-            {
                 "tui.progress", "progress"
             }
         };
