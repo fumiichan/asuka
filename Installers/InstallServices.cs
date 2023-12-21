@@ -16,7 +16,6 @@ public class InstallServices : IInstaller
 {
     public void ConfigureService(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<AsukaApplication>();
         services.AddSingleton<IProgressService, ProgressService>();
         services.AddSingleton<IGalleryRequestService, GalleryRequestService>();
         services.AddSingleton<IConsoleWriter, ConsoleWriter>();
@@ -26,15 +25,14 @@ public class InstallServices : IInstaller
         services.AddSingleton<IRequestConfigurator, RequestConfigurator>();
 
         // Command parsers
-        services.AddScoped<ICommandLineParser, GetCommandService>();
-        services.AddScoped<ICommandLineParser, RecommendCommandService>();
-        services.AddScoped<ICommandLineParser, SearchCommandService>();
-        services.AddScoped<ICommandLineParser, RandomCommandService>();
-        services.AddScoped<ICommandLineParser, FileCommandService>();
-        services.AddScoped<ICommandLineParser, ConfigureCommand>();
-        services.AddScoped<ICommandLineParser, SeriesCreatorCommandService>();
-        services.AddScoped<ICommandLineParser, CookieConfigureService>();
-        services.AddScoped<ICommandLineParserFactory, CommandLineParserFactory>();
+        services.AddKeyedScoped<ICommandLineParser, GetCommandService>("Cmd_Get");
+        services.AddKeyedScoped<ICommandLineParser, RecommendCommandService>("Cmd_Recommend");
+        services.AddKeyedScoped<ICommandLineParser, SearchCommandService>("Cmd_Search");
+        services.AddKeyedScoped<ICommandLineParser, RandomCommandService>("Cmd_Random");
+        services.AddKeyedScoped<ICommandLineParser, FileCommandService>("Cmd_File");
+        services.AddKeyedScoped<ICommandLineParser, ConfigureCommand>("Cmd_Configure");
+        services.AddKeyedScoped<ICommandLineParser, SeriesCreatorCommandService>("Cmd_Series");
+        services.AddKeyedScoped<ICommandLineParser, CookieConfigureService>("Cmd_Cookie");
         services.AddValidatorsFromAssemblyContaining<Program>();
     }
 }
