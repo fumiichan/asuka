@@ -6,17 +6,17 @@ namespace asuka.Output.ProgressService;
 public class ProgressService : IProgressService
 {
     private IProgressProvider _progressBar;
-    private readonly IConfigurationManager _configuration;
+    private readonly IAppConfigManager _appConfig;
 
-    public ProgressService(IConfigurationManager configuration)
+    public ProgressService(IAppConfigManager appConfig)
     {
-        _configuration = configuration;
+        _appConfig = appConfig;
     }
 
     public void CreateMasterProgress(int totalTicks, string title)
     {
         _progressBar = ProgressProviderFactory
-            .GetProvider(_configuration.GetValue("tui.progress"), totalTicks, title, ProgressBarConfiguration.BarOption);
+            .GetProvider(_appConfig.GetValue("tui.progress"), totalTicks, title, ProgressBarConfiguration.BarOption);
     }
 
     public IProgressProvider GetMasterProgress()

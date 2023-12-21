@@ -8,13 +8,13 @@ namespace asuka.Commandline.Parsers;
 
 public class ConfigureCommand : ICommandLineParser
 {
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IAppConfigManager _appConfigManager;
     private readonly IConsoleWriter _consoleWriter;
     private readonly IValidator<ConfigureOptions> _validator;
 
-    public ConfigureCommand(IValidator<ConfigureOptions> validator, IConfigurationManager configurationManager, IConsoleWriter consoleWriter)
+    public ConfigureCommand(IValidator<ConfigureOptions> validator, IAppConfigManager appConfigManager, IConsoleWriter consoleWriter)
     {
-        _configurationManager = configurationManager;
+        _appConfigManager = appConfigManager;
         _consoleWriter = consoleWriter;
         _validator = validator;
     }
@@ -31,15 +31,15 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.SetConfigMode)
         {
-            _configurationManager.SetValue(opts.Key, opts.Value);
-            await _configurationManager.Flush();
+            _appConfigManager.SetValue(opts.Key, opts.Value);
+            await _appConfigManager.Flush();
             
             return;
         }
 
         if (opts.ReadConfigMode)
         {
-            var configValue = _configurationManager.GetValue(opts.Key);
+            var configValue = _appConfigManager.GetValue(opts.Key);
             _consoleWriter.WriteLine($"{opts.Key} = {configValue}");
 
             return;
@@ -47,7 +47,7 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.ListConfigMode)
         {
-            var keyValuePairs = _configurationManager.GetAllValues();
+            var keyValuePairs = _appConfigManager.GetAllValues();
 
             foreach (var (key, value) in keyValuePairs)
             {
@@ -59,7 +59,7 @@ public class ConfigureCommand : ICommandLineParser
 
         if (opts.ResetConfig)
         {
-            await _configurationManager.Reset();
+            await _appConfigManager.Reset();
         }
     }
 }

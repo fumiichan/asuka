@@ -20,7 +20,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
     private readonly IDownloader _downloader;
     private readonly IProgressService _progress;
     private readonly IPackArchiveToCbz _pack;
-    private readonly IConfigurationManager _config;
+    private readonly IAppConfigManager _config;
     private readonly IValidator<SeriesCreatorCommandOptions> _validator;
 
     public SeriesCreatorCommandService(
@@ -29,7 +29,7 @@ public class SeriesCreatorCommandService : ICommandLineParser
         IDownloader downloader,
         IProgressService progress,
         IPackArchiveToCbz pack,
-        IConfigurationManager config,
+        IAppConfigManager config,
         IValidator<SeriesCreatorCommandOptions> validator)
     {
         _api = api;

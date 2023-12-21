@@ -29,13 +29,13 @@ internal record FetchImageParameter
 public class Downloader : IDownloader
 {
     private readonly IGalleryImage _api;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IAppConfigManager _appConfigManager;
     private DownloadTaskDetails _details;
 
-    public Downloader(IGalleryImage api, IConfigurationManager configurationManager)
+    public Downloader(IGalleryImage api, IAppConfigManager appConfigManager)
     {
         _api = api;
-        _configurationManager = configurationManager;
+        _appConfigManager = appConfigManager;
     }
 
     private static string GetTitle(GalleryTitleResult result)
@@ -53,7 +53,7 @@ public class Downloader : IDownloader
 
     private async Task WriteMetadata(string output, GalleryResult result)
     {
-        if (_configurationManager.GetValue("layout.tachiyomi") == "yes")
+        if (_appConfigManager.GetValue("layout.tachiyomi") == "yes")
         {
             var metaPath = Path.Combine(output, "details.json");
             var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -80,7 +80,7 @@ public class Downloader : IDownloader
 
     public void CreateChapter(GalleryResult result, int chapter)
     {
-        _details.ChapterPath = _configurationManager.GetValue("layout.tachiyomi") == "yes" && chapter > 0
+        _details.ChapterPath = _appConfigManager.GetValue("layout.tachiyomi") == "yes" && chapter > 0
             ? Path.Combine(_details.ChapterRoot, $"ch{chapter}")
             : _details.ChapterRoot;
         _details.Result = result;

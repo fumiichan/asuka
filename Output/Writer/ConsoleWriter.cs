@@ -8,16 +8,16 @@ namespace asuka.Output.Writer;
 
 public class ConsoleWriter : IConsoleWriter
 {
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IAppConfigManager _appConfigManager;
 
-    public ConsoleWriter(IConfigurationManager configurationManager)
+    public ConsoleWriter(IAppConfigManager appConfigManager)
     {
-        _configurationManager = configurationManager;
+        _appConfigManager = appConfigManager;
     }
 
     private Color GetColor(Color forWhiteTheme, Color forDarkTheme)
     {
-        return _configurationManager.GetValue("color.theme") == "dark" ? forDarkTheme : forWhiteTheme;
+        return _appConfigManager.GetValue("color.theme") == "dark" ? forDarkTheme : forWhiteTheme;
     }
 
     public void WriteLine(object message)
