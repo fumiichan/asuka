@@ -71,6 +71,12 @@ public static class PathUtils
                                                               },
                                                               {
                                                                   "=", "＝"
+                                                              },
+                                                              {
+                                                                  ".", "。"
+                                                              },
+                                                              {
+                                                                  "\t", "_"
                                                               }
                                                           };
     #endregion
