@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace asuka.Api.Responses;
 
+#nullable disable
 public record GalleryTagResponse
 {
     [JsonPropertyName("id")]

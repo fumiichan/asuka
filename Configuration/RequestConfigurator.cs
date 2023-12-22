@@ -18,7 +18,9 @@ public class RequestConfigurator : IRequestConfigurator
     private async Task<ApplicationSettingsModel> ReadSettings()
     {
         var file = await File.ReadAllTextAsync(_appSettingsPath);
-        return JsonSerializer.Deserialize<ApplicationSettingsModel>(file);
+        var config = JsonSerializer.Deserialize<ApplicationSettingsModel>(file);
+        
+        return config ?? new ApplicationSettingsModel();
     }
 
     private async Task WriteSettings(ApplicationSettingsModel settings)

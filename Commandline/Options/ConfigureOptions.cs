@@ -2,6 +2,7 @@ using CommandLine;
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("config", HelpText = "Configure the client")]
 public record ConfigureOptions
 {

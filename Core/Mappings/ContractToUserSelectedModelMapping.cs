@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using asuka.Core.Extensions;
 using asuka.Core.Models;
 using Sharprompt;
 
@@ -11,13 +12,7 @@ public static class ContractToUserSelectedModelMapping
         this IReadOnlyList<GalleryResult> response)
     {
         var selection = Prompt.MultiSelect("Select to download", response, response.Count,
-            textSelector: (result) =>
-            {
-                var title = string.IsNullOrEmpty(result.Title.Japanese)
-                    ? (string.IsNullOrEmpty(result.Title.English) ? result.Title.Pretty : result.Title.English)
-                    : result.Title.Japanese;
-                return title;
-            });
+            textSelector: result => result.Title.GetTitle());
 
         return selection.ToList();
     }

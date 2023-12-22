@@ -2,6 +2,7 @@
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("file", HelpText = "Download galleries from text file")]
 public record FileCommandOptions : ICommonOptions
 {

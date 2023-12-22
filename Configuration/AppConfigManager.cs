@@ -78,7 +78,7 @@ public class AppConfigManager : IAppConfigManager
 
     public string GetValue(string key)
     {
-        return _config.TryGetValue(key, out var data) ? data : null;
+        return _config.GetValueOrDefault(key) ?? "";
     }
 
     public IReadOnlyList<(string, string)> GetAllValues()

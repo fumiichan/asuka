@@ -3,6 +3,7 @@ using CommandLine;
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("get", HelpText = "Download a Single Gallery from URL.")]
 public record GetOptions : ICommonOptions
 {

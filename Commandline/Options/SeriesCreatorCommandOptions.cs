@@ -3,6 +3,7 @@ using CommandLine;
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("series", HelpText = "Construct series")]
 public record SeriesCreatorCommandOptions: ICommonOptions
 {
