@@ -38,7 +38,7 @@ public class SeriesDownloaderBuilder
             return;
         }
 
-        var output = Path.Combine(Output, PathUtils.NormalizeName(_chapters[0].Title.GetTitle()));
+        var output = PathUtils.Join(Output, _chapters[0].Title.GetTitle());
 
         for (var i = 0; i < _chapters.Count; i++)
         {

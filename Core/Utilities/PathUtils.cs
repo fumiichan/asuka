@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -87,15 +88,19 @@ public static class PathUtils
     /// <param name="outputPath"></param>
     /// <param name="folderName"></param>
     /// <returns></returns>
-    public static string NormalizeJoin(string outputPath, string folderName)
+    public static string Join(string outputPath, string folderName)
     {
+        var destinationPath = string.IsNullOrEmpty(outputPath)
+            ? Environment.CurrentDirectory
+            : outputPath;
+        
         var normalizedFolderName = NormalizeName(folderName);
-        var chapterRoot = Path.Combine(outputPath, normalizedFolderName);
+        var chapterRoot = Path.Combine(destinationPath, normalizedFolderName);
 
         return chapterRoot;
     }
 
-    public static string NormalizeName(string folderName)
+    private static string NormalizeName(string folderName)
     {
         var normalizedFolderName = $"{folderName}";
         normalizedFolderName = SymbolDictionary

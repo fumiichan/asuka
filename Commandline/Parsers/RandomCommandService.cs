@@ -51,7 +51,7 @@ public class RandomCommandService : ICommandLineParser
             var mainProgress = _progress.Create(response.TotalPages,
                 $"Downloading Manga: {response.Title.GetTitle()}");
 
-            var output = Path.Combine(opts.Output, PathUtils.NormalizeName(response.Title.GetTitle()));
+            var output = PathUtils.Join(opts.Output, response.Title.GetTitle());
             var downloader = new DownloadBuilder(response, 1)
             {
                 Output = output,

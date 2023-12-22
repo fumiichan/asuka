@@ -53,7 +53,7 @@ public class RecommendCommandService : ICommandLineParser
         {
             var childProgress = mainProgress
                 .Spawn(response.TotalPages, $"Downloading {response.Title.GetTitle()}")!;
-            var output = Path.Combine(opts.Output, PathUtils.NormalizeName(response.Title.GetTitle()));
+            var output = PathUtils.Join(opts.Output, response.Title.GetTitle());
             var downloader = new DownloadBuilder(response, 1)
             {
                 Request = _apiImage,

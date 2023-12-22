@@ -47,7 +47,7 @@ public class GetCommandService : ICommandLineParser
         var mainProgress = _progress.Create(response.TotalPages,
             $"Downloading Manga: {response.Title.GetTitle()}");
 
-        var output = Path.Combine(outputPath, PathUtils.NormalizeName(response.Title.GetTitle()));
+        var output = PathUtils.Join(outputPath, response.Title.GetTitle());
         var downloader = new DownloadBuilder(response, 1)
         {
             Request = _apiImage,
@@ -58,7 +58,7 @@ public class GetCommandService : ICommandLineParser
             },
             OnComplete = async gallery =>
             {
-                await gallery.WriteMetadata(Path.Combine(outputPath, "details.json"));
+                await gallery.WriteMetadata(Path.Combine(output, "details.json"));
                 if (pack)
                 {
                     await Compress.ToCbz(output, mainProgress);
