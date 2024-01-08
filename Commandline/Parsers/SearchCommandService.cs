@@ -1,14 +1,19 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using asuka.Api;
 using asuka.Commandline.Options;
 using asuka.Api.Queries;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Mappings;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
-using asuka.Output.Writer;
+using asuka.Core.Utilities;
+using asuka.Output;
+using asuka.Output.Progress;
 using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
@@ -16,26 +21,20 @@ namespace asuka.Commandline.Parsers;
 public class SearchCommandService : ICommandLineParser
 {
     private readonly IGalleryRequestService _api;
+    private readonly IGalleryImage _apiImage;
     private readonly IValidator<SearchOptions> _validator;
-    private readonly IConsoleWriter _console;
-    private readonly IDownloader _download;
-    private readonly IProgressService _progressService;
-    private readonly IPackArchiveToCbz _pack;
+    private readonly IProgressFactory _progress;
 
     public SearchCommandService(
         IGalleryRequestService api,
+        IGalleryImage apiImage,
         IValidator<SearchOptions> validator,
-        IConsoleWriter console,
-        IDownloader download,
-        IProgressService progressService,
-        IPackArchiveToCbz pack)
+        IProgressFactory progress)
     {
         _api = api;
+        _apiImage = apiImage;
         _validator = validator;
-        _console = console;
-        _download = download;
-        _progressService = progressService;
-        _pack = pack;
+        _progress = progress;
     }
 
     public async Task RunAsync(object options)
@@ -44,7 +43,7 @@ public class SearchCommandService : ICommandLineParser
         var validationResult = await _validator.ValidateAsync(opts);
         if (!validationResult.IsValid)
         {
-            _console.ValidationErrors(validationResult.Errors);
+            validationResult.Errors.PrintValidationExceptions();
             return;
         }
 
@@ -65,35 +64,40 @@ public class SearchCommandService : ICommandLineParser
         var responses = await _api.SearchAsync(query);
         if (responses.Count < 1)
         {
-            _console.ErrorLine("No results found.");
+            Console.WriteLine("No results found.");
             return;
         }
 
         var selection = responses.FilterByUserSelected();
 
         // Initialise the Progress bar.
-        _progressService.CreateMasterProgress(selection.Count, "[task] search download");
-        var progress = _progressService.GetMasterProgress();
+        var mainProgress = _progress.Create(selection.Count, "Downloading found results...");
         
         foreach (var response in selection)
         {
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
-
-            var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
-            _download.SetOnImageDownload = () =>
+            var childProgress = mainProgress
+                .Spawn(response.TotalPages, $"Downloading {response.Title.GetTitle()}")!;
+            var output = PathUtils.Join(opts.Output, response.Title.GetTitle());
+            var downloader = new DownloadBuilder(response, 1)
             {
-                innerProgress.Tick();
+                Output = output,
+                Request = _apiImage,
+                OnEachComplete = _ =>
+                {
+                    childProgress.Tick();
+                },
+                OnComplete = async data =>
+                {
+                    await data.WriteMetadata(Path.Combine(output, "details.json"));
+                    if (opts.Pack)
+                    {
+                        await Compress.ToCbz(output, childProgress);
+                    }
+                }
             };
 
-            await _download.Start();
-            await _download.Final();
-            
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, innerProgress);
-            }
-            progress.Tick();
+            await downloader.Start();
+            mainProgress.Tick();
         }
     }
 }

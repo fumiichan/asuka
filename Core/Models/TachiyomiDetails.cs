@@ -6,19 +6,19 @@ namespace asuka.Core.Models;
 public record TachiyomiDetails
 {
     [JsonPropertyName("title")]
-    public string Title { get; init; }
+    public required string Title { get; init; }
 
     [JsonPropertyName("author")]
-    public string Author { get; init; }
+    public required string Author { get; init; }
 
     [JsonPropertyName("artist")]
-    public string Artist { get; init; }
+    public required string Artist { get; init; }
 
     [JsonPropertyName("description")]
-    public string Description { get; init; }
+    public required string Description { get; init; }
 
     [JsonPropertyName("genre")]
-    public IReadOnlyList<string> Genres { get; init; }
+    public required IReadOnlyList<string> Genres { get; init; }
 
     [JsonPropertyName("status")]
     public string Status { get; init; } = "2";

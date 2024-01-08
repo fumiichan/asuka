@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace asuka.Configuration;
 
-public interface IConfigurationManager
+public interface IAppConfigManager
 {
     void SetValue(string key, string value);
     string GetValue(string key);

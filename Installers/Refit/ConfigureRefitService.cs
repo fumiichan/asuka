@@ -81,11 +81,11 @@ public class ConfigureRefitService : IInstaller
             TimeSpan.FromSeconds(1), 5);
         return builder.WaitAndRetryAsync(delay, (_, span) =>
         {
-            Colorful.Console.WriteLine($"Retrying in {span.Seconds}");
+            Console.WriteLine($"Retrying in {span.Seconds}");
         });
     }
     
-    private static Cookie CreateCookieFromConfig(IConfiguration configuration, string name)
+    private static Cookie? CreateCookieFromConfig(IConfiguration configuration, string name)
     {
         var option = configuration
             .GetSection("RequestOptions")
@@ -97,11 +97,22 @@ public class ConfigureRefitService : IInstaller
             return null;
         }
 
-        return new Cookie(option.GetValue<string>("Name"), option.GetValue<string>("Value"))
+        var cookieName = option.GetValue<string>("Name");
+        var cookieValue = option.GetValue<string>("Value");
+        var cookieDomain = option.GetValue<string>("Domain");
+        var cookieHttpOnlyFlag = option.GetValue<bool>("HttpOnly");
+        var cookieSecureFlag = option.GetValue<bool>("Secure");
+
+        if (string.IsNullOrEmpty(cookieName) || string.IsNullOrEmpty(cookieValue) || string.IsNullOrEmpty(cookieDomain))
         {
-            Domain = option.GetValue<string>("Domain"),
-            HttpOnly = option.GetValue<bool>("HttpOnly"),
-            Secure = option.GetValue<bool>("Secure")
+            return null;
+        }
+
+        return new Cookie(cookieName, cookieValue)
+        {
+            Domain = cookieDomain,
+            HttpOnly = cookieHttpOnlyFlag,
+            Secure = cookieSecureFlag
         };
     }
 }

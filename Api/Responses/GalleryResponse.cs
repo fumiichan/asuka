@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace asuka.Api.Responses;
 
+#nullable disable
 public record GalleryResponse
 {
     [JsonPropertyName("id")]
@@ -14,10 +15,10 @@ public record GalleryResponse
     public int MediaId { get; set; }
 
     [JsonPropertyName("title")]
-    public GalleryTitleResponse Title { get; set; }
+    public required GalleryTitleResponse Title { get; set; }
 
     [JsonPropertyName("images")]
-    public GalleryImageObjectResponse Images { get; set; }
+    public required GalleryImageObjectResponse Images { get; set; }
 
     [JsonPropertyName("tags")]
     public IReadOnlyList<GalleryTagResponse> Tags { get; set; }

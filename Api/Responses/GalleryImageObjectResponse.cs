@@ -3,8 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace asuka.Api.Responses;
 
+#nullable disable
 public record GalleryImageObjectResponse
 {
     [JsonPropertyName("pages")]
-    public IReadOnlyList<GalleryImageResponse> Images { get; set; }
+    public IReadOnlyList<GalleryImageResponse> Images { get; set; } 
 }

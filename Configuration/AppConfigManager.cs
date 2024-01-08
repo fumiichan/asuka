@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace asuka.Configuration;
 
-public class ConfigurationManager : IConfigurationManager
+public class AppConfigManager : IAppConfigManager
 {
     private Dictionary<string, string> _config;
 
-    public ConfigurationManager()
+    public AppConfigManager()
     {
         var configRoot = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".asuka");
         var configPath = Path.Join(configRoot, "config.conf");
@@ -35,9 +35,6 @@ public class ConfigurationManager : IConfigurationManager
         {
             {
                 "colors.theme", "dark"
-            },
-            {
-                "layout.tachiyomi", "yes"
             },
             {
                 "tui.progress", "progress"
@@ -81,7 +78,7 @@ public class ConfigurationManager : IConfigurationManager
 
     public string GetValue(string key)
     {
-        return _config.TryGetValue(key, out var data) ? data : null;
+        return _config.GetValueOrDefault(key) ?? "";
     }
 
     public IReadOnlyList<(string, string)> GetAllValues()

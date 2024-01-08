@@ -1,11 +1,15 @@
+using System.IO;
 using System.Threading.Tasks;
+using asuka.Api;
 using asuka.Commandline.Options;
 using asuka.Core.Compression;
 using asuka.Core.Downloader;
+using asuka.Core.Extensions;
 using asuka.Core.Mappings;
 using asuka.Core.Requests;
-using asuka.Output.ProgressService;
-using asuka.Output.Writer;
+using asuka.Core.Utilities;
+using asuka.Output;
+using asuka.Output.Progress;
 using FluentValidation;
 
 namespace asuka.Commandline.Parsers;
@@ -14,25 +18,19 @@ public class RecommendCommandService : ICommandLineParser
 {
     private readonly IValidator<RecommendOptions> _validator;
     private readonly IGalleryRequestService _api;
-    private readonly IDownloader _download;
-    private readonly IConsoleWriter _console;
-    private readonly IProgressService _progressService;
-    private readonly IPackArchiveToCbz _pack;
+    private readonly IGalleryImage _apiImage;
+    private readonly IProgressFactory _progress;
 
     public RecommendCommandService(
         IValidator<RecommendOptions> validator,
         IGalleryRequestService api,
-        IDownloader download,
-        IConsoleWriter console,
-        IProgressService progressService,
-        IPackArchiveToCbz pack)
+        IGalleryImage apiImage,
+        IProgressFactory progress)
     {
         _validator = validator;
         _api = api;
-        _download = download;
-        _console = console;
-        _progressService = progressService;
-        _pack = pack;
+        _apiImage = apiImage;
+        _progress = progress;
     }
 
     public async Task RunAsync(object options)
@@ -41,7 +39,7 @@ public class RecommendCommandService : ICommandLineParser
         var validator = await _validator.ValidateAsync(opts);
         if (!validator.IsValid)
         {
-            _console.ValidationErrors(validator.Errors);
+            validator.Errors.PrintValidationExceptions();
             return;
         }
 
@@ -49,28 +47,33 @@ public class RecommendCommandService : ICommandLineParser
         var selection = responses.FilterByUserSelected();
 
         // Initialise the Progress bar.
-        _progressService.CreateMasterProgress(selection.Count, $"[task] recommend from id: {opts.Input}");
-        var progress = _progressService.GetMasterProgress();
+        var mainProgress = _progress.Create(selection.Count, $"Downloading {opts.Input} recommendations...");
 
         foreach (var response in selection)
         {
-            _download.CreateSeries(response.Title, opts.Output);
-            _download.CreateChapter(response, 1);
-
-            var innerProgress = _progressService.NestToMaster(response.TotalPages, $"downloading id: {response.Id}");
-            _download.SetOnImageDownload = () =>
+            var childProgress = mainProgress
+                .Spawn(response.TotalPages, $"Downloading {response.Title.GetTitle()}")!;
+            var output = PathUtils.Join(opts.Output, response.Title.GetTitle());
+            var downloader = new DownloadBuilder(response, 1)
             {
-                innerProgress.Tick();
+                Request = _apiImage,
+                Output = output,
+                OnEachComplete = _ =>
+                {
+                    childProgress.Tick();
+                },
+                OnComplete = async data =>
+                {
+                    await data.WriteMetadata(Path.Combine(output, "details.json"));
+                    if (opts.Pack)
+                    {
+                        await Compress.ToCbz(output, childProgress);
+                    }
+                }
             };
 
-            await _download.Start();
-            await _download.Final();
-            
-            if (opts.Pack)
-            {
-                await _pack.RunAsync(_download.DownloadRoot, opts.Output, innerProgress);
-            }
-            progress.Tick();
+            await downloader.Start();
+            mainProgress.Tick();
         }
     }
 }

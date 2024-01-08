@@ -2,6 +2,7 @@ using CommandLine;
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("cookie", HelpText = "Configure cookies and User Agent")]
 public record CookieConfigureOptions
 {

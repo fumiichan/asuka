@@ -3,6 +3,7 @@ using CommandLine;
 
 namespace asuka.Commandline.Options;
 
+#nullable disable
 [Verb("search", HelpText = "Search something in the gallery")]
 public record SearchOptions : ICommonOptions
 {
