@@ -50,6 +50,11 @@ internal sealed class RandomCommand : CoconaConsoleAppBase
             try
             {
                 var random = await client.GetRandom(Context.CancellationToken);
+                Console.WriteLine($"Title: {random.Title}");
+                Console.WriteLine($"Artist: {string.Join(", ", random.Artists)}");
+                Console.WriteLine($"Genres/Tags: {string.Join(", ", random.Genres)}");
+                Console.WriteLine($"Total Chapters: {random.Chapters.Count}");
+                
                 var prompt = Prompt.Confirm("Are you sure to download this one?", true);
                 if (!prompt)
                 {
