@@ -1,23 +1,25 @@
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using asuka.Provider.Nhentai.Contracts;
+using asuka.Provider.Nhentai.Api;
+using asuka.Provider.Nhentai.Api.Requests;
 using asuka.Provider.Nhentai.Mappers;
 using asuka.ProviderSdk;
-using RestSharp;
+using Refit;
 
 namespace asuka.Provider.Nhentai;
 
 public sealed partial class Provider : MetaInfo
 {
-    private readonly RestClientOptions _clientOptions;
-    private readonly RestClientOptions _imageClientOptions;
+    private readonly IGalleryApi _gallery;
+    private readonly IGalleryImage _galleryImage;
 
     public Provider()
     {
         Id = "asuka.provider.nhentai";
-        Version = new Version(1, 0, 0, 0);
+        Version = new Version(1, 1, 0, 0);
         ProviderAliases =
         [
             "nh",
@@ -25,26 +27,16 @@ public sealed partial class Provider : MetaInfo
         ];
 
         // Configure request
-        _clientOptions = new RestClientOptions("https://nhentai.net/")
+        _gallery = RestService.For<IGalleryApi>(CreateHttpClient("https://nhentai.net/"), new RefitSettings
         {
-            ThrowOnAnyError = true,
-            UserAgent = GetUserAgentFromFile() ?? $"asuka.Provider.Nhentai {Version.Major}.{Version.Minor}",
-            CookieContainer = new CookieContainer()
-        };
+            ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            })
+        });
 
-        _imageClientOptions = new RestClientOptions("https://i.nhentai.net/")
-        {
-            ThrowOnAnyError = true,
-            UserAgent = GetUserAgentFromFile() ?? $"asuka.Provider.Nhentai {Version.Major}.{Version.Minor}",
-            CookieContainer = new CookieContainer()
-        };
-
-        // Read cookies from file and load them into RestClientOptions
-        foreach (var cookie in ReadCookiesFromFile())
-        {
-            _clientOptions.CookieContainer.Add(cookie);
-            _imageClientOptions.CookieContainer.Add(cookie);
-        }
+        _galleryImage = RestService.For<IGalleryImage>(CreateHttpClient("https://i.nhentai.net/"));
     }
 
     public override bool IsGallerySupported(string galleryId)
@@ -68,33 +60,20 @@ public sealed partial class Provider : MetaInfo
         var code = codeRegex.Match(galleryId).Value;
         
         // Request
-        var client = new RestClient(_clientOptions);
-        var request = new RestRequest($"/api/gallery/{code}");
-
-        var response = await client.GetAsync<GalleryResponse>(request, cancellationToken);
-        if (response == null)
-        {
-            throw new Exception("Failed to deserialize request.");
-        }
-        return response.ToSeries();
+        var request = await _gallery.FetchSingle(code, cancellationToken);
+        return request.ToSeries();
     }
 
     public override async Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default)
     {
-        var client = new RestClient(_clientOptions);
-        var request = new RestRequest("/api/galleries/search");
-
-        request.AddParameter("query", string.Join(" ", query.SearchQueries));
-        request.AddParameter("page", query.PageNumber);
-        request.AddParameter("sort", query.Sort);
-
-        var response = await client.GetAsync<GallerySearchResponse>(request, cancellationToken);
-        if (response?.Result == null)
+        var request = await _gallery.SearchGallery(new GallerySearchQuery
         {
-            throw new Exception($"Unable to retrieve search results. Request URL: {client.BuildUri(request).ToString()}");
-        }
+            Queries = string.Join(" ", query.SearchQueries),
+            PageNumber = query.PageNumber,
+            Sort = query.Sort ?? "popularity"
+        }, cancellationToken);
 
-        return response.Result
+        return request.Result
             .Select(x => x.ToSeries())
             .ToList();
     }
@@ -117,31 +96,22 @@ public sealed partial class Provider : MetaInfo
         var codeRegex = CodeOnlyRegex();
         var code = codeRegex.Match(galleryId).Value;
 
-        var client = new RestClient(_clientOptions);
-        var request = new RestRequest($"/api/gallery/{code}/related");
-
-        var response = await client.GetAsync<GalleryListResponse>(request, cancellationToken);
-        if (response == null)
-        {
-            throw new Exception("Unable to fetch recommendations");
-        }
-
-        return response.Result
+        var request = await _gallery.FetchRecommended(code, cancellationToken);
+        return request.Result
             .Select(x => x.ToSeries())
             .ToList();
     }
 
     public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
     {
-        var client = new RestClient(_imageClientOptions);
-        var request = new RestRequest(remotePath);
-
-        var data = await client.DownloadDataAsync(request, cancellationToken);
-        if (data == null)
+        var pathArguments = remotePath.Split(",");
+        if (pathArguments.Length != 2)
         {
-            throw new Exception("Unable to download file.");
+            throw new Exception($"Unable to download due to malformed remote path. remotePath: {remotePath}");
         }
-        return data;
+        
+        var request = await _galleryImage.GetImage(pathArguments[0], pathArguments[1], cancellationToken);
+        return await request.ReadAsByteArrayAsync(cancellationToken);
     }
 
     /// <summary>
@@ -192,6 +162,26 @@ public sealed partial class Provider : MetaInfo
         return CookieParsers.TryParseNetscapeNavigatorExport(path, out var navigatorCookies)
             ? navigatorCookies
             : [];
+    }
+
+    private HttpClient CreateHttpClient(string hostname)
+    {
+        var handler = new HttpClientHandler();
+        
+        // Read cookies from file and load them into RestClientOptions
+        foreach (var cookie in ReadCookiesFromFile())
+        {
+            handler.CookieContainer.Add(cookie);
+        }
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri(hostname)
+        };
+        httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(
+            GetUserAgentFromFile() ?? $"asuka.Provider.Nhentai {Version.Major}.{Version.Minor}");
+
+        return httpClient;
     }
 
     [GeneratedRegex(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")]

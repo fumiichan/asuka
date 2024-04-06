@@ -7,8 +7,8 @@
         <LangVersion>latestmajor</LangVersion>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <IsPackable>false</IsPackable>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <FileVersion>1.0.0.0</FileVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <FileVersion>1.1.0.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RestSharp" Version="110.2.0" />
+      <PackageReference Include="Refit" Version="7.0.0" />
     </ItemGroup>
 
 </Project>
