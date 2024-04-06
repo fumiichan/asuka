@@ -18,6 +18,10 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PublishSingleFile>true</PublishSingleFile>
+    </PropertyGroup>
+
     <ItemGroup>
       <PackageReference Include="Cocona" Version="2.2.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />

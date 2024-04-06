@@ -50,7 +50,7 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
         var client = _provider.GetProviderByAlias(provider);
         if (client == null)
         {
-            _logger.LogError("No provider with ID or alias of '{provider}' found", provider);
+            Console.WriteLine($"No provider with ID or alias of '{provider}' found");
             return;
         }
         

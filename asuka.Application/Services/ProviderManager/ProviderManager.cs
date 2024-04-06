@@ -19,9 +19,11 @@ internal sealed class ProviderManager :  IProviderManager
         _providers = new Dictionary<string, MetaInfo>();
         
         // Look for existing providers in the Providers folder
-        var assemblyPath = Assembly.GetAssembly(typeof(Program))!.Location;
-        var assemblyRootPath = Path.GetDirectoryName(assemblyPath);
-        var providerRoot = Path.Combine(assemblyRootPath!, "providers");
+        var providerRoot = Path.Combine(AppContext.BaseDirectory, "providers");
+        if (!Directory.Exists(providerRoot))
+        {
+            Directory.CreateDirectory(providerRoot);
+        }
 
         var providers = Directory.GetFiles(providerRoot, "asuka.Provider.*.dll", SearchOption.AllDirectories);
         foreach (var provider in providers)

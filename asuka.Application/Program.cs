@@ -12,8 +12,7 @@ using Serilog;
 var builder = CoconaApp.CreateBuilder();
 
 // Logging stuff for diagnostics
-var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-var logRoot = Path.Combine(assemblyPath ?? Environment.CurrentDirectory, "logs");
+var logRoot = Path.Combine(AppContext.BaseDirectory, "logs");
 if (!Directory.Exists(logRoot))
 {
     Directory.CreateDirectory(logRoot);
@@ -44,5 +43,6 @@ app.AddCommands<RecommendCommand>();
 app.AddCommands<SearchCommand>();
 app.AddCommands<ProvidersCommand>();
 app.AddCommands<InfoCommand>();
+app.AddCommands<SeriesCommand>();
 
 await app.RunAsync();

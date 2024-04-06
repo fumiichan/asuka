@@ -22,7 +22,7 @@ Cross-platform nhentai downloader on Console.
 
 ### What do I need
 
--   [.NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
+-   [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 
 ### Compiling
 
@@ -34,7 +34,7 @@ To compile, simply use your Terminal of your choice and navigate towards the asu
 
     You can use `--configuration` to specify the configuration to use. Available configurations are `Debug` and `Release`. For more information, check the [`dotnet build` documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
 
-You'll see the built packages on `bin\Debug\net6.0` or `bin\Release\net6.0` depending on the build configuration you used.
+You'll see the built packages on `bin\Debug\net8.0` or `bin\Release\net8.0` depending on the build configuration you used.
 
 ### License
 
