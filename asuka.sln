@@ -1,6 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka", "asuka.csproj", "{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka", "asuka.Application\asuka.csproj", "{310A657A-4E69-469C-836B-67E16384F23F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Providers", "Providers", "{2B203105-1EC9-48D2-AAC1-9BD716EF13C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.ProviderSdk", "asuka.ProviderSdk\asuka.ProviderSdk.csproj", "{2BD4729C-1B0B-46F8-9602-F689639DBBAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Provider.Nhentai", "asuka.Provider.Nhentai\asuka.Provider.Nhentai.csproj", "{F5313F69-A9E9-4672-A23D-2FE123F14A2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +14,21 @@ Global
 		Debug|x64 = Debug|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Release|x64.ActiveCfg = Release|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Release|x64.Build.0 = Release|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Debug|x64.ActiveCfg = Debug|x64
-		{F2D45627-3ECD-41C4-A10C-B3AA475EEF14}.Debug|x64.Build.0 = Debug|x64
+		{310A657A-4E69-469C-836B-67E16384F23F}.Release|x64.ActiveCfg = Release|x64
+		{310A657A-4E69-469C-836B-67E16384F23F}.Release|x64.Build.0 = Release|x64
+		{310A657A-4E69-469C-836B-67E16384F23F}.Debug|x64.ActiveCfg = Debug|x64
+		{310A657A-4E69-469C-836B-67E16384F23F}.Debug|x64.Build.0 = Debug|x64
+		{2BD4729C-1B0B-46F8-9602-F689639DBBAB}.Release|x64.ActiveCfg = Release|Any CPU
+		{2BD4729C-1B0B-46F8-9602-F689639DBBAB}.Release|x64.Build.0 = Release|Any CPU
+		{2BD4729C-1B0B-46F8-9602-F689639DBBAB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2BD4729C-1B0B-46F8-9602-F689639DBBAB}.Debug|x64.Build.0 = Debug|Any CPU
+		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Release|x64.ActiveCfg = Release|Any CPU
+		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Release|x64.Build.0 = Release|Any CPU
+		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Debug|x64.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2BD4729C-1B0B-46F8-9602-F689639DBBAB} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
+		{F5313F69-A9E9-4672-A23D-2FE123F14A2C} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
 	EndGlobalSection
 EndGlobal
