@@ -43,7 +43,7 @@ internal static class Compress
 
             await using var writer = new BinaryWriter(entry.Open());
             var data = await File.ReadAllBytesAsync(file.Full);
-                
+
             writer.Write(data);
         }
     }

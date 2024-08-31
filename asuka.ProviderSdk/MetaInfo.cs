@@ -9,7 +9,7 @@ public abstract class MetaInfo
     /// Conflicting IDs will be ignored if one is registered first. Whichever is loaded first (Note that loading or
     /// provider plugins are not predictable) will be loaded while the rest with the same IDs will be ignored.
     /// </remarks>
-    protected string Id { get; init; }
+    protected string Id { get; init; } = "";
     
     /// <summary>
     /// Version of the Provider
@@ -43,7 +43,7 @@ public abstract class MetaInfo
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotSupportedException">The Provided Gallery ID is not supported by the provider</exception>
-    /// <exception cref="Exception">The provider failed to fetch</exception>
+    /// <exception cref="Exception"></exception>
     public abstract Task<Series> GetSeries(string galleryId, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -56,7 +56,7 @@ public abstract class MetaInfo
     /// <param name="query"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>List of galleries matches the query</returns>
-    /// <exception cref="Exception">The provider failed to fetch</exception>
+    /// <exception cref="Exception"></exception>
     public abstract Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -90,6 +90,7 @@ public abstract class MetaInfo
     /// Downloads the image from the provider
     /// </summary>
     /// <param name="remotePath">Path to the resource.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>Returns entire file in form of byte array</returns>
     public abstract Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default);
 }

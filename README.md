@@ -9,7 +9,7 @@ Cross-platform nhentai downloader on Console.
 
 ## Requirements
 
--   [.NET 7.0 Runtime](https://dotnet.microsoft.com/download/dotnet/7.0)
+-   [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 -   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/6.0/supported-os.md)*.
     -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from Source section for compiling builds for these platforms.*
@@ -20,21 +20,15 @@ Cross-platform nhentai downloader on Console.
 
 ## Compiling from Source
 
-### What do I need
+```sh
+# Clone the repository
+git clone https://github.com/fumiichan/asuka.git
+cd asuka
 
--   [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
-
-### Compiling
-
-To compile, simply use your Terminal of your choice and navigate towards the asuka's source root.
-
-1.  `dotnet restore` to restore the packages.
-
-2.  `dotnet build` to build.
-
-    You can use `--configuration` to specify the configuration to use. Available configurations are `Debug` and `Release`. For more information, check the [`dotnet build` documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build).
-
-You'll see the built packages on `bin\Debug\net8.0` or `bin\Release\net8.0` depending on the build configuration you used.
+# Build the application
+# Note: If you are using Windows, you use build-windows target instead.
+make build
+```
 
 ### License
 

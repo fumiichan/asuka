@@ -36,6 +36,9 @@ public sealed partial class Provider : MetaInfo
             })
         });
 
+        // Notice: This may be dynamic in the near future. There's domains such as i<n>.nhentai.net
+        // This hints that maybe in the near future, some images will be served only on that domain and currently
+        // the API we are using doesn't have that kind of detail.
         _galleryImage = RestService.For<IGalleryImage>(CreateHttpClient("https://i.nhentai.net/"));
     }
 
