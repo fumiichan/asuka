@@ -26,7 +26,8 @@ git clone https://github.com/fumiichan/asuka.git
 cd asuka
 
 # Build the application
-# Note: If you are using Windows, you use build-windows target instead.
+# If you are planning to build this on Windows, ensure you run it under
+# MinGW-w64 or Git Bash
 make build
 ```
 
