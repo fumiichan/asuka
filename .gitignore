@@ -6,6 +6,9 @@
 # Mac
 .DS_Store
 
+# Editor stuff
+.idea
+
 # User-specific files
 *.rsuser
 *.suo
@@ -34,6 +37,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+[Dd]ist/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
