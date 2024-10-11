@@ -1,12 +1,43 @@
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
-namespace asuka.Provider.Nhentai;
+namespace asuka.Provider.Common;
 
 internal static class CookieParsers
 {
-    public static bool TryParseJsonExport(string filePath, out List<Cookie> cookies)
+    /// <summary>
+    /// Gets the cookie dump from file relative to the assembly path
+    /// </summary>
+    /// <param name="type">The assembly to be used as reference</param>
+    /// <param name="fileName">Custom file name of the dump</param>
+    /// <returns></returns>
+    public static List<Cookie> GetFromFileRelativeToType(Type type, string fileName = "cookies.txt")
+    {
+        var assemblyRoot = Path.GetDirectoryName(Assembly.GetAssembly(type)?.Location);
+        if (string.IsNullOrEmpty(assemblyRoot))
+        {
+            return [];
+        }
+        
+        var path = Path.Combine(assemblyRoot, Path.GetFileName(fileName));
+        if (!File.Exists(path))
+        {
+            return [];
+        }
+
+        if (TryParseJsonExport(path, out var jsonCookies))
+        {
+            return jsonCookies;
+        }
+
+        return TryParseNetscapeNavigatorExport(path, out var navigatorCookies)
+            ? navigatorCookies
+            : [];
+    }
+    
+    private static bool TryParseJsonExport(string filePath, out List<Cookie> cookies)
     {
         if (!File.Exists(filePath))
         {
@@ -49,7 +80,7 @@ internal static class CookieParsers
         }
     }
 
-    public static bool TryParseNetscapeNavigatorExport(string filePath, out List<Cookie> cookies)
+    private static bool TryParseNetscapeNavigatorExport(string filePath, out List<Cookie> cookies)
     {
         if (!File.Exists(filePath))
         {

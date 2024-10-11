@@ -16,6 +16,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Provider.Koharu", "asuka.Provider.Koharu\asuka.Provider.Koharu.csproj", "{78D1F38F-0BBA-49FF-A40E-02866C2445F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asuka.Provider.Common", "asuka.Provider.Common\asuka.Provider.Common.csproj", "{952B3C5A-8567-497B-A789-BD92EAFFFE00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x64 = Release|x64
@@ -34,9 +38,19 @@ Global
 		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Release|x64.Build.0 = Release|Any CPU
 		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{F5313F69-A9E9-4672-A23D-2FE123F14A2C}.Debug|x64.Build.0 = Debug|Any CPU
+		{78D1F38F-0BBA-49FF-A40E-02866C2445F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{78D1F38F-0BBA-49FF-A40E-02866C2445F5}.Release|x64.Build.0 = Release|Any CPU
+		{78D1F38F-0BBA-49FF-A40E-02866C2445F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{78D1F38F-0BBA-49FF-A40E-02866C2445F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{952B3C5A-8567-497B-A789-BD92EAFFFE00}.Release|x64.ActiveCfg = Release|Any CPU
+		{952B3C5A-8567-497B-A789-BD92EAFFFE00}.Release|x64.Build.0 = Release|Any CPU
+		{952B3C5A-8567-497B-A789-BD92EAFFFE00}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{952B3C5A-8567-497B-A789-BD92EAFFFE00}.Debug|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2BD4729C-1B0B-46F8-9602-F689639DBBAB} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
 		{F5313F69-A9E9-4672-A23D-2FE123F14A2C} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
+		{78D1F38F-0BBA-49FF-A40E-02866C2445F5} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
+		{952B3C5A-8567-497B-A789-BD92EAFFFE00} = {2B203105-1EC9-48D2-AAC1-9BD716EF13C1}
 	EndGlobalSection
 EndGlobal

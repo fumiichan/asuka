@@ -5,7 +5,7 @@
 [![Age Rating](https://badgen.net/badge/age%20rating/18+/red)](https://en.wikipedia.org/wiki/Age_of_majority)
 [![MIT license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 
-Cross-platform nhentai downloader on Console.
+Cross-platform ~~nhentai~~ downloader on Console.
 
 ## Requirements
 
@@ -33,4 +33,4 @@ make build
 
 ### License
 
-This project is licensed under [MIT license](LICENSE). For more information about the license, read the [LICENSE](LICENSE) file. It's short I promise.
+This project is licensed under [MIT license](LICENSE).

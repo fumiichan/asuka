@@ -1,8 +1,7 @@
-using System.Net;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using asuka.Provider.Common;
 using asuka.Provider.Nhentai.Api;
 using asuka.Provider.Nhentai.Api.Requests;
 using asuka.Provider.Nhentai.Mappers;
@@ -19,7 +18,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.provider.nhentai";
-        Version = new Version(1, 1, 0, 0);
+        Version = new Version(1, 1, 0, 2);
         ProviderAliases =
         [
             "nh",
@@ -27,7 +26,8 @@ public sealed partial class Provider : MetaInfo
         ];
 
         // Configure request
-        _gallery = RestService.For<IGalleryApi>(CreateHttpClient("https://nhentai.net/"), new RefitSettings
+        var galleryClient = HttpClientFactory.CreateClientFromProvider<Provider>("https://nhentai.net/");
+        _gallery = RestService.For<IGalleryApi>(galleryClient, new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
             {
@@ -39,7 +39,8 @@ public sealed partial class Provider : MetaInfo
         // Notice: This may be dynamic in the near future. There's domains such as i<n>.nhentai.net
         // This hints that maybe in the near future, some images will be served only on that domain and currently
         // the API we are using doesn't have that kind of detail.
-        _galleryImage = RestService.For<IGalleryImage>(CreateHttpClient("https://i.nhentai.net/"));
+        var imageClient = HttpClientFactory.CreateClientFromProvider<Provider>("https://i.nhentai.net/");
+        _galleryImage = RestService.For<IGalleryImage>(imageClient);
     }
 
     public override bool IsGallerySupported(string galleryId)
@@ -115,76 +116,6 @@ public sealed partial class Provider : MetaInfo
         
         var request = await _galleryImage.GetImage(pathArguments[0], pathArguments[1], cancellationToken);
         return await request.ReadAsByteArrayAsync(cancellationToken);
-    }
-
-    /// <summary>
-    /// Reads the User Agent from UA.txt file relative to the assembly path.
-    /// </summary>
-    /// <returns></returns>
-    private static string? GetUserAgentFromFile()
-    {
-        var assemblyRoot = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Provider))?.Location);
-        if (string.IsNullOrEmpty(assemblyRoot))
-        {
-            return null;
-        }
-
-        var path = Path.Combine(assemblyRoot, "UA.txt");
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        var file = File.ReadAllLines(path);
-        return file.Length == 0 ? null : file[0];
-    }
-
-    /// <summary>
-    /// Reads cookies from file
-    /// </summary>
-    /// <returns></returns>
-    private static List<Cookie> ReadCookiesFromFile()
-    {
-        var assemblyRoot = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Provider))?.Location);
-        if (string.IsNullOrEmpty(assemblyRoot))
-        {
-            return [];
-        }
-        
-        var path = Path.Combine(assemblyRoot, "cookies.txt");
-        if (!File.Exists(path))
-        {
-            return [];
-        }
-
-        if (CookieParsers.TryParseJsonExport(path, out var jsonCookies))
-        {
-            return jsonCookies;
-        }
-
-        return CookieParsers.TryParseNetscapeNavigatorExport(path, out var navigatorCookies)
-            ? navigatorCookies
-            : [];
-    }
-
-    private HttpClient CreateHttpClient(string hostname)
-    {
-        var handler = new HttpClientHandler();
-        
-        // Read cookies from file and load them into RestClientOptions
-        foreach (var cookie in ReadCookiesFromFile())
-        {
-            handler.CookieContainer.Add(cookie);
-        }
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri(hostname)
-        };
-        httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(
-            GetUserAgentFromFile() ?? $"asuka.Provider.Nhentai {Version.Major}.{Version.Minor}");
-
-        return httpClient;
     }
 
     [GeneratedRegex(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")]
