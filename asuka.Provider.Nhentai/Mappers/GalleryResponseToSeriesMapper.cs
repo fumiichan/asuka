@@ -37,6 +37,7 @@ internal static class GalleryResponseToSeriesMapper
                                 "j" => ".jpg",
                                 "p" => ".png",
                                 "g" => ".gif",
+                                "w" => ".webp",
                                 _ => ""
                             };
 
