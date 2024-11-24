@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using asuka.Application.Services.Downloader;
 using asuka.Application.Services.ProviderManager;
 using asuka.ProviderSdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
-using Sharprompt;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -44,7 +42,7 @@ internal sealed class RecommendCommand : CoconaConsoleAppBase
 
         if (client == null)
         {
-            Console.WriteLine($"No provider with ID or alias of '{provider}' found");
+            AnsiConsole.MarkupLine("[red3_1]No provider with ID or alias of '{0}' found[/]", Markup.Escape(provider));
             return;
         }
 
@@ -53,42 +51,48 @@ internal sealed class RecommendCommand : CoconaConsoleAppBase
             var result = await client.GetRecommendations(gallery);
 
             // Select
-            var selection = Prompt.MultiSelect("Select to download", result, result.Count,
-                    textSelector: x => x.Title)
-                .Select(x => (client, x))
-                .ToList();
+            var selection = AnsiConsole.Prompt(
+                new MultiSelectionPrompt<Series>()
+                    .Title("Select to download")
+                    .Required()
+                    .InstructionsText(
+                        "[grey](Press [blue]<space>[/] to pick, and [green]<enter>[/] to start downloading)[/]")
+                    .AddChoices(result)
+                    .UseConverter(x => Markup.Escape(x.Title)));
 
-            _logger.LogInformation("Selected total of {count} galleries to download.", selection.Count);
-            await Download(selection, output, pack);
+            _logger.LogInformation("Selection: {selection}", selection);
+            AnsiConsole.MarkupLine("Selected total of {} of galleries to download.", selection.Count);
+
+            await AnsiConsole.Status()
+                .StartAsync("Running...", async ctx =>
+                {
+                    foreach (var item in selection)
+                    {
+                        var instance = _builder.CreateDownloaderInstance(client, item);
+                        instance.Configure(c =>
+                        {
+                            c.OutputPath = output;
+                            c.Pack = pack;
+                        });
+                        instance.OnProgress = m => ctx.Status(Markup.Escape(m));
+                        await instance.Start();
+                    }
+                });
         }
         catch (NotSupportedException)
         {
-            _logger.LogError("Recommendations unsupported by provider. Provider ID {provider}", client.GetId());
-            Console.WriteLine("This provider doesn't support fetching recommendations.");
+            AnsiConsole.MarkupLine("[red3_1]Unsupported by the provider.[/]");
         }
         catch (OperationCanceledException)
         {
-            _logger.LogError("Operation cancelled by the user.");
-            Console.WriteLine("Operation cancelled by the user.");
+            AnsiConsole.MarkupLine("[yellow]Cancelled.[/]");
         }
         catch (Exception ex)
         {
             _logger.LogError("Operation failed due to an exception: {ex}", ex);
-            Console.WriteLine($"An exception occured. Error: {ex.Message}. See logs for more information");
+            AnsiConsole.MarkupLine("[red3_1]An exception occurred. See logs for more information.[/]");
         }
-    }
-
-    [Ignore]
-    private async Task Download(List<(MetaInfo, Series)> queue, string? output, bool pack)
-    {
-        var downloader = _builder.CreateDownloaderInstance();
-        downloader.Configure(c =>
-        {
-            c.OutputPath = output;
-            c.Pack = pack;
-        });
-
-        downloader.AddSeriesRange(queue);
-        await downloader.Start(Context.CancellationToken);
+        
+        AnsiConsole.MarkupLine("[chartreuse1]All jobs finished.[/]");
     }
 }

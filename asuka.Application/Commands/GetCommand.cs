@@ -6,6 +6,7 @@ using asuka.Application.Services.ProviderManager;
 using asuka.ProviderSdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -36,67 +37,76 @@ internal sealed class GetCommand : CoconaConsoleAppBase
         [Option("output", ['o'], Description = "Specify destination path for downloads")]
         string? output)
     {
-        
-        Console.WriteLine("Retrieving metadata...");
-        var queue = await RetrieveMetadata(galleryIds, provider);
-
-        // Download
-        await Download(queue, output, pack);
-    }
-
-    [Ignore]
-    private async Task<List<(MetaInfo, Series)>> RetrieveMetadata(IEnumerable<string> galleryIds, string? provider)
-    {
-        var queue = new List<(MetaInfo, Series)>();
-        foreach (var code in galleryIds)
-        {
-            var client = string.IsNullOrEmpty(provider)
-                ? _provider.GetProviderForGalleryId(code)
-                : _provider.GetProviderByAlias(provider);
-
-            if (client == null)
+        await AnsiConsole.Status()
+            .StartAsync("Running...", async ctx =>
             {
-                Console.WriteLine($"Skipped {code} due to no provider supports this.");
-                continue;
-            }
+                ctx.Status("Retrieving gallery information...");
+                
+                var queue = new List<(MetaInfo, Series)>();
+                foreach (var code in galleryIds)
+                {
+                    if (Context.CancellationToken.IsCancellationRequested)
+                    {
+                        AnsiConsole.MarkupLine("[orange1]Cancelled.[/]");
+                        break;
+                    }
+                    
+                    // Find appropriate provider
+                    var client = string.IsNullOrEmpty(provider)
+                        ? _provider.GetProviderForGalleryId(code)
+                        : _provider.GetProviderByAlias(provider);
+                    
+                    if (client == null)
+                    {
+                        AnsiConsole.MarkupLine("[orange1]No such provider or unsupported: {0}[/]", code);
+                        continue;
+                    }
+                    
+                    try
+                    {
+                        var response = await client.GetSeries(code, Context.CancellationToken);
+                        queue.Add((client, response));
+                        
+                        AnsiConsole.MarkupLine("[chartreuse1]Retrieved: {0}[/]", Markup.Escape(response.Title));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Fetching failed due to an exception: Input = {code}, Exception = {ex}", code, ex);
+                        AnsiConsole.MarkupLine("[red3_1]Failed to fetch: {0}. See logs for more information.[/]", code);
+                    }
+                }
 
-            try
-            {
-                var response = await client.GetSeries(code, Context.CancellationToken);
-                queue.Add((client, response));
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Operation canceled by the user.");
-                return [];
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Fetching failed due to an exception: {ex}", ex);
-                Console.WriteLine($"Item skipped due to an exception: {code}. See logs for more details.");
-            }
-        }
+                ctx.Status("Starting download...");
+                foreach (var (client, series) in queue)
+                {
+                    if (Context.CancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
-        return queue;
-    }
-
-    [Ignore]
-    private async Task Download(List<(MetaInfo, Series)> queue, string? output, bool pack)
-    {
-        // Don't start if cancelled.
-        if (Context.CancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-        
-        var downloader = _builder.CreateDownloaderInstance();
-        downloader.Configure(c =>
-        {
-            c.OutputPath = output;
-            c.Pack = pack;
-        });
-        
-        downloader.AddSeriesRange(queue);
-        await downloader.Start(Context.CancellationToken);
+                    try
+                    {
+                        var instance = _builder.CreateDownloaderInstance(client, series);
+                        instance.Configure(c =>
+                        {
+                            c.OutputPath = output;
+                            c.Pack = pack;
+                        });
+                        instance.OnProgress = m => ctx.Status(Markup.Escape(m));
+                        await instance.Start();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Fetching failed due to an exception: Series = {series}, Exception = {ex}", series, ex);
+                        AnsiConsole.MarkupLine("[red3_1]Failed to download: {0}. See logs for more information.[/]", Markup.Escape(series.Title));
+                    }
+                }
+                
+                AnsiConsole.MarkupLine("[chartreuse1]All jobs finished.[/]");
+            });
     }
 }

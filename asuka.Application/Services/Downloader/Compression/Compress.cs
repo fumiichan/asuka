@@ -2,8 +2,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Spectre.Console;
 
-namespace asuka.Application.Compression;
+namespace asuka.Application.Services.Downloader.Compression;
 
 internal static class Compress
 {
@@ -46,5 +47,7 @@ internal static class Compress
 
             writer.Write(data);
         }
+        
+        AnsiConsole.MarkupLine($"[chartreuse1]Compression done: {Path.GetDirectoryName(folder)}[/]");
     }
 }

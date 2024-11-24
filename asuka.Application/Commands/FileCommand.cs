@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using asuka.Application.Services.Downloader;
@@ -7,6 +8,7 @@ using asuka.Application.Services.ProviderManager;
 using asuka.Application.Validators;
 using Cocona;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -39,45 +41,63 @@ internal sealed class FileCommand : CoconaConsoleAppBase
         [Option("output", ['o'], Description = "Specify destination path for downloads")]
         string? output)
     {
-        var lines = await File.ReadAllLinesAsync(file, Encoding.UTF8, Context.CancellationToken);
-        foreach (var url in lines)
-        {
-            var client = string.IsNullOrEmpty(provider)
-                ? _provider.GetProviderForGalleryId(url)
-                : _provider.GetProviderByAlias(provider);
-
-            if (client == null)
+        await AnsiConsole.Status()
+            .StartAsync("Running...", async ctx =>
             {
-                Console.WriteLine($"Skipped '{url}' because no provider supports this.");
-                continue;
-            }
-
-            try
-            {
-                var response = await client.GetSeries(url, Context.CancellationToken);
-
-                var downloader = _builder.CreateDownloaderInstance();
-                downloader.Configure(c =>
-                {
-                    c.OutputPath = output;
-                    c.Pack = pack;
-                });
- 
-                downloader.AddSeries(client, response);
-                await downloader.Start(Context.CancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Operation canceled by the user.");
-                Console.WriteLine("Operation canceled by the user.");
+                ctx.Status("Reading text file...");
+                var lines = await File.ReadAllLinesAsync(file, Encoding.UTF8, Context.CancellationToken);
                 
-                break;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Download failed for '{code}' due to an exception: {ex}", url, e);
-                Console.WriteLine($"Download failed due to an exception: {e.Message}. See logs for more details.");
-            }
-        }
+                // Avoid lines that is not a full URL.
+                var queue = lines.Where(x =>
+                {
+                    return Uri.TryCreate(x, UriKind.Absolute, out var uri)
+                           && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+                }).ToList();
+                AnsiConsole.MarkupLine("Found total of {0} URLs.", queue.Count);
+
+                ctx.Status("Downloading list...");
+                foreach (var url in queue)
+                {
+                    if (Context.CancellationToken.IsCancellationRequested)
+                    {
+                        AnsiConsole.MarkupLine("[orange1]Cancelled.[/]");
+                        break;
+                    }
+                    
+                    var client = string.IsNullOrEmpty(provider)
+                        ? _provider.GetProviderForGalleryId(url)
+                        : _provider.GetProviderByAlias(provider);
+                    
+                    if (client == null)
+                    {
+                        AnsiConsole.MarkupLine("[orange1]Unsupported: {0}[/]", Markup.Escape(url));
+                        continue;
+                    }
+                    
+                    try
+                    {
+                        var response = await client.GetSeries(url, Context.CancellationToken);
+                        var instance = _builder.CreateDownloaderInstance(client, response);
+                        instance.Configure(c =>
+                        {
+                            c.OutputPath = output;
+                            c.Pack = pack;
+                        });
+                        instance.OnProgress = m => ctx.Status(Markup.Escape(m));
+                        await instance.Start();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Fetching failed due to an exception: Series = {series}, Exception = {ex}", url, ex);
+                        AnsiConsole.MarkupLine("[red3_1]Failed to download due to an exception: {0}[/]", Markup.Escape(url));
+                    }
+                }
+                
+                AnsiConsole.MarkupLine("[chartreuse1]All jobs finished.[/]");
+            });
     }
 }

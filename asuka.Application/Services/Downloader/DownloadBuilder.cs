@@ -1,15 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using asuka.Application.Compression;
 using asuka.Application.Extensions;
+using asuka.Application.Services.Downloader.Compression;
 using asuka.Application.Utilities;
 using asuka.ProviderSdk;
 using Microsoft.Extensions.Logging;
-using ShellProgressBar;
+using Spectre.Console;
 
 namespace asuka.Application.Services.Downloader;
 
@@ -21,133 +20,117 @@ internal sealed class DownloadBuilder : IDownloaderBuilder
     {
         _logger = logger;
     }
-    
-    #region Downloader Main Logic
 
-    internal sealed class Downloader
+    public Downloader CreateDownloaderInstance(MetaInfo client, Series series)
     {
-        private readonly List<(MetaInfo, Series)> _queue;
-        private readonly ILogger<DownloadBuilder> _logger;
+        return new Downloader(_logger, client, series);
+    }
+}
 
-        private readonly DownloaderConfiguration _config = new()
-        {
-            OutputPath = Environment.CurrentDirectory,
-            SaveMetadata = true,
-            Pack = false
-        };
+internal sealed class Downloader
+{
+    private readonly DownloaderConfiguration _config = new()
+    {
+        OutputPath = Environment.CurrentDirectory,
+        SaveMetadata = true,
+        Pack = false
+    };
 
-        internal Downloader(ILogger<DownloadBuilder> logger)
-        {
-            _logger = logger;
-            _queue = [];
-        }
+    private readonly ILogger<DownloadBuilder> _logger;
+    
+    // Events
+    public Action<string> OnProgress = (_) => { };
 
-        public void AddSeries(MetaInfo client, Series series)
-        {
-            _queue.Add((client, series));
-        }
+    private readonly MetaInfo _client;
+    private readonly Series _series;
 
-        public void AddSeriesRange(List<(MetaInfo, Series)> list)
-        {
-            _queue.AddRange(list);
-        }
+    internal Downloader(ILogger<DownloadBuilder> logger, MetaInfo client, Series series)
+    {
+        _logger = logger;
+        _client = client;
+        _series = series;
+    }
 
-        public void Configure(Action<DownloaderConfiguration> configDelegate)
-        {
-            configDelegate(_config);
-        }
+    public void Configure(Action<DownloaderConfiguration> configDelegate)
+    {
+        configDelegate(_config);
+    }
 
-        public async Task Start(CancellationToken cancellationToken = default)
+    public async Task Start(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Downloading series: {series}", _series);
+        
+        var seriesPath = PathUtils.Join(_config.OutputPath, _series.Title);
+        foreach (var chapter in _series.Chapters)
         {
-            using var progress = new ProgressBar(_queue.Count, "Downloading queue...");
-            foreach (var (client, series) in _queue)
+            OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) (0/{chapter.Pages.Count})...");
+            if (cancellationToken.IsCancellationRequested)
             {
-                var seriesPath = PathUtils.Join(_config.OutputPath, series.Title);
-                
-                _logger.LogInformation("Downloading series: {title}", series.Title);
-                await ProcessChapters(client, series.Chapters, seriesPath, progress, cancellationToken);
-
-                if (_config.SaveMetadata)
-                {
-                    var metaPath = Path.Combine(seriesPath, "details.json");
-                    await series.WriteMetadata(metaPath);
-                }
-
-                if (_config.Pack)
-                {
-                    await Compress.ToCbz(seriesPath);
-                }
-
-                progress.Tick();
-                _logger.LogInformation("Download completed for {title}", series.Title);
+                AnsiConsole.MarkupLine("[yellow]Cancelled.[/]");
+                break;
             }
+
+            await ProcessChapter(chapter, seriesPath, cancellationToken);
+            AnsiConsole.MarkupLine("[chartreuse1]Finished: {0} (Chapter {1} of {2})[/]", Markup.Escape(_series.Title), chapter.Id, _series.Chapters.Count);
         }
 
-        private async Task ProcessChapters(MetaInfo client, List<Chapter> chapters, string outputPath,
-            ProgressBar bar, CancellationToken cancellationToken = default)
+        if (_config.SaveMetadata)
         {
-            using var progress = bar.Spawn(chapters.Count, "Downloading chapters");
-            foreach (var chapter in chapters)
-            {
-                _logger.LogInformation("Downloading chapter id: {chapter}", chapter.Id);
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
+            var metaPath = Path.Combine(seriesPath, "details.json");
+            await _series.WriteMetadata(metaPath);
+        }
 
-                var chapterPath = PathUtils.Join(outputPath, $"ch{chapter.Id}");
-                if (!Directory.Exists(chapterPath))
-                {
-                    Directory.CreateDirectory(chapterPath);
-                }
-
-                var semaphore = new SemaphoreSlim(2);
-
-                var pageProgress = progress.Spawn(chapter.Pages.Count, $"Downloading chapter {chapter.Id}");
-                var tasks = chapter.Pages
-                    .Select(page => Task.Run(async () =>
-                    {
-                        await semaphore.WaitAsync(cancellationToken)
-                            .ConfigureAwait(false);
-
-                        try
-                        {
-                            var filePath = Path.Combine(chapterPath, page.Filename);
-                            if (File.Exists(filePath))
-                            {
-                                _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
-                                return;
-                            }
-
-                            var data = await client.GetImage(page.ImageRemotePath, CancellationToken.None);
-                            await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
-
-                            _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
-                                data.Length);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError("Download failed due to an exception: {ex}", ex);
-                        }
-                        finally
-                        {
-                            pageProgress.Tick();
-                            semaphore.Release();
-                        }
-                    }, cancellationToken));
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-                
-                progress.Tick();
-                _logger.LogInformation("Download of chapter completed: {chapter}", chapter.Id);
-            }
+        if (_config.Pack)
+        {
+            OnProgress.Invoke($"Compressing: {_series.Title}...");
+            await Compress.ToCbz(seriesPath);
         }
     }
 
-    #endregion
-
-    public Downloader CreateDownloaderInstance()
+    private async Task ProcessChapter(Chapter chapter, string outputPath, CancellationToken cancellationToken = default)
     {
-        return new Downloader(_logger);
+        _logger.LogInformation("Downloading chapter id: {chapter}", chapter.Id);
+
+        var chapterPath = PathUtils.Join(outputPath, $"ch{chapter.Id}");
+        if (!Directory.Exists(chapterPath)) Directory.CreateDirectory(chapterPath);
+
+        var semaphore = new SemaphoreSlim(2);
+        var tick = 0;
+        var tasks = chapter.Pages
+            .Select(page => Task.Run(async () =>
+            {
+                await semaphore.WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                try
+                {
+                    var filePath = Path.Combine(chapterPath, page.Filename);
+                    if (File.Exists(filePath))
+                    {
+                        _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
+                        return;
+                    }
+
+                    var data = await _client.GetImage(page.ImageRemotePath, CancellationToken.None);
+                    await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
+
+                    _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
+                        data.Length);
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.ImageRemotePath);
+                    _logger.LogError("Download failed due to an exception: {ex}", ex);
+                }
+                finally
+                {
+                    tick++;
+                    OnProgress.Invoke($"Downloading {_series.Title} (Chapter 1 of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
+                    semaphore.Release();
+                }
+            }, cancellationToken));
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        _logger.LogInformation("Download of chapter completed: {chapter}", chapter.Id);
     }
 }

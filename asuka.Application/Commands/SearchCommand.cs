@@ -7,7 +7,7 @@ using asuka.Application.Services.ProviderManager;
 using asuka.ProviderSdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
-using Sharprompt;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -50,7 +50,7 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
         var client = _provider.GetProviderByAlias(provider);
         if (client == null)
         {
-            Console.WriteLine($"No provider with ID or alias of '{provider}' found");
+            AnsiConsole.MarkupLine("[red3_1]No provider with ID or alias of '{0}' found[/]", Markup.Escape(provider));
             return;
         }
         
@@ -78,18 +78,38 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
             var responses = await client.Search(query, Context.CancellationToken);
             if (responses.Count < 1)
             {
-                _logger.LogWarning("No results found. Count: {count}", responses.Count);
+                AnsiConsole.MarkupLine("[orange1]No results found.[/]");
                 return;
             }
 
             // Select
-            var selection = Prompt.MultiSelect("Select to download", responses, responses.Count,
-                    textSelector: result => result.Title)
-                .Select(x => (client, x))
-                .ToList();
+            var selection = AnsiConsole.Prompt(
+                new MultiSelectionPrompt<Series>()
+                    .Title("Select to download")
+                    .Required()
+                    .InstructionsText(
+                        "[grey](Press [blue]<space>[/] to pick, and [green]<enter>[/] to start downloading)[/]")
+                    .AddChoices(responses)
+                    .UseConverter(x => Markup.Escape(x.Title)));
 
-            _logger.LogInformation("Selected total of {count} galleries to download.", selection.Count);
-            await Download(selection, output, pack);
+            _logger.LogInformation("Selected galleries: {selected}", selection);
+            await AnsiConsole.Status()
+                .StartAsync("Running...", async ctx =>
+                {
+                    foreach (var series in responses)
+                    {
+                        ctx.Status($"Starting: {series.Title}...");
+                        
+                        var instance = _builder.CreateDownloaderInstance(client, series);
+                        instance.Configure(c =>
+                        {
+                            c.OutputPath = output;
+                            c.Pack = pack;
+                        });
+                        instance.OnProgress = m => ctx.Status(Markup.Escape(m));
+                        await instance.Start();
+                    }
+                });
         }
         catch (OperationCanceledException)
         {
@@ -100,19 +120,5 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
             _logger.LogError("An exception occured: {ex}", ex);
             Console.WriteLine($"An exception occured. Error: {ex.Message}. See logs for more information");
         }
-    }
-    
-    [Ignore]
-    private async Task Download(List<(MetaInfo, Series)> queue, string? output, bool pack)
-    {
-        var downloader = _builder.CreateDownloaderInstance();
-        downloader.Configure(c =>
-        {
-            c.OutputPath = output;
-            c.Pack = pack;
-        });
-
-        downloader.AddSeriesRange(queue);
-        await downloader.Start(Context.CancellationToken);
     }
 }

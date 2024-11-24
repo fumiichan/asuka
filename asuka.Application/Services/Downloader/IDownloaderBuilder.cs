@@ -4,5 +4,5 @@ namespace asuka.Application.Services.Downloader;
 
 internal interface IDownloaderBuilder
 {
-    DownloadBuilder.Downloader CreateDownloaderInstance();
+    Downloader CreateDownloaderInstance(MetaInfo client, Series series);
 }

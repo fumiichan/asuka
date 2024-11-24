@@ -6,6 +6,7 @@ using asuka.Application.Services.ProviderManager;
 using asuka.ProviderSdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -36,88 +37,73 @@ internal sealed class SeriesCommand : CoconaConsoleAppBase
         [Option("output", ['o'], Description = "Specify destination path for downloads")]
         string? output)
     {
-        Console.WriteLine("Retrieving metadata...");
-
-        var client = _provider.GetProviderByAlias(provider);
-        if (client == null)
-        {
-            Console.WriteLine($"No provider with ID or alias of '{provider}' found");
-            return;
-        }
-
-        try
-        {
-            var series = await RetrieveMetadata(client, galleryIds);
-
-            var downloader = _downloader.CreateDownloaderInstance();
-            downloader.Configure(c =>
+        await AnsiConsole.Status()
+            .StartAsync("Running...", async ctx =>
             {
-                c.OutputPath = output;
-                c.Pack = pack;
-            });
-            
-            downloader.AddSeries(client, series);
-            await downloader.Start(Context.CancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogError("Operation canceled by user.");
-            Console.WriteLine("Operation canceled by user.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("An exception occured: {ex}", ex);
-            Console.WriteLine($"An exception occured while downloading series. Error: {ex.Message}. See logs for more information.");
-        }
-    }
-
-    [Ignore]
-    private async Task<Series> RetrieveMetadata(MetaInfo client, IEnumerable<string> galleryIds)
-    {
-        var chapters = new List<Series>();
-        foreach (var gallery in galleryIds)
-        {
-            try
-            {
-                var data = await client.GetSeries(gallery, Context.CancellationToken);
-                chapters.Add(data);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Failed to fetch gallery information of {gallery} with exception: {ex}", gallery, ex);
-                Console.WriteLine($"Skipped {gallery} due to an exception.");
-            }
-        }
-
-        var series = new Series
-        {
-            Title = chapters[0].Title,
-            Artists = chapters[0].Artists,
-            Authors = chapters[0].Authors,
-            Genres = chapters[0].Genres,
-            Chapters = [],
-            Status = chapters[0].Status
-        };
-
-        var chapterCounter = 1;
-        foreach (var item in chapters)
-        {
-            foreach (var chapter in item.Chapters)
-            {
-                series.Chapters.Add(new Chapter
+                var client = _provider.GetProviderByAlias(provider);
+                if (client == null)
                 {
-                    Id = chapterCounter,
-                    Pages = chapter.Pages
-                });
+                    AnsiConsole.MarkupLine("[red3_1]No provider with ID or alias of '{0}' found[/]", Markup.Escape(provider));
+                    return;
+                }
 
-                chapterCounter += 1;
-            }
-        }
+                try
+                {
+                    ctx.Status("Retrieving gallery information...");
 
-        return series;
+                    var queue = new List<Series>();
+                    foreach (var gallery in galleryIds)
+                    {
+                        ctx.Status("Retrieving gallery: {gallery");
+                        
+                        var response = await client.GetSeries(gallery, Context.CancellationToken);
+                        queue.Add(response);
+                        
+                        AnsiConsole.MarkupLine("[chartreuse1]Retrieved: {0}[/]", Markup.Escape(response.Title));
+                    }
+
+                    ctx.Status("Building series information...");
+                    var series = new Series
+                    {
+                        Title = queue[0].Title,
+                        Artists = queue[0].Artists,
+                        Authors = queue[0].Authors,
+                        Genres = queue[0].Genres,
+                        Chapters = [],
+                        Status = queue[0].Status
+                    };
+
+                    var counter = 1;
+                    foreach (var item in queue)
+                    {
+                        foreach (var chapter in item.Chapters)
+                        {
+                            series.Chapters.Add(new Chapter
+                            {
+                                Id = counter,
+                                Pages = chapter.Pages,
+                            });
+                            counter++;
+                        }
+                    }
+
+                    ctx.Status("Starting download...");
+                    var instance = _downloader.CreateDownloaderInstance(client, series);
+                    instance.Configure(c =>
+                    {
+                        c.OutputPath = output;
+                        c.Pack = pack;
+                    });
+                    instance.OnProgress = m => ctx.Status(Markup.Escape(m));
+                    await instance.Start();
+                }
+                catch (OperationCanceledException)
+                { }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to fetch gallery with exception: {ex}", ex);
+                    AnsiConsole.MarkupLine("[red3_1]Failed to fetch gallery. See logs for more details.[/]");
+                }
+            });
     }
 }
