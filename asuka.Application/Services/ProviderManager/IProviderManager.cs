@@ -24,5 +24,13 @@ internal interface IProviderManager
     /// Gets the list of providers currently detected
     /// </summary>
     /// <returns></returns>
-    Dictionary<string, Version> GetAllRegisteredProviders();
+    List<RegisteredProvider> GetAllRegisteredProviders();
 }
+
+internal sealed class RegisteredProvider
+{
+    public required string Id { get; init; }
+    public required Version Version { get; init; }
+    public required List<string> Aliases { get; init; }
+}
+

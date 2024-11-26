@@ -54,7 +54,7 @@ internal sealed class SeriesCommand : CoconaConsoleAppBase
                     var queue = new List<Series>();
                     foreach (var gallery in galleryIds)
                     {
-                        ctx.Status("Retrieving gallery: {gallery");
+                        ctx.Status($"Retrieving gallery: {Markup.Escape(gallery)}");
                         
                         var response = await client.GetSeries(gallery, Context.CancellationToken);
                         queue.Add(response);

@@ -93,14 +93,17 @@ internal sealed class ProviderManager :  IProviderManager
         return null;
     }
 
-    public Dictionary<string, Version> GetAllRegisteredProviders()
+    public List<RegisteredProvider> GetAllRegisteredProviders()
     {
-        var dict = new Dictionary<string, Version>();
-        foreach (var (key, instance) in _providers)
-        {
-            dict.Add(key, instance.GetVersion());
-        }
-
-        return dict;
+        return _providers.Values
+            .Select(instance =>
+            {
+                return new RegisteredProvider
+                {
+                    Id = instance.GetId(),
+                    Aliases = instance.GetAliases(),
+                    Version = instance.GetVersion()
+                };
+            }).ToList();
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using asuka.Application.Services.ProviderManager;
 using Cocona;
+using Spectre.Console;
 
 namespace asuka.Application.Commands;
 
@@ -16,9 +17,19 @@ internal sealed class ProvidersCommand
     [Command("provider", Description = "Lists/Manages the providers currently installed")]
     public void Run()
     {
-        foreach (var (id, version) in _provider.GetAllRegisteredProviders())
+        var table = new Table();
+        table.AddColumn("Provider ID");
+        table.AddColumn("Version");
+        table.AddColumn("Aliases");
+        
+        foreach (var provider in _provider.GetAllRegisteredProviders())
         {
-            Console.WriteLine($"{id}\t\t{version}");
+            table.AddRow(
+                Markup.Escape(provider.Id),
+                Markup.Escape(provider.Version.ToString()),
+                Markup.Escape(string.Join(", ", provider.Aliases)));
         }
+        
+        AnsiConsole.Write(table);
     }
 }
