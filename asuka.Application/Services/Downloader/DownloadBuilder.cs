@@ -104,7 +104,7 @@ internal sealed class Downloader
                 if (File.Exists(filePath))
                 {
                     _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
-                    return;
+                    continue;
                 }
 
                 var data = await _client.GetImage(page.ImageRemotePath, CancellationToken.None);
