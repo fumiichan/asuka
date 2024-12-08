@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,7 +14,18 @@ namespace asuka.Provider.Nhentai;
 public sealed partial class Provider : MetaInfo
 {
     private readonly IGalleryApi _gallery;
-    private readonly IGalleryImage _galleryImage;
+
+    private int _activeHostnameIndex = 0;
+    private IGalleryImage? _galleryImage;
+    private readonly List<string> _knownHostnames = [
+        "https://i.nhentai.net",
+        "https://i1.nhentai.net",
+        "https://i2.nhentai.net",
+        "https://i3.nhentai.net",
+        "https://i4.nhentai.net",
+        "https://i5.nhentai.net",
+        "https://i6.nhentai.net",
+    ];
 
     public Provider()
     {
@@ -35,12 +47,6 @@ public sealed partial class Provider : MetaInfo
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             })
         });
-
-        // Notice: This may be dynamic in the near future. There's domains such as i<n>.nhentai.net
-        // This hints that maybe in the near future, some images will be served only on that domain and currently
-        // the API we are using doesn't have that kind of detail.
-        var imageClient = HttpClientFactory.CreateClientFromProvider<Provider>("https://i.nhentai.net/");
-        _galleryImage = RestService.For<IGalleryImage>(imageClient);
     }
 
     public override bool IsGallerySupported(string galleryId)
@@ -108,14 +114,42 @@ public sealed partial class Provider : MetaInfo
 
     public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
     {
-        var pathArguments = remotePath.Split(",");
-        if (pathArguments.Length != 2)
+        return await TryGetImage(remotePath, cancellationToken: cancellationToken);
+    }
+
+    private async Task<byte[]> TryGetImage(string remotePath, int maxCalls = 0, CancellationToken cancellationToken = default)
+    {
+        // Check if the instance is null
+        if (_galleryImage == null)
         {
-            throw new Exception($"Unable to download due to malformed remote path. remotePath: {remotePath}");
+            var client = HttpClientFactory.CreateClientFromProvider<Provider>(_knownHostnames[_activeHostnameIndex]);
+            _galleryImage = RestService.For<IGalleryImage>(client);
         }
         
-        var request = await _galleryImage.GetImage(pathArguments[0], pathArguments[1], cancellationToken);
-        return await request.ReadAsByteArrayAsync(cancellationToken);
+        var pathArguments = remotePath.Split("/");
+        var mediaId = pathArguments[2];
+        var filename = pathArguments[3];
+
+        try
+        {
+            var response = await _galleryImage.GetImage(mediaId, filename, cancellationToken);
+            return await response.ReadAsByteArrayAsync(cancellationToken);
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.NotFound && maxCalls < _knownHostnames.Count)
+            {
+                _activeHostnameIndex = (_activeHostnameIndex + 1) >= _knownHostnames.Count ? 0 : _activeHostnameIndex + 1;
+                
+                // Override the gallery instance
+                var client = HttpClientFactory.CreateClientFromProvider<Provider>(_knownHostnames[_activeHostnameIndex]);
+                _galleryImage = RestService.For<IGalleryImage>(client);
+                
+                return await TryGetImage(remotePath, maxCalls + 1, cancellationToken);
+            }
+
+            throw;
+        }
     }
 
     [GeneratedRegex(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")]

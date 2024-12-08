@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using asuka.Application.Extensions;
@@ -94,43 +93,37 @@ internal sealed class Downloader
         var chapterPath = PathUtils.Join(outputPath, $"ch{chapter.Id}");
         if (!Directory.Exists(chapterPath)) Directory.CreateDirectory(chapterPath);
 
-        var semaphore = new SemaphoreSlim(2);
         var tick = 0;
-        var tasks = chapter.Pages
-            .Select(page => Task.Run(async () =>
+        foreach (var page in chapter.Pages)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
             {
-                await semaphore.WaitAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                try
+                var filePath = Path.Combine(chapterPath, page.Filename);
+                if (File.Exists(filePath))
                 {
-                    var filePath = Path.Combine(chapterPath, page.Filename);
-                    if (File.Exists(filePath))
-                    {
-                        _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
-                        return;
-                    }
-
-                    var data = await _client.GetImage(page.ImageRemotePath, CancellationToken.None);
-                    await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
-
-                    _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
-                        data.Length);
+                    _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
+                    return;
                 }
-                catch (Exception ex)
-                {
-                    AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.ImageRemotePath);
-                    _logger.LogError("Download failed due to an exception: {ex}", ex);
-                }
-                finally
-                {
-                    tick++;
-                    OnProgress.Invoke($"Downloading {_series.Title} (Chapter 1 of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
-                    semaphore.Release();
-                }
-            }, cancellationToken));
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+                var data = await _client.GetImage(page.ImageRemotePath, CancellationToken.None);
+                await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
+
+                _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
+                    data.Length);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.ImageRemotePath);
+                _logger.LogError("Download failed due to an exception: {ex}", ex);
+            }
+            finally
+            {
+                tick++;
+                OnProgress.Invoke($"Downloading {_series.Title} (Chapter 1 of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
+            }
+        }
         _logger.LogInformation("Download of chapter completed: {chapter}", chapter.Id);
     }
 }

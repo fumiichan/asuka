@@ -46,7 +46,7 @@ internal static class GalleryResponseToSeriesMapper
                             
                             return new Chapter.ChapterImages
                             {
-                                ImageRemotePath = $"{response.MediaId},{pageNumber}{extension}",
+                                ImageRemotePath = $"/galleries/{response.MediaId}/{pageNumber}{extension}",
                                 Filename = filename
                             };
                         })
