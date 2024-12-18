@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 using Microsoft.Extensions.Logging;
 
 namespace asuka.Application.Services.ProviderManager;

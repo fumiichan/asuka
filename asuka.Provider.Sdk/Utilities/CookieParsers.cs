@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
-namespace asuka.Provider.Common;
+namespace asuka.Provider.Sdk.Utilities;
 
 internal static class CookieParsers
 {

@@ -2,11 +2,11 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using asuka.Provider.Common;
 using asuka.Provider.Nhentai.Api;
 using asuka.Provider.Nhentai.Api.Requests;
 using asuka.Provider.Nhentai.Mappers;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
+using asuka.Provider.Sdk.Utilities;
 using Refit;
 
 namespace asuka.Provider.Nhentai;

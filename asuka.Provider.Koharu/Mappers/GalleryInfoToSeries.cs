@@ -1,5 +1,5 @@
 using asuka.Provider.Koharu.Contracts.Responses;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 
 namespace asuka.Provider.Koharu.Mappers;
 

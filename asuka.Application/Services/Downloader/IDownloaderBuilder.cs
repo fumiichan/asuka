@@ -1,4 +1,4 @@
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 
 namespace asuka.Application.Services.Downloader;
 

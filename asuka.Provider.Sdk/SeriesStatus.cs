@@ -1,4 +1,4 @@
-namespace asuka.ProviderSdk;
+namespace asuka.Provider.Sdk;
 
 public enum SeriesStatus
 {

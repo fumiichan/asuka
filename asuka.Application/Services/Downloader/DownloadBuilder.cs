@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using asuka.Application.Extensions;
 using asuka.Application.Services.Downloader.Compression;
 using asuka.Application.Utilities;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -57,17 +57,13 @@ internal sealed class Downloader
 
     public async Task Start(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Downloading series: {series}", _series);
+        _logger.LogInformation("Downloading series: {@series}", _series);
         
         var seriesPath = PathUtils.Join(_config.OutputPath, _series.Title);
         foreach (var chapter in _series.Chapters)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) (0/{chapter.Pages.Count})...");
-            if (cancellationToken.IsCancellationRequested)
-            {
-                AnsiConsole.MarkupLine("[yellow]Cancelled.[/]");
-                break;
-            }
 
             await ProcessChapter(chapter, seriesPath, cancellationToken);
             AnsiConsole.MarkupLine("[chartreuse1]Finished: {0} (Chapter {1} of {2})[/]", Markup.Escape(_series.Title), chapter.Id, _series.Chapters.Count);
@@ -104,24 +100,27 @@ internal sealed class Downloader
                 if (File.Exists(filePath))
                 {
                     _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
+                    
+                    tick++;
+                    OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
                     continue;
                 }
 
-                var data = await _client.GetImage(page.ImageRemotePath, CancellationToken.None);
+                var data = await _client.GetImage(page.ImageRemotePath, cancellationToken);
                 await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
 
                 _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
                     data.Length);
+                
+                tick++;
+                OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
             }
             catch (Exception ex)
             {
                 AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.ImageRemotePath);
                 _logger.LogError("Download failed due to an exception: {ex}", ex);
-            }
-            finally
-            {
-                tick++;
-                OnProgress.Invoke($"Downloading {_series.Title} (Chapter 1 of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
+
+                break;
             }
         }
         _logger.LogInformation("Download of chapter completed: {chapter}", chapter.Id);

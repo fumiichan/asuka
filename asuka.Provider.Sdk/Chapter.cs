@@ -1,6 +1,4 @@
-namespace asuka.ProviderSdk;
-
-using System.Collections.Generic;
+namespace asuka.Provider.Sdk;
 
 public sealed class Chapter
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using asuka.Application.Services.Downloader;
 using asuka.Application.Services.ProviderManager;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;

@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>asuka.Provider.Sdk</AssemblyName>
+        <RootNamespace>asuka.Provider.Sdk</RootNamespace>
     </PropertyGroup>
 
 </Project>

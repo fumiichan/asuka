@@ -14,3 +14,4 @@ build:
 	# Build the plugins
 	dotnet build -c Release -o ./dist/providers/nhentai asuka.Provider.Nhentai/asuka.Provider.Nhentai.csproj
 	dotnet build -c Release -o ./dist/providers/koharu asuka.Provider.Koharu/asuka.Provider.Koharu.csproj
+	dotnet build -c Release -o ./dist/providers/hitomi asuka.Provider.Hitomi/asuka.Provider.Hitomi.csproj

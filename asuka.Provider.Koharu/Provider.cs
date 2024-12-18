@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using asuka.Provider.Common;
 using asuka.Provider.Koharu.Api;
 using asuka.Provider.Koharu.Contracts.Queries;
 using asuka.Provider.Koharu.Extensions;
 using asuka.Provider.Koharu.Mappers;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
+using asuka.Provider.Sdk.Utilities;
 using Refit;
 
 namespace asuka.Provider.Koharu;
@@ -14,20 +14,29 @@ public sealed partial class Provider : MetaInfo
 {
     private readonly IKoharuApi _api;
 
+    private string _activeHost = string.Empty;
+    private IKoharuImageApi? _imageApi;
+
     public Provider()
     {
         Id = "asuka.Provider.Koharu";
-        Version = new Version(0, 1, 0, 0);
+        Version = new Version(1, 0, 0, 0);
         ProviderAliases =
         [
-            "koharu-beta"
+            "koharu",
+            "niyaniya",
+            "shcale",
+            "gehenna",
+            "shupogaki",
+            "hoshino",
+            "seia"
         ];
 
-        var apiClient = HttpClientFactory.CreateClientFromProvider<Provider>("https://api.koharu.to/",
+        var apiClient = HttpClientFactory.CreateClientFromProvider<Provider>("https://api.niyaniya.moe/",
             new Dictionary<string, string>
             {
-                { "Referer", "https://koharu.to" },
-                { "Origin", "https://koharu.to" }
+                { "Referer", "https://niyaniya.moe" },
+                { "Origin", "https://niyaniya.moe" }
             });
         _api = RestService.For<IKoharuApi>(apiClient, new RefitSettings
         {
@@ -84,7 +93,7 @@ public sealed partial class Provider : MetaInfo
 
     public override Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public override async Task<Series> GetRandom(CancellationToken cancellationToken = default)
@@ -120,13 +129,19 @@ public sealed partial class Provider : MetaInfo
     public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
     {
         var uri = new Uri(remotePath);
-        var client = HttpClientFactory.CreateClientFromProvider<Provider>($"https://{uri.Authority}/",
-            new Dictionary<string, string>
-            {
-                { "Referer", "https://koharu.to" },
-                { "Origin", "https://koharu.to" }
-            });
-        var request = RestService.For<IKoharuImageApi>(client);
+        if (uri.Authority != _activeHost || _imageApi == null)
+        {
+            _activeHost = uri.Authority;
+            
+            var client = HttpClientFactory.CreateClientFromProvider<Provider>($"https://{uri.Authority}/",
+                new Dictionary<string, string>
+                {
+                    { "Referer", "https://niyaniya.moe" },
+                    { "Origin", "https://niyaniya.moe" }
+                });
+            
+            _imageApi = RestService.For<IKoharuImageApi>(client);
+        }
         
         // It must need to be 7 in length, just to be safe.
         var parameters = uri.AbsolutePath.Split('/');
@@ -144,7 +159,7 @@ public sealed partial class Provider : MetaInfo
         var hash2 = parameters[5];
         var file = parameters[6];
         
-        var data = await request.GetImage(
+        var data = await _imageApi.GetImage(
             id,
             publicKey,
             hash1,
@@ -156,7 +171,7 @@ public sealed partial class Provider : MetaInfo
         return await data.ReadAsByteArrayAsync(cancellationToken);
     }
 
-    [GeneratedRegex(@"^https:\/\/koharu.to\/g\/\d{1,9}\/[a-fA-F0-9]+$")]
+    [GeneratedRegex(@"^https:\/\/niyaniya\.moe\/g\/\d{1,9}\/[a-fA-F0-9]+$")]
     private static partial Regex UrlRegex();
     
     [GeneratedRegex(@"([a-fA-F0-9])+$")]

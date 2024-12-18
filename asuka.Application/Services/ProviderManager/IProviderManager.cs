@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 
 namespace asuka.Application.Services.ProviderManager;
 

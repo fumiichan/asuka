@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace asuka.Provider.Common;
+namespace asuka.Provider.Sdk.Utilities;
 
 public static class HttpClientFactory
 {

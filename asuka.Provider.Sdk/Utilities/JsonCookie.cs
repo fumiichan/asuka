@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace asuka.Provider.Common;
+namespace asuka.Provider.Sdk.Utilities;
 
 internal sealed class JsonCookie
 {

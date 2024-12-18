@@ -12,8 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\asuka.Provider.Common\asuka.Provider.Common.csproj" />
-      <ProjectReference Include="..\asuka.ProviderSdk\asuka.ProviderSdk.csproj" />
+      <ProjectReference Include="..\asuka.Provider.Sdk\asuka.Provider.Sdk.csproj" />
     </ItemGroup>
 
     <ItemGroup>

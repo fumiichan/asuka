@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using asuka.Application.Commands;
 using asuka.Application.Services.Downloader;
 using asuka.Application.Services.ProviderManager;
@@ -20,7 +19,10 @@ if (!Directory.Exists(logRoot))
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo
-    .File(Path.Combine(logRoot, "log.txt"), rollingInterval: RollingInterval.Day)
+    .File(
+        Path.Combine(logRoot, "log.txt"),
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}[{Level}][{SourceContext}] {Message}{NewLine}{Exception}")
     .CreateLogger();
 
 builder.Services.AddLogging(loggingBuilder =>

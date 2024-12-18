@@ -1,6 +1,6 @@
 using asuka.Provider.Nhentai.Contracts;
 using asuka.Provider.Nhentai.Extensions;
-using asuka.ProviderSdk;
+using asuka.Provider.Sdk;
 
 namespace asuka.Provider.Nhentai.Mappers;
 
