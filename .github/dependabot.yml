@@ -11,9 +11,9 @@ updates:
       interval: "weekly"
     target-branch: "main"
     reviewers:
-      - "aikoofujimotoo"
+      - "fumiichan"
     labels:
       - "dependencies"
       - "enhancement"
     assignees:
-      - "aikoofujimotoo"
+      - "fumiichan"
