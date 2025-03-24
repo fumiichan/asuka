@@ -18,7 +18,6 @@ public sealed partial class Provider : MetaInfo
     private int _activeHostnameIndex = 0;
     private IGalleryImage? _galleryImage;
     private readonly List<string> _knownHostnames = [
-        "https://i.nhentai.net",
         "https://i1.nhentai.net",
         "https://i2.nhentai.net",
         "https://i3.nhentai.net",
