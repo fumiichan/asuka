@@ -9,7 +9,7 @@ build:
 	dotnet restore
 
 	# Build main application first
-	dotnet publish -p:PublishSingleFile=true --self-contained true -o ./dist/ asuka.Application/asuka.csproj
+	dotnet publish -p:PublishSingleFile=true --self-contained false -o ./dist/ asuka.Application/asuka.csproj
 
 	# Build the plugins
 	dotnet build -c Release -o ./dist/providers/nhentai asuka.Provider.Nhentai/asuka.Provider.Nhentai.csproj
