@@ -29,7 +29,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.provider.nhentai";
-        Version = new Version(1, 1, 0, 2);
+        Version = new Version(1, 2, 0, 2);
         ProviderAliases =
         [
             "nh",

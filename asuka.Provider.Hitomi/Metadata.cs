@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using asuka.Provider.Hitomi.Contracts.Responses;
@@ -12,10 +13,11 @@ public sealed partial class Metadata : MetaInfo
     public Metadata()
     {
         Id = "asuka.provider.hitomi";
-        Version = new Version(0, 0, 1, 0);
+        Version = new Version(1, 1, 0, 0);
         ProviderAliases =
         [
-            "hitomi"
+            "hitomi",
+            "hitomi.la"
         ];
     }
     
@@ -26,7 +28,7 @@ public sealed partial class Metadata : MetaInfo
 
     public override async Task<Series> GetSeries(string galleryId, CancellationToken cancellationToken = default)
     {
-        var client = HttpClientFactory.CreateClientFromProvider<Metadata>("https://ltn.hitomi.la",
+        var client = HttpClientFactory.CreateClientFromProvider<Metadata>("https://ltn.gold-usergeneratedcontent.net",
             new Dictionary<string, string>
             {
                 { "Referer", galleryId },
@@ -42,7 +44,7 @@ public sealed partial class Metadata : MetaInfo
     {
         var id = GalleryIdRegex().Match(galleryId).Groups[1].Value;
         
-        var client = HttpClientFactory.CreateClientFromProvider<Metadata>("https://ltn.hitomi.la",
+        var client = HttpClientFactory.CreateClientFromProvider<Metadata>("https://ltn.gold-usergeneratedcontent.net",
             new Dictionary<string, string>
             {
                 { "Referer", galleryId },
@@ -137,19 +139,39 @@ public sealed partial class Metadata : MetaInfo
         var ggCode = await HitomiHelper.GetGgCode(client, cancellationToken);
         var referrer = $"https://hitomi.la/reader/{id}.html";
         
+        // Constants for image url
+        // Default to "w", other formats seems to fail for some reason.
+        // Also force it to use webp instead.
+        const string domainLetter = "w";
+        const string ext = ".webp";
+        
         var chapter = new Chapter
         {
             Id = 1,
             Pages = data.Files.Select(x =>
             {
-                var a = HitomiHelper.GetHiddenCodeFromHash(x.Hash);
-                var b = (char)(97 + (ggCode.M.TryGetValue(a, out var c) ? c : ggCode.D));
-                
-                var url = $"https://{b}a.hitomi.la/webp/{ggCode.B}/{a}/{x.Hash}.webp";
-                var filename = Path.GetFileName(x.Name).Replace(Path.GetExtension(x.Name), ".webp");
+                // https://{a}{b}.gold-usergeneratedcontent.net/{c}/{d}/{e}.{f}
+                // Legend:
+                //     a -> the first letter of the file extension    domainLetter
+                //     b -> some digit from gg.js                     domainNumeric
+                //     c -> some digits (probably an epoch time)      ggCode.B
+                //     d -> some random 4 digits again                dictKey
+                //     e -> hash of the file                          x.Hash
+                //     f -> file extension                            ext (including dot)
+
+                // Retrieve the key as index from the dictionary
+                var key = x.Hash[^1] + x.Hash.Substring(x.Hash.Length - 3, 2);
+                var dictKey = int.Parse(key, NumberStyles.HexNumber);
+                var domainNumeric = (ggCode.M.TryGetValue(dictKey, out var code) ? code : ggCode.D) + 1;
+
+                var url = $"https://{domainLetter}{domainNumeric}.gold-usergeneratedcontent.net" +
+                          $"/{ggCode.B}" +
+                          $"/{dictKey}" +
+                          $"/{x.Hash}" +
+                          ext;
                 return new Chapter.ChapterImages
                 {
-                    Filename = filename,
+                    Filename = x.Name.Replace(Path.GetExtension(x.Name), ext),
                     ImageRemotePath = url + "|" + referrer,
                 };
             }).ToList()

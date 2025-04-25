@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.RegularExpressions;
 using asuka.Provider.Hitomi.Contracts.Responses;
 
@@ -51,12 +50,6 @@ internal static partial class HitomiHelper
         };
     }
 
-    public static int GetHiddenCodeFromHash(string hash)
-    {
-        var m = TheHiddenCodeFromHashRegex().Match(hash);
-        return int.Parse(m.Groups[2].Value + m.Groups[1].Value, NumberStyles.HexNumber);
-    }
-
     public static List<string> MergeTags(this GalleryInformation info)
     {
         var tags = new List<string>();
@@ -65,9 +58,6 @@ internal static partial class HitomiHelper
 
         return tags;
     }
-
-    [GeneratedRegex(@"(..)(.)$")]
-    private static partial Regex TheHiddenCodeFromHashRegex();
 
     [GeneratedRegex(@"(?:var\s|default:)\s*o\s*=\s*(\d+)")]
     private static partial Regex TheDStuffRegex();
