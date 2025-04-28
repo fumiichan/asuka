@@ -25,7 +25,7 @@ internal static class GalleryResponseToSeriesMapper
             Genres = tags,
             Chapters =
             [
-                new()
+                new Chapter
                 {
                     Id = 1,
                     Pages = response.Images.Pages
@@ -44,9 +44,9 @@ internal static class GalleryResponseToSeriesMapper
                             var pageNumberFormatted = pageNumber.ToString($"D{response.TotalPages.ToString().Length}");
                             var filename = $"{pageNumberFormatted}{extension}";
                             
-                            return new Chapter.ChapterImages
+                            return new ChapterImage
                             {
-                                ImageRemotePath = $"/galleries/{response.MediaId}/{pageNumber}{extension}",
+                                RemotePath = $"/galleries/{response.MediaId}/{pageNumber}{extension}",
                                 Filename = filename
                             };
                         })

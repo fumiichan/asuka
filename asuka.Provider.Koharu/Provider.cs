@@ -20,7 +20,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.Provider.Koharu";
-        Version = new Version(1, 0, 0, 0);
+        Version = new Version(1, 0, 0, 2);
         ProviderAliases =
         [
             "koharu",
@@ -126,9 +126,9 @@ public sealed partial class Provider : MetaInfo
         throw new NotSupportedException();
     }
 
-    public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
+    public override async Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default)
     {
-        var uri = new Uri(remotePath);
+        var uri = new Uri(image.RemotePath);
         if (uri.Authority != _activeHost || _imageApi == null)
         {
             _activeHost = uri.Authority;
@@ -147,7 +147,7 @@ public sealed partial class Provider : MetaInfo
         var parameters = uri.AbsolutePath.Split('/');
         if (parameters.Length != 7)
         {
-            throw new ArgumentException($"The remote path may not be usable: {remotePath}", nameof(remotePath));
+            throw new ArgumentException($"The remote path may not be usable: {image.RemotePath}", nameof(image.RemotePath));
         }
         
         var widthFromQuery = ResolutionRegex().Match(uri.Query).Value;
@@ -158,16 +158,11 @@ public sealed partial class Provider : MetaInfo
         var hash1 = parameters[4];
         var hash2 = parameters[5];
         var file = parameters[6];
-        
-        var data = await _imageApi.GetImage(
-            id,
-            publicKey,
-            hash1,
-            hash2,
-            file,
-            new ImageQuery { Width = int.Parse(widthFromQuery) },
-            cancellationToken);
 
+        var route = $"{id}/{publicKey}/{hash1}/{hash2}/{file}";
+        var query = new ImageQuery { Width = int.Parse(widthFromQuery) };
+
+        var data = await _imageApi.GetImage(route, query, cancellationToken);
         return await data.ReadAsByteArrayAsync(cancellationToken);
     }
 

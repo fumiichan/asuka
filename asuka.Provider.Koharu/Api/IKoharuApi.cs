@@ -20,6 +20,4 @@ internal interface IKoharuApi
         string anotherPublicKey,
         ImageListQuery query,
         CancellationToken cancellationToken = default);
-    
-    Task<GallerySearchResult> Search(SearchParams @params, CancellationToken cancellationToken = default);
 }

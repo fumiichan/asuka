@@ -13,7 +13,7 @@ public sealed partial class Metadata : MetaInfo
     public Metadata()
     {
         Id = "asuka.provider.hitomi";
-        Version = new Version(1, 1, 0, 0);
+        Version = new Version(1, 1, 0, 1);
         ProviderAliases =
         [
             "hitomi",
@@ -64,18 +64,12 @@ public sealed partial class Metadata : MetaInfo
         return result;
     }
 
-    public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
+    public override async Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default)
     {
-        var @params = remotePath.Split('|');
-        
-        var uri = new Uri(@params[0]);
-        var referer = @params[1];
+        var uri = new Uri(image.RemotePath);
+        var hostname = $"https://{uri.Authority}";
 
-        var client = HttpClientFactory.CreateClientFromProvider<Metadata>($"https://{uri.Authority}",
-            new Dictionary<string, string>
-            {
-                { "Referer", referer },
-            });
+        var client = HttpClientFactory.CreateClientFromProvider<Metadata>(hostname, image.RequestHeaders);
         var request = await client.GetAsync(uri.AbsolutePath, cancellationToken);
         request.EnsureSuccessStatusCode();
         
@@ -169,10 +163,14 @@ public sealed partial class Metadata : MetaInfo
                           $"/{dictKey}" +
                           $"/{x.Hash}" +
                           ext;
-                return new Chapter.ChapterImages
+                return new ChapterImage
                 {
                     Filename = x.Name.Replace(Path.GetExtension(x.Name), ext),
-                    ImageRemotePath = url + "|" + referrer,
+                    RemotePath = url,
+                    RequestHeaders = new Dictionary<string, string>
+                    {
+                        { "Referer", referrer }
+                    }
                 };
             }).ToList()
         };

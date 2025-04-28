@@ -29,7 +29,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.provider.nhentai";
-        Version = new Version(1, 2, 0, 2);
+        Version = new Version(1, 2, 0, 3);
         ProviderAliases =
         [
             "nh",
@@ -111,12 +111,12 @@ public sealed partial class Provider : MetaInfo
             .ToList();
     }
 
-    public override async Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default)
+    public override async Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default)
     {
-        return await TryGetImage(remotePath, cancellationToken: cancellationToken);
+        return await TryGetImage(image, cancellationToken: cancellationToken);
     }
 
-    private async Task<byte[]> TryGetImage(string remotePath, int maxCalls = 0, CancellationToken cancellationToken = default)
+    private async Task<byte[]> TryGetImage(ChapterImage image, int maxCalls = 0, CancellationToken cancellationToken = default)
     {
         // Check if the instance is null
         if (_galleryImage == null)
@@ -125,7 +125,7 @@ public sealed partial class Provider : MetaInfo
             _galleryImage = RestService.For<IGalleryImage>(client);
         }
         
-        var pathArguments = remotePath.Split("/");
+        var pathArguments = image.RemotePath.Split("/");
         var mediaId = pathArguments[2];
         var filename = pathArguments[3];
 
@@ -144,7 +144,7 @@ public sealed partial class Provider : MetaInfo
                 var client = HttpClientFactory.CreateClientFromProvider<Provider>(_knownHostnames[_activeHostnameIndex]);
                 _galleryImage = RestService.For<IGalleryImage>(client);
                 
-                return await TryGetImage(remotePath, maxCalls + 1, cancellationToken);
+                return await TryGetImage(image, maxCalls + 1, cancellationToken);
             }
 
             throw;

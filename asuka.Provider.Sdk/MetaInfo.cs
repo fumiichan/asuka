@@ -89,8 +89,8 @@ public abstract class MetaInfo
     /// <summary>
     /// Downloads the image from the provider
     /// </summary>
-    /// <param name="remotePath">Path to the resource.</param>
+    /// <param name="image">The image information to download</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Returns entire file in form of byte array</returns>
-    public abstract Task<byte[]> GetImage(string remotePath, CancellationToken cancellationToken = default);
+    public abstract Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default);
 }

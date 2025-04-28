@@ -32,9 +32,9 @@ internal static class GalleryInfoToSeries
         return data;
     }
 
-    private static List<Chapter.ChapterImages> ToChapterImages(this GalleryContentsResponse contents, int width)
+    private static List<ChapterImage> ToChapterImages(this GalleryContentsResponse contents, int width)
     {
-        var chapterImages = new List<Chapter.ChapterImages>();
+        var chapterImages = new List<ChapterImage>();
 
         var pages = contents.Entries.Count;
         for (var i = 0; i < pages; i++)
@@ -44,10 +44,10 @@ internal static class GalleryInfoToSeries
             var filenameFormat = (i + 1).ToString($"D{pages.ToString().Length}");
             var extension = Path.GetExtension(path);
             
-            chapterImages.Add(new Chapter.ChapterImages
+            chapterImages.Add(new ChapterImage
             {
                 Filename = $"{filenameFormat}{extension}",
-                ImageRemotePath = $"{contents.Base}{path}?w={width}"
+                RemotePath = $"{contents.Base}{path}?w={width}"
             });
         }
         

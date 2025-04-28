@@ -106,7 +106,7 @@ internal sealed class Downloader
                     continue;
                 }
 
-                var data = await _client.GetImage(page.ImageRemotePath, cancellationToken);
+                var data = await _client.GetImage(page, cancellationToken);
                 await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
 
                 _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
@@ -117,7 +117,7 @@ internal sealed class Downloader
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.ImageRemotePath);
+                AnsiConsole.MarkupLine("[red3_1]Failed to download image: {0}[/]", page.RemotePath);
                 _logger.LogError("Download failed due to an exception: {ex}", ex);
 
                 break;
