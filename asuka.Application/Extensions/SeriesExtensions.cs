@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using asuka.Application.Utilities;
 using asuka.Provider.Sdk;
 
 namespace asuka.Application.Extensions;
@@ -52,7 +53,7 @@ internal static class SeriesExtensions
             Status = series.Status == SeriesStatus.Completed ? "2" : "1"
         };
 
-        var serialized = JsonSerializer.Serialize(metadata);
+        var serialized = JsonSerializer.Serialize(metadata, SerializerOptions.DefaultSerializerOptions);
         await File.WriteAllTextAsync(writePath, serialized, Encoding.UTF8);
     }
 }
