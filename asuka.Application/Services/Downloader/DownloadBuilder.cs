@@ -87,11 +87,16 @@ internal sealed class Downloader
         _logger.LogInformation("Downloading chapter id: {chapter}", chapter.Id);
 
         var chapterPath = PathUtils.Join(outputPath, $"ch{chapter.Id}");
-        if (!Directory.Exists(chapterPath)) Directory.CreateDirectory(chapterPath);
+        if (!Directory.Exists(chapterPath))
+        {
+            _logger.LogInformation("Creating directory: {dir}", chapterPath);
+            Directory.CreateDirectory(chapterPath);
+        }
 
         var tick = 0;
         foreach (var page in chapter.Pages)
         {
+            OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -102,18 +107,16 @@ internal sealed class Downloader
                     _logger.LogInformation("Download skipped due to file exists: {path}", filePath);
                     
                     tick++;
-                    OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
                     continue;
                 }
 
                 var data = await _client.GetImage(page, cancellationToken);
                 await File.WriteAllBytesAsync(filePath, data, CancellationToken.None);
 
-                _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath,
-                    data.Length);
+                _logger.LogInformation("File downloaded: {file} with {length} bytes", filePath, data.Length);
                 
+                // Increment upon completion
                 tick++;
-                OnProgress.Invoke($"Downloading {_series.Title} (Chapter {chapter.Id} of {_series.Chapters.Count}) ({tick}/{chapter.Pages.Count})...");
             }
             catch (Exception ex)
             {

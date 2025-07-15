@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using asuka.Provider.Nhentai.Api;
+using asuka.Provider.Nhentai.Api.Client;
 using asuka.Provider.Nhentai.Api.Requests;
 using asuka.Provider.Nhentai.Mappers;
 using asuka.Provider.Sdk;
@@ -15,16 +16,8 @@ public sealed partial class Provider : MetaInfo
 {
     private readonly IGalleryApi _gallery;
 
-    private int _activeHostnameIndex = 0;
-    private IGalleryImage? _galleryImage;
-    private readonly List<string> _knownHostnames = [
-        "https://i1.nhentai.net",
-        "https://i2.nhentai.net",
-        "https://i3.nhentai.net",
-        "https://i4.nhentai.net",
-        "https://i5.nhentai.net",
-        "https://i6.nhentai.net",
-    ];
+    private readonly List<ImageRequestClient<Provider>> _clients;
+    private int _active;
 
     public Provider()
     {
@@ -46,6 +39,17 @@ public sealed partial class Provider : MetaInfo
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             })
         });
+        
+        // Configure Image request
+        _clients =
+        [
+            new ImageRequestClient<Provider>("https://i1.nhentai.net"),
+            new ImageRequestClient<Provider>("https://i2.nhentai.net"),
+            new ImageRequestClient<Provider>("https://i3.nhentai.net"),
+            new ImageRequestClient<Provider>("https://i4.nhentai.net"),
+            new ImageRequestClient<Provider>("https://i5.nhentai.net"),
+            new ImageRequestClient<Provider>("https://i6.nhentai.net")
+        ];
     }
 
     public override bool IsGallerySupported(string galleryId)
@@ -116,35 +120,29 @@ public sealed partial class Provider : MetaInfo
         return await TryGetImage(image, cancellationToken: cancellationToken);
     }
 
-    private async Task<byte[]> TryGetImage(ChapterImage image, int maxCalls = 0, CancellationToken cancellationToken = default)
+    private async Task<byte[]> TryGetImage(ChapterImage image, int retryCount = 0, CancellationToken cancellationToken = default)
     {
-        // Check if the instance is null
-        if (_galleryImage == null)
-        {
-            var client = HttpClientFactory.CreateClientFromProvider<Provider>(_knownHostnames[_activeHostnameIndex]);
-            _galleryImage = RestService.For<IGalleryImage>(client);
-        }
-        
-        var pathArguments = image.RemotePath.Split("/");
-        var mediaId = pathArguments[2];
-        var filename = pathArguments[3];
+        var client = _clients[_active];
 
         try
         {
-            var response = await _galleryImage.GetImage(mediaId, filename, cancellationToken);
+            var pathArguments = image.RemotePath.Split("/");
+            var mediaId = pathArguments[2];
+            var filename = pathArguments[3];
+            
+            var response = await client.Client.GetImage(mediaId, filename, cancellationToken);
             return await response.ReadAsByteArrayAsync(cancellationToken);
         }
         catch (ApiException ex)
         {
-            if (ex.StatusCode == HttpStatusCode.NotFound && maxCalls < _knownHostnames.Count)
+            // Retry with a different host if it doesn't exist:
+            if (ex.StatusCode == HttpStatusCode.NotFound && retryCount <= _clients.Count)
             {
-                _activeHostnameIndex = (_activeHostnameIndex + 1) >= _knownHostnames.Count ? 0 : _activeHostnameIndex + 1;
+                _active = (_active + 1) >= _clients.Count
+                    ? 0
+                    : _active + 1;
                 
-                // Override the gallery instance
-                var client = HttpClientFactory.CreateClientFromProvider<Provider>(_knownHostnames[_activeHostnameIndex]);
-                _galleryImage = RestService.For<IGalleryImage>(client);
-                
-                return await TryGetImage(image, maxCalls + 1, cancellationToken);
+                return await TryGetImage(image, retryCount + 1, cancellationToken);
             }
 
             throw;
