@@ -22,7 +22,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.provider.nhentai";
-        Version = new Version(1, 2, 0, 3);
+        Version = new Version(1, 2, 0, 4);
         ProviderAliases =
         [
             "nh",
@@ -126,11 +126,7 @@ public sealed partial class Provider : MetaInfo
 
         try
         {
-            var pathArguments = image.RemotePath.Split("/");
-            var mediaId = pathArguments[2];
-            var filename = pathArguments[3];
-            
-            var response = await client.Client.GetImage(mediaId, filename, cancellationToken);
+            var response = await client.Client.GetImage(image.RemotePath, cancellationToken);
             return await response.ReadAsByteArrayAsync(cancellationToken);
         }
         catch (ApiException ex)
