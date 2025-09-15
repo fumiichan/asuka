@@ -43,6 +43,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="9.0.9" />
       <ProjectReference Include="..\asuka.Provider.Sdk\asuka.Provider.Sdk.csproj" />
     </ItemGroup>
 </Project>
