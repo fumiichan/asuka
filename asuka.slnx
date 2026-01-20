@@ -1,0 +1,23 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Providers/">
+    <Project Path="asuka.Provider.Hitomi/asuka.Provider.Hitomi.csproj" />
+    <Project Path="asuka.Provider.Koharu/asuka.Provider.Koharu.csproj" />
+    <Project Path="asuka.Provider.Nhentai/asuka.Provider.Nhentai.csproj" />
+    <Project Path="asuka.Provider.Sdk/asuka.Provider.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/Solution Files/">
+    <File Path=".gitignore" />
+    <File Path="LICENSE" />
+    <File Path="Makefile" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Files/Documentation/">
+    <File Path="docs/SDK" />
+  </Folder>
+  <Project Path="asuka.Application/asuka.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>

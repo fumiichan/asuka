@@ -1,14 +1,20 @@
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable CollectionNeverUpdated.Global
+
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using asuka.Application.Services.Downloader;
 using asuka.Application.Services.ProviderManager;
 using asuka.Application.Validators;
+using asuka.Provider.Sdk;
 using Cocona;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace asuka.Application.Commands;
 
@@ -25,15 +31,12 @@ internal sealed class FileCommand : CoconaConsoleAppBase
         _logger = logger;
     }
 
-    [Command("file", Aliases = ["f"], Description = "Download galleries from text file")]
+    [Command("file", Aliases = ["f"], Description = "Download galleries from yaml (.yml) document")]
     public async Task RunAsync(
-        [Argument(Description = "Path to the text file to read")]
+        [Argument(Description = "Path to the yaml (.yml) file to read")]
         [PathExists]
         [FileWithinSizeLimits]
         string file,
-        
-        [Option("provider", Description = "Specify a provider to use")]
-        string? provider,
         
         [Option("pack", ['p'], Description = "Compress downloads to a CBZ archive")]
         bool pack,
@@ -44,40 +47,62 @@ internal sealed class FileCommand : CoconaConsoleAppBase
         await AnsiConsole.Status()
             .StartAsync("Running...", async ctx =>
             {
-                ctx.Status("Reading text file...");
-                var lines = await File.ReadAllLinesAsync(file, Encoding.UTF8, Context.CancellationToken);
+                ctx.Status("Reading yaml document...");
+                var lines = await Document.ReadAsync(file);
                 
-                // Avoid lines that is not a full URL.
-                var queue = lines.Where(x =>
+                // Loop through the jobs if possible
+                foreach (var job in lines.Jobs)
                 {
-                    return Uri.TryCreate(x, UriKind.Absolute, out var uri)
-                           && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-                }).ToList();
-                AnsiConsole.MarkupLine("Found total of {0} URLs.", queue.Count);
-
-                ctx.Status("Downloading list...");
-                foreach (var url in queue)
-                {
-                    if (Context.CancellationToken.IsCancellationRequested)
-                    {
-                        AnsiConsole.MarkupLine("[orange1]Cancelled.[/]");
-                        break;
-                    }
-                    
-                    var client = string.IsNullOrEmpty(provider)
-                        ? _provider.GetProviderForGalleryId(url)
-                        : _provider.GetProviderByAlias(provider);
-                    
+                    var client = _provider.GetProviderByAlias(job.Provider);
                     if (client == null)
                     {
-                        AnsiConsole.MarkupLine("[orange1]Unsupported: {0}[/]", Markup.Escape(url));
+                        _logger.LogWarning("Provider alias not found: {alias}", job.Provider);
+                        
+                        AnsiConsole.MarkupLine("[orange1]Unsupported: {0}[/]", Markup.Escape(job.Provider));
                         continue;
                     }
                     
+                    // Build series
+                    ctx.Status("Fetching chapters...");
+
                     try
                     {
-                        var response = await client.GetSeries(url, Context.CancellationToken);
-                        var instance = _builder.CreateDownloaderInstance(client, response);
+                        var queue = new List<Series>();
+                        foreach (var url in job.Urls)
+                        {
+                            Context.CancellationToken.ThrowIfCancellationRequested();
+                        
+                            var response = await client.GetSeries(url, Context.CancellationToken);
+                            queue.Add(response);
+                        }
+                    
+                        var series = new Series
+                        {
+                            Title = queue[0].Title,
+                            Artists = queue[0].Artists,
+                            Authors = queue[0].Authors,
+                            Genres = queue[0].Genres,
+                            Chapters = [],
+                            Status = queue[0].Status
+                        };
+                    
+                        var counter = 1;
+                        foreach (var item in queue)
+                        {
+                            foreach (var chapter in item.Chapters)
+                            {
+                                series.Chapters.Add(new Chapter
+                                {
+                                    Id = counter,
+                                    Pages = chapter.Pages,
+                                });
+                                counter++;
+                            }
+                        }
+                    
+                        ctx.Status("Starting download...");
+                    
+                        var instance = _builder.CreateDownloaderInstance(client, series);
                         instance.Configure(c =>
                         {
                             c.OutputPath = output;
@@ -92,12 +117,33 @@ internal sealed class FileCommand : CoconaConsoleAppBase
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Fetching failed due to an exception: Series = {series}, Exception = {ex}", url, ex);
-                        AnsiConsole.MarkupLine("[red3_1]Failed to download due to an exception: {0}[/]", Markup.Escape(url));
+                        _logger.LogError("Failed to fetch gallery with exception: {ex}", ex);
+                        AnsiConsole.MarkupLine("[red3_1]Failed to fetch gallery. See logs for more details.[/]");
                     }
                 }
                 
                 AnsiConsole.MarkupLine("[chartreuse1]All jobs finished.[/]");
             });
+    }
+}
+
+internal sealed class Document
+{
+    public List<Job> Jobs { get; set; } = [];
+
+    internal sealed class Job
+    {
+        public List<string> Urls { get; set; } = [];
+        public string Provider { get; set; } = string.Empty;
+    }
+
+    public static async Task<Document> ReadAsync(string path, CancellationToken cancellationToken = default)
+    {
+        var file = await File.ReadAllTextAsync(path, cancellationToken);
+        
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        return deserializer.Deserialize<Document>(file);
     }
 }
