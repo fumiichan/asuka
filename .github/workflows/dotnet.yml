@@ -20,4 +20,4 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore asuka.slnx
     - name: Build
-      run: dotnet build asuna.slnx -c Release --no-restore
+      run: dotnet build asuka.slnx -c Release --no-restore
