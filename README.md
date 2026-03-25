@@ -9,10 +9,10 @@ Cross-platform ~~nhentai~~ downloader on Console.
 
 ## Requirements
 
--   [.NET 9.0 Runtime](https://dotnet.microsoft.com/download/dotnet/9.0)
+-   [.NET 10.0 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)
 
--   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/9.0/supported-os.md)*.
-    -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from Source section for compiling builds for these platforms.*
+-   For supported platforms check [here](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)*.
+    -   *Releases supports x64 Operating Systems only. You cannot use this on x86 or ARM. Check Compiling from the Source section for compiling builds for these platforms.*
 
 ## Usage
 
