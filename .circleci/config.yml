@@ -11,7 +11,7 @@
             - checkout
             - run:
                 name: Restore packages
-                command: dotnet restore
+                command: dotnet restore asuka.slnx
             - run:
                 name: Build
-                command: dotnet build -c Release
+                command: dotnet build asuka.slnx -c Release
