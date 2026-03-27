@@ -10,12 +10,17 @@
   </Folder>
   <Folder Name="/Solution Files/">
     <File Path=".gitignore" />
+    <File Path="build.cmd" />
+    <File Path="build.sh" />
     <File Path="LICENSE" />
     <File Path="Makefile" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Solution Files/Documentation/">
     <File Path="docs/SDK" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="asuka.JsonToComicInfoMigrator/asuka.JsonToComicInfoMigrator.csproj" />
   </Folder>
   <Project Path="asuka.Application/asuka.csproj">
     <Platform Project="x64" />

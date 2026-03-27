@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using asuka.Application.Extensions;
 using asuka.Application.Services.Downloader.Compression;
 using asuka.Application.Utilities;
 using asuka.Provider.Sdk;
+using asuka.Provider.Sdk.Extensions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -71,7 +71,7 @@ internal sealed class Downloader
 
         if (_config.SaveMetadata)
         {
-            var metaPath = Path.Combine(seriesPath, "details.json");
+            var metaPath = Path.Combine(seriesPath, "ComicInfo.xml");
             await _series.WriteMetadata(metaPath);
         }
 
