@@ -52,12 +52,12 @@ internal sealed class RecommendCommand : CoconaConsoleAppBase
 
             // Select
             var selection = AnsiConsole.Prompt(
-                new MultiSelectionPrompt<Series>()
+                new MultiSelectionPrompt<SearchResultObject>()
                     .Title("Select to download")
                     .Required()
                     .InstructionsText(
                         "[grey](Press [blue]<space>[/] to pick, and [green]<enter>[/] to start downloading)[/]")
-                    .AddChoices(result)
+                    .AddChoices(result.Result)
                     .UseConverter(x => Markup.Escape(x.Title)));
 
             _logger.LogInformation("Selection: {selection}", selection);
@@ -68,7 +68,12 @@ internal sealed class RecommendCommand : CoconaConsoleAppBase
                 {
                     foreach (var item in selection)
                     {
-                        var instance = _builder.CreateDownloaderInstance(client, item);
+                        ctx.Status($"Starting: {Markup.Escape(item.Title)}...");
+                        
+                        // Fetch the information from the provider first
+                        var info = await client.GetSeries(item.Id);
+                        
+                        var instance = _builder.CreateDownloaderInstance(client, info);
                         instance.Configure(c =>
                         {
                             c.OutputPath = output;

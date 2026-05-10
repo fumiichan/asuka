@@ -28,26 +28,16 @@ internal static class GalleryResponseToSeriesMapper
                 new Chapter
                 {
                     Id = 1,
-                    Pages = response.Images.Pages
+                    Pages = response.Pages
                         .Select((x, i) =>
                         {
-                            var pageNumber = i + 1;
-                            var extension = x.Format switch
-                            {
-                                "j" => ".jpg",
-                                "p" => ".png",
-                                "g" => ".gif",
-                                "w" => ".webp",
-                                _ => ""
-                            };
-
-                            var pageNumberFormatted = pageNumber.ToString($"D{response.TotalPages.ToString().Length}");
-                            var filename = $"{pageNumberFormatted}{extension}";
+                            var fileName = Path.GetFileName(x.Path);
+                            fileName = fileName.PadLeft(response.NumPages.ToString().Length, '0');
                             
                             return new ChapterImage
                             {
-                                RemotePath = $"{response.MediaId}/{pageNumber}{extension}",
-                                Filename = filename
+                                RemotePath = x.Path,
+                                Filename = fileName,
                             };
                         })
                         .ToList()

@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using asuka.Provider.Nhentai.Api;
-using asuka.Provider.Nhentai.Api.Client;
 using asuka.Provider.Nhentai.Api.Requests;
 using asuka.Provider.Nhentai.Mappers;
 using asuka.Provider.Sdk;
@@ -15,9 +14,7 @@ namespace asuka.Provider.Nhentai;
 public sealed partial class Provider : MetaInfo
 {
     private readonly IGalleryApi _gallery;
-
-    private readonly List<ImageRequestClient<Provider>> _clients;
-    private int _active;
+    private readonly GalleryImageProvider _clients = new();
 
     public Provider()
     {
@@ -39,17 +36,6 @@ public sealed partial class Provider : MetaInfo
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             })
         });
-        
-        // Configure Image request
-        _clients =
-        [
-            new ImageRequestClient<Provider>("https://i1.nhentai.net"),
-            new ImageRequestClient<Provider>("https://i2.nhentai.net"),
-            new ImageRequestClient<Provider>("https://i3.nhentai.net"),
-            new ImageRequestClient<Provider>("https://i4.nhentai.net"),
-            new ImageRequestClient<Provider>("https://i5.nhentai.net"),
-            new ImageRequestClient<Provider>("https://i6.nhentai.net")
-        ];
     }
 
     public override bool IsGallerySupported(string galleryId)
@@ -77,18 +63,27 @@ public sealed partial class Provider : MetaInfo
         return request.ToSeries();
     }
 
-    public override async Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default)
+    public override async Task<SearchInfo> Search(SearchQuery query, CancellationToken cancellationToken = default)
     {
         var request = await _gallery.SearchGallery(new GallerySearchQuery
         {
             Queries = string.Join(" ", query.SearchQueries),
             PageNumber = query.PageNumber,
-            Sort = query.Sort ?? "popularity"
+            Sort = query.Sort ?? "popular"
         }, cancellationToken);
 
-        return request.Result
-            .Select(x => x.ToSeries())
-            .ToList();
+        return new()
+        {
+            Result = request.Result
+                .Select(x => new SearchResultObject
+                {
+                    Id = x.Id.ToString(),
+                    Title = string.IsNullOrEmpty(x.JapaneseTitle) ? x.EnglishTitle : x.JapaneseTitle
+                })
+                .ToList(),
+            NumberOfPages = request.NumPages,
+            TotalPages = request.Total,
+        };
     }
 
     public override async Task<Series> GetRandom(CancellationToken cancellationToken = default)
@@ -97,7 +92,7 @@ public sealed partial class Provider : MetaInfo
         return await GetSeries(id.ToString(), cancellationToken);
     }
 
-    public override async Task<List<Series>> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
+    public override async Task<SearchInfo> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
     {
         // Sanity check
         if (!IsGallerySupported(galleryId))
@@ -110,9 +105,18 @@ public sealed partial class Provider : MetaInfo
         var code = codeRegex.Match(galleryId).Value;
 
         var request = await _gallery.FetchRecommended(code, cancellationToken);
-        return request.Result
-            .Select(x => x.ToSeries())
-            .ToList();
+        return new()
+        {
+            Result = request.Result
+                .Select(x => new SearchResultObject
+                {
+                    Id = x.Id.ToString(),
+                    Title = string.IsNullOrEmpty(x.JapaneseTitle) ? x.EnglishTitle : x.JapaneseTitle
+                })
+                .ToList(),
+            NumberOfPages = request.NumPages,
+            TotalPages = request.Total,
+        };
     }
 
     public override async Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default)
@@ -120,29 +124,45 @@ public sealed partial class Provider : MetaInfo
         return await TryGetImage(image, cancellationToken: cancellationToken);
     }
 
-    private async Task<byte[]> TryGetImage(ChapterImage image, int retryCount = 0, CancellationToken cancellationToken = default)
+    private async Task<byte[]> TryGetImage(ChapterImage image, CancellationToken cancellationToken = default)
     {
-        var client = _clients[_active];
+        var clients = await _clients.GetImageProviders(_gallery);
+        var retries = 0;
+        
+        // Keep track of which CDN works.
+        // Starts with 1 to skip the i1 domain, which is known to have issues with newer galleries.
+        var goodIndex = 1;
 
-        try
+        while (retries < clients.Count)
         {
-            var response = await client.Client.GetImage(image.RemotePath, cancellationToken);
-            return await response.ReadAsByteArrayAsync(cancellationToken);
-        }
-        catch (ApiException ex)
-        {
-            // Retry with a different host if it doesn't exist:
-            if (ex.StatusCode == HttpStatusCode.NotFound && retryCount <= _clients.Count)
+            try
             {
-                _active = (_active + 1) >= _clients.Count
-                    ? 0
-                    : _active + 1;
+                var response = await clients[goodIndex].Client
+                    .GetImage(image.RemotePath, cancellationToken);
+                var data = await response.ReadAsByteArrayAsync(cancellationToken);
                 
-                return await TryGetImage(image, retryCount + 1, cancellationToken);
-            }
+                var successJitter = RandomNumberGenerator.GetInt32(50, 250); 
+                await Task.Delay(successJitter, cancellationToken);
 
-            throw;
+                return data;
+            }
+            catch (OperationCanceledException) { throw; }
+            catch
+            {
+                goodIndex = (goodIndex + 1) % clients.Count;
+                retries++;
+                
+                // Sleep
+                var baseDelay = (int)Math.Pow(2, retries) * 1000;
+                var backoffJitter = RandomNumberGenerator.GetInt32(0, 1000);
+                var totalDelay = baseDelay + backoffJitter;
+                
+                await Task.Delay(totalDelay, cancellationToken);
+            }
         }
+        
+        // Throw when it fails
+        throw new Exception($"Unable to download image after {retries} retries: {image.RemotePath}");
     }
 
     [GeneratedRegex(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")]

@@ -70,13 +70,13 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
         {
             SearchQueries = searchArguments,
             PageNumber = pageNumber,
-            Sort = sort ?? "popularity"
+            Sort = sort
         };
 
         try
         {
             var responses = await client.Search(query, Context.CancellationToken);
-            if (responses.Count < 1)
+            if (responses.Result.Count < 1)
             {
                 AnsiConsole.MarkupLine("[orange1]No results found.[/]");
                 return;
@@ -84,23 +84,26 @@ internal sealed class SearchCommand : CoconaConsoleAppBase
 
             // Select
             var selection = AnsiConsole.Prompt(
-                new MultiSelectionPrompt<Series>()
+                new MultiSelectionPrompt<SearchResultObject>()
                     .Title("Select to download")
                     .Required()
                     .InstructionsText(
                         "[grey](Press [blue]<space>[/] to pick, and [green]<enter>[/] to start downloading)[/]")
-                    .AddChoices(responses)
+                    .AddChoices(responses.Result)
                     .UseConverter(x => Markup.Escape(x.Title)));
 
             _logger.LogInformation("Selected galleries: {selected}", selection);
             await AnsiConsole.Status()
                 .StartAsync("Running...", async ctx =>
                 {
-                    foreach (var series in responses)
+                    foreach (var series in selection)
                     {
-                        ctx.Status($"Starting: {series.Title}...");
+                        ctx.Status($"Starting: {Markup.Escape(series.Title)}...");
                         
-                        var instance = _builder.CreateDownloaderInstance(client, series);
+                        // Fetch the information from the provider first
+                        var info = await client.GetSeries(series.Id);
+                        
+                        var instance = _builder.CreateDownloaderInstance(client, info);
                         instance.Configure(c =>
                         {
                             c.OutputPath = output;

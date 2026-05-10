@@ -55,9 +55,9 @@ public abstract class MetaInfo
     /// </remarks>
     /// <param name="query"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns>List of galleries matches the query</returns>
+    /// <returns>The list of search results</returns>
     /// <exception cref="Exception"></exception>
-    public abstract Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default);
+    public abstract Task<SearchInfo> Search(SearchQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a random gallery
@@ -84,7 +84,7 @@ public abstract class MetaInfo
     /// <param name="cancellationToken"></param>
     /// <returns>Returns a list of galleries.</returns>
     /// <exception cref="NotSupportedException">Unsupported by the provider</exception>
-    public abstract Task<List<Series>> GetRecommendations(string galleryId, CancellationToken cancellationToken = default);
+    public abstract Task<SearchInfo> GetRecommendations(string galleryId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Downloads the image from the provider

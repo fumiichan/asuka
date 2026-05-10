@@ -13,7 +13,7 @@ public sealed partial class Metadata : MetaInfo
     public Metadata()
     {
         Id = "asuka.provider.hitomi";
-        Version = new Version(1, 1, 0, 1);
+        Version = new Version(1, 2, 0, 1);
         ProviderAliases =
         [
             "hitomi",
@@ -40,7 +40,7 @@ public sealed partial class Metadata : MetaInfo
         return await GetInfo(client, id, cancellationToken);
     }
     
-    public override async Task<List<Series>> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
+    public override async Task<SearchInfo> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
     {
         var id = GalleryIdRegex().Match(galleryId).Groups[1].Value;
         
@@ -52,16 +52,25 @@ public sealed partial class Metadata : MetaInfo
         
         var ids = await GetRelativeIdsFromGalleryId(client, id, cancellationToken);
         
-        var result = new List<Series>();
+        var result = new List<SearchResultObject>();
         foreach (var related in ids)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var info = await GetInfo(client, related.ToString(), cancellationToken);
-            result.Add(info);
+            result.Add(new SearchResultObject
+            {
+                Id = related.ToString(),
+                Title = info.Title
+            });
         }
         
-        return result;
+        return new()
+        {
+            Result = result,
+            NumberOfPages = 1,
+            TotalPages = 1
+        };
     }
 
     public override async Task<byte[]> GetImage(ChapterImage image, CancellationToken cancellationToken = default)
@@ -77,7 +86,7 @@ public sealed partial class Metadata : MetaInfo
     }
     
     #region Unsupported Methods
-    public override Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default)
+    public override Task<SearchInfo> Search(SearchQuery query, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

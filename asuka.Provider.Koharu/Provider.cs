@@ -20,7 +20,7 @@ public sealed partial class Provider : MetaInfo
     public Provider()
     {
         Id = "asuka.Provider.Koharu";
-        Version = new Version(1, 0, 0, 2);
+        Version = new Version(1, 2, 0, 0);
         ProviderAliases =
         [
             "koharu",
@@ -91,7 +91,7 @@ public sealed partial class Provider : MetaInfo
         return data.ToSeries(images, imageQueries.Width);
     }
 
-    public override Task<List<Series>> Search(SearchQuery query, CancellationToken cancellationToken = default)
+    public override Task<SearchInfo> Search(SearchQuery query, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
@@ -121,7 +121,7 @@ public sealed partial class Provider : MetaInfo
         return gallery.ToSeries(images, imageQueries.Width);
     }
 
-    public override Task<List<Series>> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
+    public override Task<SearchInfo> GetRecommendations(string galleryId, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

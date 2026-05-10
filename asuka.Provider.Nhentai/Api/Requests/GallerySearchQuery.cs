@@ -8,7 +8,7 @@ internal sealed class GallerySearchQuery
     public required string Queries { get; init; }
 
     [AliasAs("page")]
-    public int PageNumber { get; init; }
+    public int PageNumber { get; init; } = 1;
 
     [AliasAs("sort")]
     public required string Sort { get; init; }
