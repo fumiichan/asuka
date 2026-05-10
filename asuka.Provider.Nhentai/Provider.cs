@@ -60,6 +60,8 @@ public sealed partial class Provider : MetaInfo
         
         // Request
         var request = await _gallery.FetchSingle(code, cancellationToken);
+        await WaitOnJitter(cancellationToken);
+        
         return request.ToSeries();
     }
 
@@ -141,8 +143,7 @@ public sealed partial class Provider : MetaInfo
                     .GetImage(image.RemotePath, cancellationToken);
                 var data = await response.ReadAsByteArrayAsync(cancellationToken);
                 
-                var successJitter = RandomNumberGenerator.GetInt32(50, 250); 
-                await Task.Delay(successJitter, cancellationToken);
+                await WaitOnJitter(cancellationToken);
 
                 return data;
             }
@@ -163,6 +164,12 @@ public sealed partial class Provider : MetaInfo
         
         // Throw when it fails
         throw new Exception($"Unable to download image after {retries} retries: {image.RemotePath}");
+    }
+
+    private async Task WaitOnJitter(CancellationToken cancellationToken = default)
+    {
+        var successJitter = RandomNumberGenerator.GetInt32(50, 250); 
+        await Task.Delay(successJitter, cancellationToken);
     }
 
     [GeneratedRegex(@"^http(s)?:\/\/(nhentai\.net)\b([//g]*)\b([\d]{1,6})\/?$")]
