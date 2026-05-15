@@ -31,8 +31,14 @@ internal static class GalleryResponseToSeriesMapper
                     Pages = response.Pages
                         .Select((x, i) =>
                         {
-                            var fileName = Path.GetFileName(x.Path);
-                            fileName = fileName.PadLeft(response.NumPages.ToString().Length, '0');
+                            var extension = Path.GetExtension(x.Path);
+                            var nameWithoutExtension = Path.GetFileNameWithoutExtension(x.Path);
+                            
+                            var paddedName = nameWithoutExtension.PadLeft(
+                                response.NumPages.ToString().Length,
+                                '0');
+
+                            var fileName = paddedName + extension;
                             
                             return new ChapterImage
                             {

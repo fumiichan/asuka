@@ -16,6 +16,8 @@ public sealed partial class Provider : MetaInfo
     private readonly IGalleryApi _gallery;
     private readonly GalleryImageProvider _clients = new();
 
+    private int _cdnGoodIndex = 0;
+
     public Provider()
     {
         Id = "asuka.provider.nhentai";
@@ -130,16 +132,12 @@ public sealed partial class Provider : MetaInfo
     {
         var clients = await _clients.GetImageProviders(_gallery);
         var retries = 0;
-        
-        // Keep track of which CDN works.
-        // Starts with 1 to skip the i1 domain, which is known to have issues with newer galleries.
-        var goodIndex = 1;
 
         while (retries < clients.Count)
         {
             try
             {
-                var response = await clients[goodIndex].Client
+                var response = await clients[_cdnGoodIndex].Client
                     .GetImage(image.RemotePath, cancellationToken);
                 var data = await response.ReadAsByteArrayAsync(cancellationToken);
                 
@@ -150,7 +148,7 @@ public sealed partial class Provider : MetaInfo
             catch (OperationCanceledException) { throw; }
             catch
             {
-                goodIndex = (goodIndex + 1) % clients.Count;
+                _cdnGoodIndex = (_cdnGoodIndex + 1) % clients.Count;
                 retries++;
                 
                 // Sleep
@@ -168,7 +166,7 @@ public sealed partial class Provider : MetaInfo
 
     private async Task WaitOnJitter(CancellationToken cancellationToken = default)
     {
-        var successJitter = RandomNumberGenerator.GetInt32(50, 250); 
+        var successJitter = RandomNumberGenerator.GetInt32(100, 550); 
         await Task.Delay(successJitter, cancellationToken);
     }
 
