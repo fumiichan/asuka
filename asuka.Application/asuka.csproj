@@ -30,7 +30,7 @@
       <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
       <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
       <PackageReference Include="Spectre.Console" Version="0.55.2" />
-      <PackageReference Include="YamlDotNet" Version="17.1.0" />
+      <PackageReference Include="YamlDotNet" Version="18.0.0" />
     </ItemGroup>
 
     <ItemGroup>
